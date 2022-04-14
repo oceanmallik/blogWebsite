@@ -120,8 +120,6 @@ Typical flow:
 2. Push to the branch configured in GitHub Pages.
 3. GitHub Pages rebuilds and publishes automatically.
 
-The `CNAME` file keeps the custom domain (`blog.oceanmallik.com`) attached.
-
 ## Maintenance
 
 - Keep post filenames and `date` values consistent.
