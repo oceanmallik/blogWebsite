@@ -3,24 +3,26 @@ on:
   push:
     paths:
       - 'assets/images/**'
-  pull_request:
-    paths:
-      - 'assets/images/**'
 
 jobs:
   build:
-    name: calibreapp/image-actions
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Compress Images
-        id: calibre
         uses: calibreapp/image-actions@main
         with:
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          compressOnly: true
           jpegQuality: '80'
           pngQuality: '80'
           webpQuality: '80'
-          ignorePaths: 'node_modules/**,build/**'
+
+      - name: Save Compressed Images
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto-compressed images to save space"
