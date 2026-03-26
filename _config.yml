@@ -19,6 +19,10 @@ defaults:
       type: posts
     values:
       layout: post
+  - scope:
+      path: "assets/pages"
+    values:
+      layout: default
 
 exclude:
   - README.md
