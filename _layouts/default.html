@@ -8,9 +8,17 @@
     <script>
         (function () {
             var storedTheme = localStorage.getItem("theme");
-            if (storedTheme) {
-                document.documentElement.setAttribute("data-theme", storedTheme);
+            var startTheme;
+
+            if (storedTheme === "dark" || storedTheme === "light" || storedTheme === "sepia") {
+                startTheme = storedTheme;
+            } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
+                startTheme = "light";
+            } else {
+                startTheme = "dark";
             }
+
+            document.documentElement.setAttribute("data-theme", startTheme);
         })();
     </script>
 </head>
@@ -18,7 +26,7 @@
     <header>
         <div class="header-row">
             <h1><a href="{{ '/' | relative_url }}">{{ site.title }}</a></h1>
-            <button id="theme-toggle" type="button" aria-label="Change color theme">Theme: Light</button>
+            <button id="theme-toggle" type="button" aria-label="Cycle through color themes">Theme: Dark</button>
         </div>
         <nav>
             <a href="{{ '/' | relative_url }}">Home</a>
@@ -36,13 +44,13 @@
 
     <script>
         (function () {
-            var themes = ["light", "slate", "sepia"];
-            var labels = { light: "Light", slate: "Slate", sepia: "Sepia" };
+            var themes = ["dark", "light", "sepia"];
+            var labels = { dark: "Dark", light: "Light", sepia: "Sepia" };
             var button = document.getElementById("theme-toggle");
             if (!button) {
                 return;
             }
-            var currentTheme = document.documentElement.getAttribute("data-theme") || "light";
+            var currentTheme = document.documentElement.getAttribute("data-theme") || "dark";
 
             function applyTheme(theme) {
                 document.documentElement.setAttribute("data-theme", theme);
