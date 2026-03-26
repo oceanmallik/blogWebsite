@@ -443,6 +443,35 @@ footer {
     text-align: center;
 }
 
+.support-card-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.support-card-text h2 {
+    margin: 0;
+    font-size: 1.15rem;
+}
+
+.support-link {
+    display: inline-block;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.4rem 0.85rem;
+    background: var(--button-bg);
+    color: var(--button-text);
+    font-family: var(--ui);
+    font-size: 0.9rem;
+}
+
+.support-link:hover {
+    border-bottom-color: transparent;
+    filter: brightness(1.06);
+}
+
 /* Code Block Styles */
 pre {
     background: var(--button-bg);
