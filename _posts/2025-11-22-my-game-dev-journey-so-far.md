@@ -22,4 +22,4 @@ Since then, I’ve been learning more, experimenting more, and slowly building u
 
 I’m still figuring things out, still breaking stuff, still fixing stuff… but I’m having fun. And that’s pretty much why I started all this in the first place. 
 
-You can support my work by donating and following. [**Click here**](https://www.oceanmallik.com/supportMe)
+You can support my work by donating and following. [**Click here**](https://www.oceanmallik.com/support/)
