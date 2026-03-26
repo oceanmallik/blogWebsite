@@ -1,1 +1,3 @@
-## A blog site for blog.oceanmallik.com
+## A blog site for Me
+Work in progress...
+blog.oceanmallik.com
