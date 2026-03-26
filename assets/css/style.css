@@ -39,6 +39,18 @@ html[data-theme="sepia"] {
     --button-text: #55351d;
 }
 
+html[data-theme="lagoon"] {
+    --bg: #031a2a;
+    --bg-top: #0a3551;
+    --surface: #0d2739;
+    --text: #e8f6ff;
+    --muted: #9ec4d8;
+    --border: #2f5c74;
+    --link: #74d4ff;
+    --button-bg: #11415b;
+    --button-text: #e8f6ff;
+}
+
 * {
     box-sizing: border-box;
 }
