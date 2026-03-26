@@ -1,0 +1,26 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f4f4f9;
+    color: #333;
+}
+
+header {
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+}
+
+nav a {
+    margin-right: 15px;
+    text-decoration: none;
+    color: #007BFF;
+}
+
+.date {
+    color: #888;
+    font-size: 0.9em;
+}
