@@ -165,13 +165,14 @@ p {
 
 .post-card {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 210px;
+    grid-template-columns: minmax(0, 1fr) minmax(160px, 210px);
     gap: 1rem;
     align-items: center;
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 0.8rem 0.9rem;
     background: var(--surface);
+    overflow: hidden;
 }
 
 .post-card--no-media {
@@ -196,6 +197,10 @@ p {
 
 .post-card-media {
     display: block;
+    width: 100%;
+    max-width: 210px;
+    justify-self: end;
+    align-self: center;
     border-radius: 7px;
     overflow: hidden;
     border: 1px solid var(--border);
@@ -208,7 +213,8 @@ p {
 
 .post-card-media img {
     width: 100%;
-    height: 140px;
+    height: auto;
+    aspect-ratio: 16 / 10;
     object-fit: cover;
     display: block;
 }
@@ -392,7 +398,12 @@ blockquote {
         grid-template-columns: 1fr;
     }
 
+    .post-card-media {
+        max-width: none;
+        justify-self: stretch;
+    }
+
     .post-card-media img {
-        height: 170px;
+        aspect-ratio: 16 / 9;
     }
 }
