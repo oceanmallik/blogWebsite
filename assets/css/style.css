@@ -449,9 +449,16 @@ footer {
     justify-content: center;
     align-items: center;
     text-align: center;
+    grid-column: 1 / -1;
     border: none;
     background: transparent;
     padding: 0;
+}
+
+.support-category {
+    font-family: var(--ui);
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
 }
 
 .support-button {
