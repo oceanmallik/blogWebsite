@@ -10,7 +10,7 @@ image: /assets/images/dev_journey.png
 
 I’ve always loved getting lost in games, but for the longest time I never thought I’d be the one making them. One day I decided, “Why not at least try?” I even sat down with my father and talked about my future plans, and he actually agreed and supported the idea — which honestly gave me the push I needed. So I opened up Godot… and wow, it was confusing at first. Nodes? Scenes? Scripts? My brain was doing backflips. 
 
-![Photo of Game Development](/assets/images/dev_journey.png)
+![Photo of Game Development](/assets/images/dev_journey.jpg)
 
 But after messing around for a bit, things slowly started making sense. I picked up **C#** because I wanted to learn something solid, and I started grinding lessons on Codecademy and freecodecamp. Every time I got something working, even a tiny mechanic, I’d hype myself up like I just invented electricity.
 
