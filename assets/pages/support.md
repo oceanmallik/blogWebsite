@@ -21,9 +21,7 @@ If you would like to support my work, you can use the options below.
 
   <div class="support-card support-card-text">
     <h2>Patreon</h2>
-    <p>Support me on Patreon:</p>
-    <p>
-      <a class="support-link" href="https://www.patreon.com/c/oceanmallik" target="_blank" rel="noopener noreferrer">patreon.com/c/oceanmallik</a>
-    </p>
+    <p>Support me on Patreon.</p>
+    <a class="support-button" href="https://www.patreon.com/c/oceanmallik" target="_blank" rel="noopener noreferrer">Support on Patreon</a>
   </div>
 </div>
