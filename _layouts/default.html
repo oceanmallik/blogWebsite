@@ -5,10 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% if page.title %}{{ page.title }} | {% endif %}{{ site.title }}</title>
     <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+    <script>
+        (function () {
+            var storedTheme = localStorage.getItem("theme");
+            if (storedTheme) {
+                document.documentElement.setAttribute("data-theme", storedTheme);
+            }
+        })();
+    </script>
 </head>
 <body>
     <header>
-        <h1><a href="{{ '/' | relative_url }}">{{ site.title }}</a></h1>
+        <div class="header-row">
+            <h1><a href="{{ '/' | relative_url }}">{{ site.title }}</a></h1>
+            <button id="theme-toggle" type="button" aria-label="Change color theme">Theme: Light</button>
+        </div>
         <nav>
             <a href="{{ '/' | relative_url }}">Home</a>
             <a href="{{ '/about/' | relative_url }}">About</a>
@@ -22,5 +33,31 @@
     <footer>
         <p>&copy; {{ 'now' | date: '%Y' }} Ocean Mallik</p>
     </footer>
+
+    <script>
+        (function () {
+            var themes = ["light", "slate", "sepia"];
+            var labels = { light: "Light", slate: "Slate", sepia: "Sepia" };
+            var button = document.getElementById("theme-toggle");
+            if (!button) {
+                return;
+            }
+            var currentTheme = document.documentElement.getAttribute("data-theme") || "light";
+
+            function applyTheme(theme) {
+                document.documentElement.setAttribute("data-theme", theme);
+                localStorage.setItem("theme", theme);
+                button.textContent = "Theme: " + labels[theme];
+            }
+
+            applyTheme(currentTheme);
+
+            button.addEventListener("click", function () {
+                var index = themes.indexOf(currentTheme);
+                currentTheme = themes[(index + 1) % themes.length];
+                applyTheme(currentTheme);
+            });
+        })();
+    </script>
 </body>
 </html>

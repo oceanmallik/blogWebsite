@@ -1,10 +1,42 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@500;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap");
+
 :root {
     --bg: #f8fafc;
+    --bg-top: #e9f2ff;
     --surface: #ffffff;
     --text: #1f2937;
-    --muted: #6b7280;
+    --muted: #5f6b7a;
     --border: #e5e7eb;
     --link: #0b57d0;
+    --button-bg: #edf2ff;
+    --button-text: #1a365d;
+    --headline: "Fraunces", Georgia, serif;
+    --body: "Source Serif 4", Georgia, serif;
+    --ui: "Manrope", "Segoe UI", sans-serif;
+}
+
+html[data-theme="slate"] {
+    --bg: #101824;
+    --bg-top: #1a2736;
+    --surface: #142033;
+    --text: #e7edf5;
+    --muted: #9bb0c8;
+    --border: #25384f;
+    --link: #86b9ff;
+    --button-bg: #203148;
+    --button-text: #d6e6ff;
+}
+
+html[data-theme="sepia"] {
+    --bg: #f8f1e4;
+    --bg-top: #f0e3c6;
+    --surface: #fff9ef;
+    --text: #3b2f26;
+    --muted: #786252;
+    --border: #e7d7bd;
+    --link: #8b4c1b;
+    --button-bg: #f3e4cb;
+    --button-text: #55351d;
 }
 
 * {
@@ -12,11 +44,11 @@
 }
 
 body {
-    font-family: Georgia, "Times New Roman", serif;
+    font-family: var(--body);
     line-height: 1.7;
     margin: 0;
     padding: 1.25rem;
-    background: linear-gradient(180deg, #eff6ff 0%, var(--bg) 35%);
+    background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg) 35%);
     color: var(--text);
 }
 
@@ -37,16 +69,36 @@ h1,
 h2,
 h3 {
     line-height: 1.25;
+    font-family: var(--headline);
 }
 
 a {
     color: var(--link);
 }
 
+.header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+#theme-toggle {
+    border: 1px solid var(--border);
+    background: var(--button-bg);
+    color: var(--button-text);
+    border-radius: 999px;
+    padding: 0.45rem 0.9rem;
+    font-family: var(--ui);
+    font-weight: 700;
+    cursor: pointer;
+}
+
 nav a {
     margin-right: 0.875rem;
     text-decoration: none;
     font-weight: 600;
+    font-family: var(--ui);
 }
 
 main {
@@ -73,6 +125,26 @@ p {
     font-size: 0.95rem;
 }
 
+.posts-feed {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.post-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.8rem 0.9rem;
+    background: var(--surface);
+}
+
+.post-card h3 {
+    margin: 0;
+}
+
+.post-card .date {
+    margin: 0.35rem 0 0.3rem;
+}
+
 footer {
     color: var(--muted);
     font-size: 0.9rem;
@@ -83,6 +155,11 @@ footer {
 @media (max-width: 640px) {
     body {
         padding: 0.75rem;
+    }
+
+    .header-row {
+        align-items: flex-start;
+        flex-direction: column;
     }
 
     main {
