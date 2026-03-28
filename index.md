@@ -12,6 +12,18 @@ I write about things I build, learn, and break while coding.
 {% if site.posts.size > 0 %}
 {% assign latest_post = site.posts.first %}
 <div class="home-layout">
+	<aside class="latest-feature" aria-label="Latest full post">
+		{% if latest_post %}
+		<article class="latest-post-full">
+			<h3><a href="{{ latest_post.url | relative_url }}">{{ latest_post.title }}</a></h3>
+			<p class="date">{{ latest_post.date | date: "%B %d, %Y" }}</p>
+			<div class="latest-post-content">
+				{{ latest_post.content }}
+			</div>
+		</article>
+		{% endif %}
+	</aside>
+
 	<section class="home-feed" aria-label="Post previews">
 		<div class="posts-feed">
 		{% for post in site.posts %}
@@ -42,18 +54,6 @@ I write about things I build, learn, and break while coding.
 		{% endfor %}
 		</div>
 	</section>
-
-	<aside class="latest-feature" aria-label="Latest full post">
-		{% if latest_post %}
-		<article class="latest-post-full">
-			<h3><a href="{{ latest_post.url | relative_url }}">{{ latest_post.title }}</a></h3>
-			<p class="date">{{ latest_post.date | date: "%B %d, %Y" }}</p>
-			<div class="latest-post-content">
-				{{ latest_post.content }}
-			</div>
-		</article>
-		{% endif %}
-	</aside>
 </div>
 {% else %}
 No posts yet. Add Markdown files to `_posts` using `YYYY-MM-DD-title.md`.
