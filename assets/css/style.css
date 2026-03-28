@@ -273,10 +273,9 @@ a:focus-visible {
     flex-shrink: 0;
 }
 
-#theme-toggle img {
-    width: 1.15rem;
-    height: 1.15rem;
-    object-fit: contain;
+#theme-icon {
+    font-size: 1.1rem;
+    line-height: 1;
     display: block;
 }
 
