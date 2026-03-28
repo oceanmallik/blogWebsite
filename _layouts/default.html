@@ -17,7 +17,7 @@
             var storedTheme = localStorage.getItem("theme");
             var startTheme;
 
-            if (storedTheme === "dark" || storedTheme === "light" || storedTheme === "sepia" || storedTheme === "lagoon") {
+            if (storedTheme === "dark" || storedTheme === "light" || storedTheme === "sepia" || storedTheme === "lagoon" || storedTheme === "aurora") {
                 startTheme = storedTheme;
             } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
                 startTheme = "light";
@@ -58,8 +58,8 @@
 
     <script>
         (function () {
-            var themes = ["dark", "light", "sepia", "lagoon"];
-            var labels = { dark: "Dark", light: "Light", sepia: "Sepia", lagoon: "Ember" };
+            var themes = ["dark", "light", "sepia", "lagoon", "aurora"];
+            var labels = { dark: "Dark", light: "Light", sepia: "Sepia", lagoon: "Ember", aurora: "Aurora" };
             var button = document.getElementById("theme-toggle");
             if (!button) {
                 return;

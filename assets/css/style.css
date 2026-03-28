@@ -51,6 +51,18 @@ html[data-theme="lagoon"] {
     --button-text: #fff3e7;
 }
 
+html[data-theme="aurora"] {
+    --bg: #050b18;
+    --bg-top: #0d1f35;
+    --surface: #0e1a2f;
+    --text: #e9f7ff;
+    --muted: #b5cad8;
+    --border: #2e5571;
+    --link: #84d8ff;
+    --button-bg: #16324d;
+    --button-text: #edfbff;
+}
+
 * {
     box-sizing: border-box;
 }
@@ -63,6 +75,59 @@ body {
     background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg) 35%);
     color: var(--text);
     transition: background-color 0.4s ease, color 0.4s ease, background 0.4s ease;
+    position: relative;
+    isolation: isolate;
+}
+
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    inset: -18% -10%;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 0;
+    transition: opacity 0.45s ease;
+}
+
+body::before {
+    background:
+        radial-gradient(42% 34% at 14% 21%, rgba(74, 225, 197, 0.35), rgba(74, 225, 197, 0) 70%),
+        radial-gradient(44% 36% at 82% 18%, rgba(110, 173, 255, 0.34), rgba(110, 173, 255, 0) 71%),
+        radial-gradient(48% 40% at 62% 78%, rgba(109, 255, 231, 0.3), rgba(109, 255, 231, 0) 74%);
+    filter: blur(24px) saturate(120%);
+    transform: translate3d(0, 0, 0) scale(1);
+}
+
+body::after {
+    background:
+        radial-gradient(34% 25% at 24% 64%, rgba(77, 240, 221, 0.22), rgba(77, 240, 221, 0) 72%),
+        radial-gradient(42% 30% at 76% 38%, rgba(123, 191, 255, 0.22), rgba(123, 191, 255, 0) 76%);
+    filter: blur(44px) saturate(130%);
+    transform: translate3d(0, 0, 0) scale(1);
+}
+
+@keyframes auroraDrift {
+    0% {
+        transform: translate3d(-1%, -1%, 0) scale(1.02);
+    }
+    50% {
+        transform: translate3d(2%, 1.5%, 0) scale(1.06);
+    }
+    100% {
+        transform: translate3d(-1%, -1%, 0) scale(1.02);
+    }
+}
+
+html[data-theme="aurora"] body::before,
+html[data-theme="aurora"] body::after {
+    opacity: 1;
+    animation: auroraDrift 18s ease-in-out infinite;
+}
+
+html[data-theme="aurora"] body::after {
+    animation-duration: 24s;
+    animation-direction: reverse;
 }
 
 @keyframes sepiaThemeFade {
@@ -83,6 +148,8 @@ header,
 footer {
     max-width: 780px;
     margin: 0 auto;
+    position: relative;
+    z-index: 1;
 }
 
 header {
