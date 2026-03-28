@@ -33,14 +33,16 @@
     <header>
         <div class="header-row">
             <h1><a class="site-brand" href="{{ '/' | relative_url }}">{% if site.title contains ' Talks' %}<span class="brand-main">{{ site.title | replace: ' Talks', '' }}</span><span class="brand-talks">Talks</span>{% else %}{{ site.title }}{% endif %}</a></h1>
+            <nav>
+                <a href="{{ '/' | relative_url }}">Home</a>
+                <a href="{{ '/archive/' | relative_url }}">Archive</a>
+                <a href="{{ '/about/' | relative_url }}">About</a>
+            </nav>
+        </div>
+        <div class="header-controls">
+            <a class="nav-support" href="{{ '/support/' | relative_url }}">Support Me</a>
             <button id="theme-toggle" type="button" aria-label="Cycle through color themes">Theme: Dark</button>
         </div>
-        <nav>
-            <a href="{{ '/' | relative_url }}">Home</a>
-            <a href="{{ '/archive/' | relative_url }}">Archive</a>
-            <a href="{{ '/about/' | relative_url }}">About</a>
-            <a class="nav-support" href="{{ '/support/' | relative_url }}">Support Me</a>
-        </nav>
     </header>
 
     <main>
