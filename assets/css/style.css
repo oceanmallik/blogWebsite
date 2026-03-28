@@ -127,11 +127,12 @@ body::after {
 
 html[data-theme="aurora"] body::before,
 html[data-theme="aurora"] body::after {
-    opacity: 1;
+    opacity: 0.68;
     animation: auroraDrift 18s ease-in-out infinite;
 }
 
 html[data-theme="aurora"] body::after {
+    opacity: 0.5;
     animation-duration: 24s;
     animation-direction: reverse;
 }
@@ -143,9 +144,9 @@ html[data-theme="aurora"] footer {
 
 html[data-theme="aurora"] main {
     background:
-        linear-gradient(165deg, rgba(16, 51, 86, 0.88) 0%, rgba(9, 29, 51, 0.88) 100%);
+        linear-gradient(165deg, rgba(10, 29, 48, 0.9) 0%, rgba(7, 20, 35, 0.92) 100%);
     border-color: rgba(123, 203, 255, 0.38);
-    box-shadow: 0 18px 44px rgba(2, 12, 26, 0.42);
+    box-shadow: 0 16px 36px rgba(2, 12, 26, 0.34);
     backdrop-filter: blur(2px);
 }
 
@@ -153,7 +154,7 @@ html[data-theme="aurora"] .post-card,
 html[data-theme="aurora"] .support-card,
 html[data-theme="aurora"] pre,
 html[data-theme="aurora"] .archive-list li:hover {
-    background: linear-gradient(170deg, rgba(22, 60, 95, 0.72) 0%, rgba(11, 34, 59, 0.72) 100%);
+    background: linear-gradient(170deg, rgba(15, 42, 68, 0.64) 0%, rgba(10, 28, 48, 0.66) 100%);
     border-color: rgba(126, 204, 255, 0.35);
 }
 
