@@ -39,35 +39,6 @@ html[data-theme="sepia"] {
     --button-text: #55351d;
 }
 
-html[data-theme="lagoon"] {
-    --bg: #1c1410;
-    --bg-top: #5a2c1c;
-    --surface: #2b1d16;
-    --text: #ffeede;
-    --muted: #d0b8a5;
-    --border: #a8744f;
-    --link: #ffd2a1;
-    --button-bg: #6a3a24;
-    --button-text: #fff3e7;
-}
-
-html[data-theme="aurora"] {
-    --bg: #050b18;
-    --bg-top: #0d1f35;
-    --surface: #0e1a2f;
-    --text: #e9f7ff;
-    --muted: #b5cad8;
-    --border: #2e5571;
-    --link: #84d8ff;
-    --button-bg: #16324d;
-    --button-text: #edfbff;
-}
-
-html[data-theme="aurora"] body {
-    background:
-        radial-gradient(120% 78% at 50% -18%, rgba(126, 210, 255, 0.24), rgba(126, 210, 255, 0) 64%),
-        linear-gradient(180deg, #173c63 0%, #0c2340 36%, #071a33 72%, #051328 100%);
-}
 
 * {
     box-sizing: border-box;
@@ -111,55 +82,6 @@ body::after {
         radial-gradient(42% 30% at 76% 38%, rgba(123, 191, 255, 0.22), rgba(123, 191, 255, 0) 76%);
     filter: blur(44px) saturate(130%);
     transform: translate3d(0, 0, 0) scale(1);
-}
-
-@keyframes auroraDrift {
-    0% {
-        transform: translate3d(-1%, -1%, 0) scale(1.02);
-    }
-    50% {
-        transform: translate3d(2%, 1.5%, 0) scale(1.06);
-    }
-    100% {
-        transform: translate3d(-1%, -1%, 0) scale(1.02);
-    }
-}
-
-html[data-theme="aurora"] body::before,
-html[data-theme="aurora"] body::after {
-    opacity: 0.68;
-    animation: auroraDrift 18s ease-in-out infinite;
-}
-
-html[data-theme="aurora"] body::after {
-    opacity: 0.5;
-    animation-duration: 24s;
-    animation-direction: reverse;
-}
-
-html[data-theme="aurora"] header,
-html[data-theme="aurora"] footer {
-    border-color: rgba(120, 194, 238, 0.42);
-}
-
-html[data-theme="aurora"] main {
-    background:
-        linear-gradient(165deg, rgba(10, 29, 48, 0.9) 0%, rgba(7, 20, 35, 0.92) 100%);
-    border-color: rgba(123, 203, 255, 0.38);
-    box-shadow: 0 16px 36px rgba(2, 12, 26, 0.34);
-    backdrop-filter: blur(2px);
-}
-
-html[data-theme="aurora"] .post-card,
-html[data-theme="aurora"] .support-card,
-html[data-theme="aurora"] pre,
-html[data-theme="aurora"] .archive-list li:hover {
-    background: linear-gradient(170deg, rgba(15, 42, 68, 0.64) 0%, rgba(10, 28, 48, 0.66) 100%);
-    border-color: rgba(126, 204, 255, 0.35);
-}
-
-html[data-theme="aurora"] a:hover {
-    border-bottom-color: #9ce7ff;
 }
 
 @keyframes sepiaThemeFade {
