@@ -419,6 +419,14 @@ p {
     margin-top: 0.55rem;
 }
 
+.latest-post-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: calc(var(--border-radius) - 3px);
+    display: block;
+    margin: 0.75rem 0;
+}
+
 .posts-feed {
     display: grid;
     gap: 0.9rem;
