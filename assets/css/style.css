@@ -19,7 +19,7 @@
     --text-title: var(--text);
     --text-muted: var(--muted);
     --border-color: var(--border);
-    --container-width: 780px;
+    --container-width: 1200px;
     --border-radius: 10px;
     --transition: all 0.3s ease;
     --headline: "Fraunces", Georgia, serif;
