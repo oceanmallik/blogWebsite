@@ -10,6 +10,7 @@
     <meta property="og:url" content="{{ site.url }}{{ page.url }}">
     <meta property="og:type" content="{% if page.date %}article{% else %}website{% endif %}">
     <link rel="canonical" href="{{ site.url }}{{ page.url }}">
+    <link rel="icon" type="image/png" href="{{ '/favicon.png' | relative_url }}">
     <title>{% if page.title %}{{ page.title }} | {% endif %}{{ site.title }}</title>
     <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
     <script>
@@ -33,14 +34,18 @@
     <header>
         <div class="header-row">
             <h1><a class="site-brand" href="{{ '/' | relative_url }}">{% if site.title contains ' Talks' %}<span class="brand-main">{{ site.title | replace: ' Talks', '' }}</span><span class="brand-talks">Talks</span>{% else %}{{ site.title }}{% endif %}</a></h1>
-            <button id="theme-toggle" type="button" aria-label="Cycle through color themes">Theme: Dark</button>
+            <nav>
+                <a href="{{ '/' | relative_url }}">Home</a>
+                <a href="{{ '/archive/' | relative_url }}">Archive</a>
+                <a href="{{ '/about/' | relative_url }}">About</a>
+            </nav>
+            <button id="theme-toggle" type="button" aria-label="Cycle through color themes">
+                <span id="theme-icon" aria-hidden="true">🌙</span>
+            </button>
         </div>
-        <nav>
-            <a href="{{ '/' | relative_url }}">Home</a>
-            <a href="{{ '/archive/' | relative_url }}">Archive</a>
-            <a href="{{ '/about/' | relative_url }}">About</a>
+        <div class="header-controls">
             <a class="nav-support" href="{{ '/support/' | relative_url }}">Support Me</a>
-        </nav>
+        </div>
     </header>
 
     <main>
@@ -60,7 +65,9 @@
         (function () {
             var themes = ["dark", "light", "sepia", "lagoon", "aurora"];
             var labels = { dark: "Dark", light: "Light", sepia: "Sepia", lagoon: "Ember", aurora: "Aurora" };
+            var icons = { dark: "🌙", light: "☀️", sepia: "📜", lagoon: "🔥", aurora: "✨" };
             var button = document.getElementById("theme-toggle");
+            var icon = document.getElementById("theme-icon");
             if (!button) {
                 return;
             }
@@ -69,7 +76,11 @@
             function applyTheme(theme) {
                 document.documentElement.setAttribute("data-theme", theme);
                 localStorage.setItem("theme", theme);
-                button.textContent = "Theme: " + labels[theme];
+                button.setAttribute("aria-label", "Theme: " + labels[theme]);
+                button.title = "Theme: " + labels[theme];
+                if (icon) {
+                    icon.textContent = icons[theme] || "🎨";
+                }
 
                 if (theme === "sepia") {
                     document.body.classList.remove("theme-fade-sepia");
