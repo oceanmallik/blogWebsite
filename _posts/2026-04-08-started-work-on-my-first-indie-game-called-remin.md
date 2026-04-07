@@ -10,7 +10,7 @@ I just recently started working on my video game called REMIN, alone in silence.
 
 ![Photo of Game Website](/assets/images/remin_website.png)
 
-Check out my website here: https://games.oceanmallik.com/
+Check out my website here: [Click Here](https://games.oceanmallik.com/)
 
 But I had a problem, without any character movement, this looks ugly and I am loosing my willing power to develop a game. So, I will start learning blender just to make some models and other stuff so that my scene does not look empty and I can give the game a grayish look and atmosphere. 
 
