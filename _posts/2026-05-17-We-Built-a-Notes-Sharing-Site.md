@@ -20,6 +20,8 @@ We're a small team of Software Engineering students at Daffodil International Un
 
 ---
 
+![Photo of Site Banner](/assets/images/Site_Banner.png)
+
 ## So What Even Is It?
 
 It's a pretty simple website. No login, no account, no subscription. You go to **[diunotesbuddy.live](https://diunotesbuddy.live/)**, you find your course, and you grab the notes. That's it.
