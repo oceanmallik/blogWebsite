@@ -77,7 +77,6 @@ And if you're a student from another university reading this thinking *"we need 
 <div align="center">
 
 **Check it out, share your notes, or contribute to the project.**
-
-[🌐 Visit diunotesbuddy.live](https://diunotesbuddy.live/) &nbsp;·&nbsp; [💻 GitHub Repo](https://github.com/AxiomVessel/DIUNotesBuddy) &nbsp;·&nbsp; [🏢 AxiomVessel Org](https://github.com/AxiomVessel)
+[**🌐 Visit diunotesbuddy.live**](https://diunotesbuddy.live/)
 
 </div>
