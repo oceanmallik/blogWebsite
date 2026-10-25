@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ocean Verse — Stories, Technology & Reflections</title>
+  <meta name="description" content="Ocean Verse: A modern, responsive blog powered by Supabase and vanilla web technologies.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌊</text></svg>">
+  
+  <!-- Supabase JS Client v2 (Required) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Marked.js Markdown Parser & DOMPurify Sanitizer (Required) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header / Navigation -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="#" class="brand-logo" id="brand-logo" aria-label="Ocean Verse Home">
+        <div class="logo-icon-wrap">
+          <svg class="ocean-wave-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12c2.5-3 5-3 7.5 0s5 3 7.5 0 5-3 5-3"></path>
+            <path d="M2 17c2.5-3 5-3 7.5 0s5 3 7.5 0 5-3 5-3"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">Ocean<span class="brand-highlight">Verse</span></span>
+          <span class="brand-tagline">Deep Dive Thoughts</span>
+        </div>
+      </a>
+
+      <div class="header-right">
+        <!-- Live search bar for posts -->
+        <div class="search-container" id="search-container">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="search-input" placeholder="Search articles..." aria-label="Search articles">
+          <button id="search-clear-btn" class="search-clear-btn hidden" aria-label="Clear search">&times;</button>
+        </div>
+
+        <!-- Connection Settings Button -->
+        <button id="config-btn" class="icon-button" title="Supabase Settings" aria-label="Supabase Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </button>
+
+        <!-- Theme Toggle (Dark / Light) -->
+        <button id="theme-toggle" class="icon-button" title="Toggle theme" aria-label="Toggle theme">
+          <svg class="sun-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
+        <!-- Supabase Auth Actions -->
+        <div id="nav-auth-container" class="nav-auth-container">
+          <!-- Logged out button -->
+          <button id="nav-login-btn" class="btn-sm btn-primary nav-login-btn">
+            <svg class="nav-auth-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+              <polyline points="10 17 15 12 10 7"></polyline>
+              <line x1="15" y1="12" x2="3" y2="12"></line>
+            </svg>
+            <span>Sign In</span>
+          </button>
+
+          <!-- Logged in user profile & logout -->
+          <div id="nav-user-profile" class="nav-user-profile hidden">
+            <div id="nav-user-avatar" class="nav-user-avatar" title="Your Account"></div>
+            <div class="nav-user-details">
+              <span id="nav-user-name" class="nav-user-name"></span>
+              <span id="nav-user-role" class="role-badge role-visitor">Visitor</span>
+            </div>
+            <!-- Admin Panel Button (Shown strictly for currentUserRole === 'admin') -->
+            <button id="nav-admin-btn" class="nav-admin-btn hidden" title="Admin Panel" aria-label="Admin Panel">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+              </svg>
+              <span class="admin-btn-label">Admin Panel</span>
+            </button>
+            <button id="nav-logout-btn" class="nav-logout-btn" title="Log out" aria-label="Log out">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              <span class="logout-label">Logout</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-content">
+    <!-- Notice Banner (Shown if Supabase keys need configuration) -->
+    <div id="setup-banner" class="setup-banner hidden">
+      <div class="banner-inner">
+        <div class="banner-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <div class="banner-text">
+          <strong>Supabase Configuration Notice:</strong>
+          <span>Configure <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> in <code>app.js</code> or use the settings dialog to connect your live database.</span>
+        </div>
+        <div class="banner-actions">
+          <button id="banner-config-btn" class="btn-sm btn-primary">Configure Keys</button>
+          <button id="banner-demo-btn" class="btn-sm btn-outline">Preview Demo Posts</button>
+          <button id="banner-dismiss-btn" class="banner-close" aria-label="Dismiss banner">&times;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==============================================
+         HOME VIEW: Post Cards Grid
+         ============================================== -->
+    <section id="home-view" class="view">
+      <!-- Hero Section -->
+      <section class="hero-section">
+        <div class="hero-badge">
+          <span class="pulse-dot"></span>
+          <span>Ocean Verse Journal</span>
+        </div>
+        <h1 class="hero-title">Navigating ideas, technology & creative currents.</h1>
+        <p class="hero-subtitle">
+          Curated writings on software engineering, web design, and digital explorations.
+        </p>
+      </section>
+
+      <!-- View Header / Stats Bar -->
+      <div class="posts-header-bar">
+        <div class="posts-count-indicator">
+          <span id="posts-count-text">Loading posts...</span>
+        </div>
+        <div class="posts-controls">
+          <button id="refresh-btn" class="btn-refresh" title="Reload posts">
+            <svg class="refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 4v6h-6"></path>
+              <path d="M1 20v-6h6"></path>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading Skeleton Grid -->
+      <div id="posts-skeleton" class="posts-grid">
+        <div class="post-card skeleton-card">
+          <div class="skeleton-image skeleton-anim"></div>
+          <div class="card-body">
+            <div class="skeleton-line sm skeleton-anim"></div>
+            <div class="skeleton-line lg skeleton-anim"></div>
+            <div class="skeleton-line md skeleton-anim"></div>
+            <div class="skeleton-line md skeleton-anim"></div>
+          </div>
+        </div>
+        <div class="post-card skeleton-card">
+          <div class="skeleton-image skeleton-anim"></div>
+          <div class="card-body">
+            <div class="skeleton-line sm skeleton-anim"></div>
+            <div class="skeleton-line lg skeleton-anim"></div>
+            <div class="skeleton-line md skeleton-anim"></div>
+            <div class="skeleton-line md skeleton-anim"></div>
+          </div>
+        </div>
+        <div class="post-card skeleton-card">
+          <div class="skeleton-image skeleton-anim"></div>
+          <div class="card-body">
+            <div class="skeleton-line sm skeleton-anim"></div>
+            <div class="skeleton-line lg skeleton-anim"></div>
+            <div class="skeleton-line md skeleton-anim"></div>
+            <div class="skeleton-line md skeleton-anim"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Post Cards Grid -->
+      <div id="posts-grid" class="posts-grid hidden"></div>
+
+      <!-- Empty State -->
+      <div id="empty-state" class="state-container hidden">
+        <div class="state-icon">🌊</div>
+        <h2 class="state-title">No published posts found</h2>
+        <p class="state-desc">There are no published articles in the database yet, or none match your search query.</p>
+        <button id="empty-reset-btn" class="btn-primary">View All Posts</button>
+      </div>
+
+      <!-- Error State -->
+      <div id="error-state" class="state-container hidden">
+        <div class="state-icon">⚠️</div>
+        <h2 class="state-title">Unable to load posts</h2>
+        <p id="error-message" class="state-desc">Failed to connect to Supabase. Please verify your credentials and network connection.</p>
+        <div class="state-actions">
+          <button id="error-retry-btn" class="btn-primary">Try Again</button>
+          <button id="error-config-btn" class="btn-outline">Open Settings</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==============================================
+         ARTICLE VIEW: Full Post Content
+         ============================================== -->
+    <article id="article-view" class="view hidden">
+      <!-- Top Navigation -->
+      <div class="article-top-nav">
+        <button id="back-btn" class="back-btn" aria-label="Back to Posts">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span>Back to Posts</span>
+        </button>
+
+        <div class="article-actions">
+          <button id="copy-link-btn" class="icon-button-subtle" title="Copy article link" aria-label="Copy article link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+            <span id="copy-feedback" class="copy-feedback hidden">Copied!</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Article Header -->
+      <header class="article-header">
+        <div class="article-meta">
+          <span id="article-date" class="meta-item"></span>
+          <span class="meta-dot">&bull;</span>
+          <span id="article-reading-time" class="meta-item"></span>
+        </div>
+
+        <h1 id="article-title" class="article-title"></h1>
+
+        <p id="article-summary" class="article-summary-lead"></p>
+      </header>
+
+      <!-- Article Cover Image Banner -->
+      <div id="article-cover-wrap" class="article-cover-wrapper hidden">
+        <img id="article-cover" class="article-cover-image" src="" alt="Post cover image">
+      </div>
+
+      <!-- Full Article Content Body -->
+      <div id="article-content" class="article-body"></div>
+
+      <!-- Comments Section -->
+      <section id="comments-section" class="comments-section">
+        <div class="comments-header">
+          <div class="comments-title-wrap">
+            <svg class="comments-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <h3 class="comments-title">Discussion (<span id="comments-count">0</span>)</h3>
+          </div>
+        </div>
+
+        <!-- Add Comment Form (Shown when logged in) -->
+        <div id="comment-form-container" class="comment-form-container">
+          <form id="comment-form" class="comment-form">
+            <div class="comment-input-wrap">
+              <textarea id="comment-content" placeholder="Share your perspective or ask a question..." required rows="3"></textarea>
+            </div>
+            <div class="comment-form-actions">
+              <span id="comment-form-msg" class="comment-msg hidden"></span>
+              <button type="submit" id="comment-submit-btn" class="btn-primary btn-sm">
+                <span>Post Comment</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Logged out notice (Shown when not logged in) -->
+        <div id="comment-login-prompt" class="comment-login-prompt hidden">
+          <p>Please <button type="button" id="comment-login-btn" class="btn-inline-link">Sign in</button> to join the discussion.</p>
+        </div>
+
+        <!-- Loading state for comments -->
+        <div id="comments-loading" class="comments-loading hidden">
+          <div class="skeleton-line sm skeleton-anim" style="width: 130px;"></div>
+          <div class="skeleton-line md skeleton-anim"></div>
+        </div>
+
+        <!-- Comments List -->
+        <div id="comments-list" class="comments-list"></div>
+
+        <!-- Empty Comments State -->
+        <div id="comments-empty" class="comments-empty hidden">
+          <p>No comments yet. Be the first to share your thoughts!</p>
+        </div>
+      </section>
+
+      <!-- Article Footer Navigation -->
+      <footer class="article-footer">
+        <button class="back-btn bottom-back-btn" aria-label="Back to Posts">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span>Back to Posts</span>
+        </button>
+        <button id="scroll-top-btn" class="scroll-top-btn" title="Back to top" aria-label="Scroll to top">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="18 15 12 9 6 15"></polyline>
+          </svg>
+          <span>Top</span>
+        </button>
+      </footer>
+    </article>
+
+    <!-- ==============================================
+         ADMIN PANEL VIEW: Full CRUD for Posts
+         ============================================== -->
+    <section id="admin-view" class="view hidden">
+      <!-- Admin Top Bar -->
+      <div class="admin-top-bar">
+        <button id="admin-back-btn" class="back-btn" aria-label="Back to Blog">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span>Back to Blog</span>
+        </button>
+
+        <div class="admin-header-badge">
+          <span class="role-badge role-admin">👑 Administrator</span>
+        </div>
+      </div>
+
+      <!-- Admin Overview Header -->
+      <div class="admin-intro">
+        <h1 class="admin-title">Admin Dashboard</h1>
+        <p class="admin-subtitle">Create, edit, delete, and publish posts to <code>public.posts</code>.</p>
+      </div>
+
+      <div class="admin-grid-layout">
+        <!-- Post Editor Card -->
+        <div class="admin-editor-card">
+          <div class="editor-card-header">
+            <h2 id="admin-editor-title" class="editor-heading">Create New Post</h2>
+            <button id="admin-cancel-edit-btn" class="btn-sm btn-ghost hidden">Cancel Edit</button>
+          </div>
+
+          <form id="admin-post-form" class="admin-form">
+            <input type="hidden" id="admin-post-id" value="">
+
+            <div class="form-group">
+              <label for="admin-title">Article Title</label>
+              <input type="text" id="admin-title" placeholder="e.g. Deep Ocean Explorations" required>
+            </div>
+
+            <div class="form-group">
+              <div class="label-with-action">
+                <label for="admin-slug">Slug (URL identifier)</label>
+                <button type="button" id="admin-generate-slug" class="btn-text-action">Generate from Title</button>
+              </div>
+              <input type="text" id="admin-slug" placeholder="e.g. deep-ocean-explorations" required>
+              <span class="field-hint">Used in URLs: <code>#/post/your-slug</code></span>
+            </div>
+
+            <div class="form-group">
+              <label for="admin-summary">Summary (Excerpt)</label>
+              <textarea id="admin-summary" rows="2" placeholder="Brief 1-2 sentence preview for cards..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="admin-cover-image">Cover Image URL</label>
+              <input type="url" id="admin-cover-image" placeholder="https://images.unsplash.com/photo-...">
+              <span class="field-hint">Direct image URL (Unsplash, Supabase Storage, etc.).</span>
+            </div>
+
+            <div class="form-group admin-content-group">
+              <div class="editor-tabs-bar">
+                <label for="admin-content" class="editor-tabs-label">Article Content (Markdown)</label>
+                <div class="editor-tabs" role="tablist">
+                  <button type="button" id="editor-tab-write" class="editor-tab-btn active" role="tab" aria-selected="true" title="Write Markdown">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                      <path d="M12 20h9"></path>
+                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                    </svg>
+                    <span>Write</span>
+                  </button>
+                  <button type="button" id="editor-tab-preview" class="editor-tab-btn" role="tab" aria-selected="false" title="View Rendered Markdown">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <span>Live Preview</span>
+                  </button>
+                  <button type="button" id="editor-toggle-split" class="editor-tab-btn editor-split-btn" title="Toggle Side-by-Side Split View">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="12" y1="3" x2="12" y2="21"></line>
+                    </svg>
+                    <span class="split-btn-label">Split View</span>
+                  </button>
+                </div>
+              </div>
+
+              <div id="editor-view-container" class="editor-view-container">
+                <div id="editor-write-pane" class="editor-pane editor-write-pane">
+                  <textarea id="admin-content" rows="12" placeholder="Write article content using Markdown (## Headings, **bold**, > Quotes, ```code```) or HTML..." required></textarea>
+                </div>
+                <div id="editor-preview-pane" class="editor-pane editor-preview-pane hidden">
+                  <div id="admin-content-preview" class="article-body admin-markdown-preview">
+                    <p class="preview-empty-hint">Type in the editor to see live Markdown preview...</p>
+                  </div>
+                </div>
+              </div>
+              <span class="field-hint">Supports full GitHub Flavored Markdown (headings, lists, quotes, code fences, tables).</span>
+            </div>
+
+            <div class="form-group-checkbox">
+              <label class="checkbox-container">
+                <input type="checkbox" id="admin-is-published" checked>
+                <span class="checkbox-custom"></span>
+                <span class="checkbox-label">Publish immediately (visible on public home view)</span>
+              </label>
+            </div>
+
+            <div id="admin-form-msg" class="config-status-msg hidden"></div>
+
+            <div class="admin-form-actions">
+              <button type="button" id="admin-reset-form-btn" class="btn-outline">Clear Form</button>
+              <button type="submit" id="admin-submit-btn" class="btn-primary">
+                <span class="btn-text">Publish Post</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Posts Management List Card -->
+        <div class="admin-posts-card">
+          <div class="posts-card-header">
+            <div>
+              <h2 class="editor-heading">All Posts &amp; Drafts</h2>
+              <span id="admin-posts-count" class="admin-count-text">Loading posts...</span>
+            </div>
+            <button id="admin-refresh-posts-btn" class="btn-sm btn-outline" title="Reload posts">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <path d="M23 4v6h-6"></path>
+                <path d="M1 20v-6h6"></path>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+              </svg>
+              <span>Refresh</span>
+            </button>
+          </div>
+
+          <!-- Admin Posts Table / List -->
+          <div id="admin-posts-list" class="admin-posts-list">
+            <!-- Dynamically populated rows -->
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==============================================
+       SUPABASE CONFIGURATION MODAL
+       ============================================== -->
+  <div id="config-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </div>
+          <div>
+            <h2 id="modal-title" class="modal-title">Supabase Connection</h2>
+            <p class="modal-subtitle">Connect your Supabase project to fetch live posts.</p>
+          </div>
+        </div>
+        <button id="modal-close-btn" class="modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <form id="config-form" class="modal-body">
+        <p class="modal-instruction">
+          You can set these credentials directly inside <code>app.js</code> or save them here in your browser:
+        </p>
+
+        <div class="form-group">
+          <label for="cfg-url">Supabase Project URL</label>
+          <input type="url" id="cfg-url" placeholder="https://your-project.supabase.co" required autocomplete="off">
+          <span class="field-hint">Find this in your Supabase Project Settings &gt; API.</span>
+        </div>
+
+        <div class="form-group">
+          <label for="cfg-key">Supabase Anon Key</label>
+          <input type="text" id="cfg-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." required autocomplete="off">
+          <span class="field-hint">Public anon key (<code>anon</code> / <code>public</code>).</span>
+        </div>
+
+        <div id="config-status-msg" class="config-status-msg hidden"></div>
+
+        <div class="modal-footer">
+          <button type="button" id="cfg-clear-btn" class="btn-outline">Clear</button>
+          <div class="modal-footer-right">
+            <button type="button" id="cfg-cancel-btn" class="btn-ghost">Cancel</button>
+            <button type="submit" id="cfg-save-btn" class="btn-primary">Save &amp; Connect</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==============================================
+       AUTHENTICATION MODAL (Sign In & Sign Up)
+       ============================================== -->
+  <div id="auth-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+    <div class="modal-card auth-modal-card">
+      <div class="modal-header auth-modal-header">
+        <div class="auth-tabs" role="tablist">
+          <button type="button" id="tab-signin" class="auth-tab-btn active" role="tab" aria-selected="true">Sign In</button>
+          <button type="button" id="tab-signup" class="auth-tab-btn" role="tab" aria-selected="false">Create Account</button>
+        </div>
+        <button id="auth-modal-close-btn" class="modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <!-- Sign In Form -->
+      <form id="signin-form" class="modal-body auth-form">
+        <div class="auth-welcome">
+          <h3 id="auth-modal-title" class="auth-title">Welcome back to Ocean Verse</h3>
+          <p class="auth-subtitle">Sign in with your email and password.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="signin-email">Email Address</label>
+          <input type="email" id="signin-email" placeholder="name@example.com" required autocomplete="email">
+        </div>
+
+        <div class="form-group">
+          <label for="signin-password">Password</label>
+          <input type="password" id="signin-password" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+
+        <div id="signin-status-msg" class="config-status-msg hidden"></div>
+
+        <div class="auth-modal-footer">
+          <button type="submit" id="signin-submit-btn" class="btn-primary auth-submit-btn">
+            <span class="btn-text">Sign In</span>
+          </button>
+          <p class="auth-switch-link">
+            Don't have an account? <a href="#" id="switch-to-signup">Sign up</a>
+          </p>
+        </div>
+      </form>
+
+      <!-- Sign Up Form -->
+      <form id="signup-form" class="modal-body auth-form hidden">
+        <div class="auth-welcome">
+          <h3 class="auth-title">Join the Ocean Verse Community</h3>
+          <p class="auth-subtitle">Create an account to join discussions and explore.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="signup-name">Display Name</label>
+          <input type="text" id="signup-name" placeholder="Ocean Explorer" required autocomplete="name">
+        </div>
+
+        <div class="form-group">
+          <label for="signup-email">Email Address</label>
+          <input type="email" id="signup-email" placeholder="name@example.com" required autocomplete="email">
+        </div>
+
+        <div class="form-group">
+          <label for="signup-password">Password</label>
+          <input type="password" id="signup-password" placeholder="At least 6 characters" minlength="6" required autocomplete="new-password">
+          <span class="field-hint">Must be at least 6 characters.</span>
+        </div>
+
+        <div id="signup-status-msg" class="config-status-msg hidden"></div>
+
+        <div class="auth-modal-footer">
+          <button type="submit" id="signup-submit-btn" class="btn-primary auth-submit-btn">
+            <span class="btn-text">Create Account</span>
+          </button>
+          <p class="auth-switch-link">
+            Already have an account? <a href="#" id="switch-to-signin">Sign in</a>
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <span class="footer-logo">🌊 Ocean Verse</span>
+        <span class="footer-desc">A minimal, responsive blog frontend built with HTML, CSS, Vanilla JS &amp; Supabase.</span>
+      </div>
+      <div class="footer-links">
+        <span>Table: <code>public.posts</code></span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
+
