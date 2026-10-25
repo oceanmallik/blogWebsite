@@ -872,8 +872,17 @@ function getPlaceholderIconSvg() {
 
 /**
  * Displays full article view and hides home grid
+ * @param {object} post - Post object to display
+ * @param {boolean} updateHash - Whether to update window.location.hash
  */
-function openArticleView(post) {
+function openArticleView(post, updateHash = true) {
+  if (!post) return;
+
+  // Prevent double rendering if this article view is already actively open for this post
+  if (activePost && activePost.id === post.id && !dom.articleView?.classList.contains('hidden')) {
+    return;
+  }
+
   activePost = post;
 
   dom.articleTitle.textContent = post.title || 'Untitled';
@@ -901,17 +910,22 @@ function openArticleView(post) {
   dom.articleContent.innerHTML = renderMarkdown(post.content || 'No content provided.');
 
   // Toggle views
-  dom.homeView.classList.add('hidden');
-  dom.adminView.classList.add('hidden');
-  dom.articleView.classList.remove('hidden');
+  dom.homeView?.classList.add('hidden');
+  dom.adminView?.classList.add('hidden');
+  dom.articleView?.classList.remove('hidden');
 
   // Load comments
   loadCommentsForPost(post.id);
 
-  const postIdentifier = post.slug || post.id;
-  window.location.hash = `#/post/${encodeURIComponent(postIdentifier)}`;
-  document.title = `${post.title || 'Article'} — Ocean Verse`;
+  if (updateHash) {
+    const postIdentifier = post.slug || post.id;
+    const targetHash = `#/post/${encodeURIComponent(postIdentifier)}`;
+    if (window.location.hash !== targetHash) {
+      window.location.hash = targetHash;
+    }
+  }
 
+  document.title = `${post.title || 'Article'} — Ocean Verse`;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -952,7 +966,11 @@ function handleHashNavigation() {
     if (identifier && allPosts.length > 0) {
       const match = allPosts.find(p => p.slug === identifier || String(p.id) === identifier);
       if (match) {
-        openArticleView(match);
+        // If already actively viewing this post, do not duplicate view open or comments fetch
+        if (activePost && (activePost.id === match.id || activePost.slug === match.slug) && !dom.articleView?.classList.contains('hidden')) {
+          return;
+        }
+        openArticleView(match, false);
         return;
       }
     }
@@ -967,11 +985,16 @@ function handleHashNavigation() {
 // 8. COMMENTS MANAGEMENT (public.comments)
 // ============================================================================
 
+// Request sequence counter to discard stale asynchronous responses
+let commentsRequestId = 0;
+
 /**
  * Loads all comments for a post_id and joins profiles(display_name)
  */
 async function loadCommentsForPost(postId) {
   if (!postId || !dom.commentsList) return;
+
+  const thisRequestId = ++commentsRequestId;
 
   dom.commentsLoading?.classList.remove('hidden');
   dom.commentsEmpty?.classList.add('hidden');
@@ -1015,16 +1038,37 @@ async function loadCommentsForPost(postId) {
   } catch (err) {
     console.error('Failed to load comments:', err);
   } finally {
+    // If a newer request was dispatched while this query was in flight, abort
+    if (thisRequestId !== commentsRequestId) return;
     dom.commentsLoading?.classList.add('hidden');
   }
 
+  // Discard response if user navigated away or a newer request took precedence
+  if (thisRequestId !== commentsRequestId || !activePost || activePost.id !== postId) {
+    return;
+  }
+
+  // Deduplicate by comment.id in case database or query join returned duplicate rows
+  const seenIds = new Set();
+  comments = comments.filter(c => {
+    if (!c || !c.id) return true;
+    if (seenIds.has(c.id)) return false;
+    seenIds.add(c.id);
+    return true;
+  });
+
   activeComments = comments;
   if (dom.commentsCount) dom.commentsCount.textContent = comments.length;
+
+  // Clear list cleanly right before rendering
+  dom.commentsList.innerHTML = '';
 
   if (comments.length === 0) {
     dom.commentsEmpty?.classList.remove('hidden');
     return;
   }
+
+  dom.commentsEmpty?.classList.add('hidden');
 
   const fragment = document.createDocumentFragment();
   comments.forEach(comment => {
@@ -1048,10 +1092,12 @@ function createCommentCardElement(comment) {
   const avatar = document.createElement('div');
   avatar.className = 'comment-avatar';
 
-  const displayName = comment.profiles?.display_name || 'Community Member';
+  const profile = Array.isArray(comment.profiles) ? comment.profiles[0] : comment.profiles;
+  const displayName = profile?.display_name || 'Community Member';
+  const avatarUrl = profile?.avatar_url;
 
-  if (comment.profiles?.avatar_url && comment.profiles.avatar_url.trim() !== '') {
-    avatar.innerHTML = `<img src="${comment.profiles.avatar_url}" alt="${escapeHtml(displayName)}">`;
+  if (avatarUrl && typeof avatarUrl === 'string' && avatarUrl.trim() !== '') {
+    avatar.innerHTML = `<img src="${avatarUrl}" alt="${escapeHtml(displayName)}">`;
   } else {
     const initials = displayName
       .split(' ')
