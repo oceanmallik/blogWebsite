@@ -45,14 +45,6 @@
           <button id="search-clear-btn" class="search-clear-btn hidden" aria-label="Clear search">&times;</button>
         </div>
 
-        <!-- Connection Settings Button -->
-        <button id="config-btn" class="icon-button" title="Supabase Settings" aria-label="Supabase Settings">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-          </svg>
-        </button>
-
         <!-- Theme Toggle (Dark / Light) -->
         <button id="theme-toggle" class="icon-button" title="Toggle theme" aria-label="Toggle theme">
           <svg class="sun-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -114,28 +106,6 @@
 
   <!-- Main Container -->
   <main class="main-content">
-    <!-- Notice Banner (Shown if Supabase keys need configuration) -->
-    <div id="setup-banner" class="setup-banner hidden">
-      <div class="banner-inner">
-        <div class="banner-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
-        </div>
-        <div class="banner-text">
-          <strong>Supabase Configuration Notice:</strong>
-          <span>Configure <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> in <code>app.js</code> or use the settings dialog to connect your live database.</span>
-        </div>
-        <div class="banner-actions">
-          <button id="banner-config-btn" class="btn-sm btn-primary">Configure Keys</button>
-          <button id="banner-demo-btn" class="btn-sm btn-outline">Preview Demo Posts</button>
-          <button id="banner-dismiss-btn" class="banner-close" aria-label="Dismiss banner">&times;</button>
-        </div>
-      </div>
-    </div>
-
     <!-- ==============================================
          HOME VIEW: Post Cards Grid
          ============================================== -->
@@ -207,7 +177,7 @@
       <div id="empty-state" class="state-container hidden">
         <div class="state-icon">🌊</div>
         <h2 class="state-title">No published posts found</h2>
-        <p class="state-desc">There are no published articles in the database yet, or none match your search query.</p>
+        <p class="state-desc">There are no published articles yet, or none match your search query.</p>
         <button id="empty-reset-btn" class="btn-primary">View All Posts</button>
       </div>
 
@@ -215,10 +185,9 @@
       <div id="error-state" class="state-container hidden">
         <div class="state-icon">⚠️</div>
         <h2 class="state-title">Unable to load posts</h2>
-        <p id="error-message" class="state-desc">Failed to connect to Supabase. Please verify your credentials and network connection.</p>
+        <p id="error-message" class="state-desc">Unable to load articles right now. Please check your connection and try again.</p>
         <div class="state-actions">
           <button id="error-retry-btn" class="btn-primary">Try Again</button>
-          <button id="error-config-btn" class="btn-outline">Open Settings</button>
         </div>
       </div>
     </section>
@@ -355,7 +324,7 @@
       <!-- Admin Overview Header -->
       <div class="admin-intro">
         <h1 class="admin-title">Admin Dashboard</h1>
-        <p class="admin-subtitle">Create, edit, delete, and publish posts to <code>public.posts</code>.</p>
+        <p class="admin-subtitle">Create, edit, delete, and publish articles.</p>
       </div>
 
       <div class="admin-grid-layout">
@@ -380,7 +349,7 @@
                 <button type="button" id="admin-generate-slug" class="btn-text-action">Generate from Title</button>
               </div>
               <input type="text" id="admin-slug" placeholder="e.g. deep-ocean-explorations" required>
-              <span class="field-hint">Used in URLs: <code>#/post/your-slug</code></span>
+              <span class="field-hint">Used in article link URLs (e.g. your-article-slug).</span>
             </div>
 
             <div class="form-group">
@@ -391,7 +360,7 @@
             <div class="form-group">
               <label for="admin-cover-image">Cover Image URL</label>
               <input type="url" id="admin-cover-image" placeholder="https://images.unsplash.com/photo-...">
-              <span class="field-hint">Direct image URL (Unsplash, Supabase Storage, etc.).</span>
+              <span class="field-hint">Direct image URL (e.g. Unsplash or hosted image link).</span>
             </div>
 
             <div class="form-group admin-content-group">
@@ -481,57 +450,6 @@
   </main>
 
   <!-- ==============================================
-       SUPABASE CONFIGURATION MODAL
-       ============================================== -->
-  <div id="config-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <div class="modal-card">
-      <div class="modal-header">
-        <div class="modal-title-wrap">
-          <div class="modal-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
-            </svg>
-          </div>
-          <div>
-            <h2 id="modal-title" class="modal-title">Supabase Connection</h2>
-            <p class="modal-subtitle">Connect your Supabase project to fetch live posts.</p>
-          </div>
-        </div>
-        <button id="modal-close-btn" class="modal-close" aria-label="Close dialog">&times;</button>
-      </div>
-
-      <form id="config-form" class="modal-body">
-        <p class="modal-instruction">
-          You can set these credentials directly inside <code>app.js</code> or save them here in your browser:
-        </p>
-
-        <div class="form-group">
-          <label for="cfg-url">Supabase Project URL</label>
-          <input type="url" id="cfg-url" placeholder="https://your-project.supabase.co" required autocomplete="off">
-          <span class="field-hint">Find this in your Supabase Project Settings &gt; API.</span>
-        </div>
-
-        <div class="form-group">
-          <label for="cfg-key">Supabase Anon Key</label>
-          <input type="text" id="cfg-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." required autocomplete="off">
-          <span class="field-hint">Public anon key (<code>anon</code> / <code>public</code>).</span>
-        </div>
-
-        <div id="config-status-msg" class="config-status-msg hidden"></div>
-
-        <div class="modal-footer">
-          <button type="button" id="cfg-clear-btn" class="btn-outline">Clear</button>
-          <div class="modal-footer-right">
-            <button type="button" id="cfg-cancel-btn" class="btn-ghost">Cancel</button>
-            <button type="submit" id="cfg-save-btn" class="btn-primary">Save &amp; Connect</button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ==============================================
        AUTHENTICATION MODAL (Sign In & Sign Up)
        ============================================== -->
   <div id="auth-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
@@ -615,10 +533,10 @@
     <div class="footer-container">
       <div class="footer-brand">
         <span class="footer-logo">🌊 Ocean Verse</span>
-        <span class="footer-desc">A minimal, responsive blog frontend built with HTML, CSS, Vanilla JS &amp; Supabase.</span>
+        <span class="footer-desc">Stories, perspectives, and reflections from the digital tide.</span>
       </div>
       <div class="footer-links">
-        <span>Table: <code>public.posts</code></span>
+        <span>&copy; 2026 Ocean Verse. All rights reserved.</span>
       </div>
     </div>
   </footer>

@@ -129,21 +129,14 @@ using (
 
 ## ⚙️ Configuration
 
-You can configure your Supabase connection in one of two ways:
-
-### Option 1: Edit `app.js`
-In [`app.js`](file:///home/oceanmallik/Desktop/blogWebsite/app.js), credentials are pre-configured:
+Supabase connection credentials are configured directly in [`app.js`](file:///home/oceanmallik/Desktop/blogWebsite/app.js):
 
 ```javascript
 const SUPABASE_URL = 'https://juqrglgjjoxvdkhqquvz.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_z9Hk9GwzczIGsJWZpHoh0w_grcfZbAX';
 ```
 
-### Option 2: Browser UI Settings
-1. Open [`index.html`](file:///home/oceanmallik/Desktop/blogWebsite/index.html) in your browser.
-2. Click the gear / settings icon in the top-right header (or click **"Configure Keys"** on the notice banner).
-3. Enter your Supabase Project URL and Public Anon Key.
-4. Click **Save & Connect**. Your credentials are saved locally in `localStorage`.
+Row Level Security (RLS) policies on your Supabase tables safeguard all data, ensuring that public readers can only fetch published posts, while write/delete actions require proper authentication and role authorization.
 
 ---
 

@@ -61,10 +61,10 @@ const DEMO_PREVIEW_POSTS = [
   {
     id: 'demo-3',
     author_id: null,
-    title: 'Undercurrents: Exploring Supabase as a Modern Backend Engine',
-    slug: 'undercurrents-exploring-supabase',
-    summary: 'How PostgreSQL, Row-Level Security, and auto-generated REST APIs provide a rock-solid foundation for dynamic publishing platforms.',
-    content: `## The Elegance of Postgres on the Edge\n\nSupabase couples the legendary reliability of PostgreSQL with real-time subscriptions, intuitive authentication, and instant REST APIs.\n\n### Safety with Row Level Security (RLS)\n\nWith RLS enabled, security rules live where they belong: right inside the database engine. Even with client-side anon keys, public readers only access rows explicitly marked \`is_published = true\`.\n\n\`\`\`sql\n-- Enabling public read access for published posts\ncreate policy "Public can view published posts"\non public.posts\nfor select\nusing (is_published = true);\n\`\`\`\n\nThis simplicity allows frontend developers to build rich, reactive blogs without needing complex middleware servers.`,
+    title: 'Undercurrents: The Quiet Evolution of Edge Computing',
+    slug: 'undercurrents-quiet-evolution-edge-computing',
+    summary: 'How shifting computation closer to the edge transforms distributed performance, latency, and real-time experiences.',
+    content: `## Beyond Centralized Horizons\n\nFor decades, computing oscillated between centralized mainframes and localized client hardware. Today, the edge represents a harmonious equilibrium — data processed precisely where it is generated.\n\n### Why the Edge Matters\n\n- **Sub-millisecond Latency:** Processing requests in local edge clusters eliminates round-trip lag across oceanic fiber cables.\n- **Resilience Under Pressure:** If an origin datacenter experiences disruption, edge nodes continue serving cached and dynamic workloads.\n- **Smart Data Routing:** Intelligent routing steers requests dynamically along optimal paths.\n\n> "Speed is not merely a feature; it is the silent foundation of trust in digital spaces."\n\nAs web platforms evolve, embracing edge computing ensures that every reader experiences instantaneous, seamless engagement regardless of where they reside on the globe.`,
     cover_image: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?auto=format&fit=crop&w=1200&q=80',
     is_published: true,
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9).toISOString()
@@ -95,7 +95,6 @@ function initDOM() {
   dom.searchClearBtn = document.getElementById('search-clear-btn');
   dom.emptyResetBtn = document.getElementById('empty-reset-btn');
   dom.errorRetryBtn = document.getElementById('error-retry-btn');
-  dom.errorConfigBtn = document.getElementById('error-config-btn');
 
   // Article View elements
   dom.backBtn = document.getElementById('back-btn');
@@ -116,21 +115,6 @@ function initDOM() {
   dom.themeToggle = document.getElementById('theme-toggle');
   dom.sunIcon = document.querySelector('.sun-icon');
   dom.moonIcon = document.querySelector('.moon-icon');
-  dom.configBtn = document.getElementById('config-btn');
-
-  // Banner & Modal
-  dom.setupBanner = document.getElementById('setup-banner');
-  dom.bannerConfigBtn = document.getElementById('banner-config-btn');
-  dom.bannerDemoBtn = document.getElementById('banner-demo-btn');
-  dom.bannerDismissBtn = document.getElementById('banner-dismiss-btn');
-  dom.configModal = document.getElementById('config-modal');
-  dom.configForm = document.getElementById('config-form');
-  dom.cfgUrl = document.getElementById('cfg-url');
-  dom.cfgKey = document.getElementById('cfg-key');
-  dom.cfgClearBtn = document.getElementById('cfg-clear-btn');
-  dom.cfgCancelBtn = document.getElementById('cfg-cancel-btn');
-  dom.modalCloseBtn = document.getElementById('modal-close-btn');
-  dom.configStatusMsg = document.getElementById('config-status-msg');
 
   // Auth & Profile Navbar Elements
   dom.navAuthContainer = document.getElementById('nav-auth-container');
@@ -210,66 +194,20 @@ function initDOM() {
 // ============================================================================
 
 /**
- * Normalizes user-entered Supabase project URLs, including dashboard links
- */
-function normalizeSupabaseUrl(url) {
-  if (!url) return '';
-  let cleaned = url.trim();
-
-  // If user pasted dashboard link like https://supabase.com/dashboard/project/juqrglgjjoxvdkhqquvz/settings/api-keys
-  const dashboardMatch = cleaned.match(/supabase\.com\/dashboard\/project\/([a-z0-9_-]+)/i);
-  if (dashboardMatch) {
-    return `https://${dashboardMatch[1]}.supabase.co`;
-  }
-
-  // Ensure protocol
-  if (!cleaned.startsWith('http://') && !cleaned.startsWith('https://')) {
-    cleaned = 'https://' + cleaned;
-  }
-
-  // Remove trailing slashes
-  return cleaned.replace(/\/+$/, '');
-}
-
-/**
- * Resolves active Supabase credentials from constants or browser storage
- */
-function getActiveCredentials() {
-  const storedUrl = localStorage.getItem('ocean_verse_supabase_url');
-  const storedKey = localStorage.getItem('ocean_verse_supabase_key');
-
-  const isConstantUrlValid = SUPABASE_URL && SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_URL.trim() !== '';
-  const isConstantKeyValid = SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY' && SUPABASE_ANON_KEY.trim() !== '';
-
-  const rawUrl = isConstantUrlValid ? SUPABASE_URL.trim() : (storedUrl ? storedUrl.trim() : '');
-  const url = normalizeSupabaseUrl(rawUrl);
-  const key = isConstantKeyValid ? SUPABASE_ANON_KEY.trim() : (storedKey ? storedKey.trim() : '');
-
-  return { url, key, isPlaceholder: !url || !key || url === 'YOUR_SUPABASE_URL' };
-}
-
-/**
  * Instantiates the Supabase client safely without shadowing window.supabase
  */
 function initSupabase() {
-  const { url, key, isPlaceholder } = getActiveCredentials();
+  if (supabaseClient) return true;
 
-  if (isPlaceholder) {
+  if (typeof window.supabase === 'undefined' || typeof window.supabase.createClient !== 'function') {
+    console.error('Supabase library is not loaded from CDN.');
     supabaseClient = null;
     window.supabaseClient = null;
     return false;
   }
 
   try {
-    if (typeof window.supabase === 'undefined' || typeof window.supabase.createClient !== 'function') {
-      console.error('Supabase library is not loaded from CDN.');
-      supabaseClient = null;
-      window.supabaseClient = null;
-      return false;
-    }
-
-    // FIX 1: create client into supabaseClient
-    supabaseClient = window.supabase.createClient(url, key);
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     window.supabaseClient = supabaseClient;
     return true;
   } catch (err) {
@@ -281,7 +219,7 @@ function initSupabase() {
 }
 
 /**
- * FIX 3: Simple posts query first using .select('*') without complex joins
+ * Fetches published posts from Supabase ordered by creation date
  */
 async function loadPosts() {
   showLoadingState();
@@ -289,24 +227,11 @@ async function loadPosts() {
   const isConfigured = initSupabase();
 
   if (!isConfigured) {
-    showSetupBanner(true);
-
-    const useDemo = localStorage.getItem('ocean_verse_preview_demo') !== 'false';
-    if (useDemo) {
-      allPosts = DEMO_PREVIEW_POSTS;
-      renderPostsGrid(allPosts);
-      handleHashNavigation();
-      return;
-    } else {
-      showErrorState('Supabase credentials are not configured yet. Click "Supabase Settings" to add your project URL and Anon key.');
-      return;
-    }
+    showErrorState('Unable to load articles right now. Please check your connection and try again.');
+    return;
   }
 
-  showSetupBanner(false);
-
   try {
-    // FIX 3: Fetch public.posts using simple .select('*')
     const { data, error } = await supabaseClient
       .from('posts')
       .select('*')
@@ -321,8 +246,8 @@ async function loadPosts() {
     renderPostsGrid(allPosts);
     handleHashNavigation();
   } catch (err) {
-    console.error('Supabase query error:', err);
-    showErrorState(err.message || 'Unable to fetch posts from the database.');
+    console.error('Failed to load posts:', err);
+    showErrorState(err.message || 'Unable to load articles right now.');
   } finally {
     if (dom.refreshBtn) dom.refreshBtn.classList.remove('spinning');
   }
@@ -581,7 +506,7 @@ function clearAuthMessages() {
 async function handleSignIn(e) {
   e.preventDefault();
   if (!supabaseClient) {
-    showAuthError(dom.signinStatusMsg, 'Supabase client is not initialized.');
+    showAuthError(dom.signinStatusMsg, 'Service is currently unavailable. Please try again.');
     return;
   }
 
@@ -621,7 +546,7 @@ async function handleSignIn(e) {
 async function handleSignUp(e) {
   e.preventDefault();
   if (!supabaseClient) {
-    showAuthError(dom.signupStatusMsg, 'Supabase client is not initialized.');
+    showAuthError(dom.signupStatusMsg, 'Service is currently unavailable. Please try again.');
     return;
   }
 
@@ -1696,20 +1621,8 @@ function showErrorState(message) {
   dom.postsGrid?.classList.add('hidden');
   dom.emptyState?.classList.add('hidden');
   dom.errorState?.classList.remove('hidden');
-  if (dom.errorMessage) dom.errorMessage.textContent = message || 'Failed to connect to Supabase.';
+  if (dom.errorMessage) dom.errorMessage.textContent = message || 'Unable to load articles right now. Please check your connection and try again.';
   if (dom.postsCountText) dom.postsCountText.textContent = 'Connection error';
-}
-
-function showSetupBanner(show) {
-  if (!dom.setupBanner) return;
-  if (show) {
-    const isDismissed = sessionStorage.getItem('ocean_verse_banner_dismissed') === 'true';
-    if (!isDismissed) {
-      dom.setupBanner.classList.remove('hidden');
-    }
-  } else {
-    dom.setupBanner.classList.add('hidden');
-  }
 }
 
 // ============================================================================
@@ -1743,61 +1656,7 @@ function toggleTheme() {
 }
 
 // ============================================================================
-// 13. CONFIGURATION MODAL
-// ============================================================================
-
-function openConfigModal() {
-  const { url, key } = getActiveCredentials();
-  if (dom.cfgUrl) dom.cfgUrl.value = (url && url !== 'YOUR_SUPABASE_URL') ? url : '';
-  if (dom.cfgKey) dom.cfgKey.value = (key && key !== 'YOUR_SUPABASE_ANON_KEY') ? key : '';
-  if (dom.configStatusMsg) dom.configStatusMsg.className = 'config-status-msg hidden';
-  dom.configModal?.classList.remove('hidden');
-  dom.cfgUrl?.focus();
-}
-
-function closeConfigModal() {
-  dom.configModal?.classList.add('hidden');
-}
-
-function saveConfig(e) {
-  e.preventDefault();
-  const rawUrl = dom.cfgUrl.value.trim();
-  const key = dom.cfgKey.value.trim();
-
-  if (!rawUrl || !key) {
-    dom.configStatusMsg.textContent = 'Please enter both Supabase URL and Anon Key.';
-    dom.configStatusMsg.className = 'config-status-msg error';
-    return;
-  }
-
-  const url = normalizeSupabaseUrl(rawUrl);
-  localStorage.setItem('ocean_verse_supabase_url', url);
-  localStorage.setItem('ocean_verse_supabase_key', key);
-  localStorage.removeItem('ocean_verse_preview_demo');
-
-  dom.configStatusMsg.textContent = 'Connecting to Supabase...';
-  dom.configStatusMsg.className = 'config-status-msg success';
-
-  setTimeout(async () => {
-    closeConfigModal();
-    await loadPosts();
-    await initAuth();
-  }, 400);
-}
-
-function clearConfig() {
-  localStorage.removeItem('ocean_verse_supabase_url');
-  localStorage.removeItem('ocean_verse_supabase_key');
-  if (dom.cfgUrl) dom.cfgUrl.value = '';
-  if (dom.cfgKey) dom.cfgKey.value = '';
-  if (dom.configStatusMsg) {
-    dom.configStatusMsg.textContent = 'Credentials cleared. Using defaults.';
-    dom.configStatusMsg.className = 'config-status-msg success';
-  }
-}
-
-// ============================================================================
-// 14. EVENT LISTENERS
+// 13. EVENT LISTENERS
 // ============================================================================
 
 function initEventListeners() {
@@ -1848,36 +1707,8 @@ function initEventListeners() {
     await loadPosts();
   });
 
-  dom.errorConfigBtn?.addEventListener('click', openConfigModal);
-
   // Theme toggle
   dom.themeToggle?.addEventListener('click', toggleTheme);
-
-  // Supabase Settings Modal
-  dom.configBtn?.addEventListener('click', openConfigModal);
-  dom.bannerConfigBtn?.addEventListener('click', openConfigModal);
-  dom.modalCloseBtn?.addEventListener('click', closeConfigModal);
-  dom.cfgCancelBtn?.addEventListener('click', closeConfigModal);
-  dom.configForm?.addEventListener('submit', saveConfig);
-  dom.cfgClearBtn?.addEventListener('click', clearConfig);
-
-  dom.configModal?.addEventListener('click', (e) => {
-    if (e.target === dom.configModal) {
-      closeConfigModal();
-    }
-  });
-
-  // Banner Actions
-  dom.bannerDismissBtn?.addEventListener('click', () => {
-    dom.setupBanner?.classList.add('hidden');
-    sessionStorage.setItem('ocean_verse_banner_dismissed', 'true');
-  });
-
-  dom.bannerDemoBtn?.addEventListener('click', () => {
-    localStorage.setItem('ocean_verse_preview_demo', 'true');
-    allPosts = DEMO_PREVIEW_POSTS;
-    renderPostsGrid(allPosts);
-  });
 
   // Copy Article Link
   dom.copyLinkBtn?.addEventListener('click', async () => {
@@ -1955,9 +1786,6 @@ function initEventListeners() {
   // Escape key closes open modals
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-      if (dom.configModal && !dom.configModal.classList.contains('hidden')) {
-        closeConfigModal();
-      }
       if (dom.authModal && !dom.authModal.classList.contains('hidden')) {
         closeAuthModal();
       }
