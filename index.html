@@ -87,6 +87,13 @@
               </svg>
               <span class="admin-btn-label">Admin Panel</span>
             </button>
+            <button id="nav-change-password-btn" class="nav-profile-btn" title="Change Password" aria-label="Change Password">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <span class="profile-btn-label">Password</span>
+            </button>
             <button id="nav-logout-btn" class="nav-logout-btn" title="Log out" aria-label="Log out">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -487,6 +494,7 @@
         <div class="auth-tabs" role="tablist">
           <button type="button" id="tab-signin" class="auth-tab-btn active" role="tab" aria-selected="true">Sign In</button>
           <button type="button" id="tab-signup" class="auth-tab-btn" role="tab" aria-selected="false">Create Account</button>
+          <button type="button" id="tab-recover" class="auth-tab-btn" role="tab" aria-selected="false">Recover Password</button>
         </div>
         <button id="auth-modal-close-btn" class="modal-close" aria-label="Close dialog">&times;</button>
       </div>
@@ -504,7 +512,10 @@
         </div>
 
         <div class="form-group">
-          <label for="signin-password">Password</label>
+          <div class="auth-label-row">
+            <label for="signin-password">Password</label>
+            <a href="#" id="forgot-password-link" class="auth-forgot-link">Forgot password?</a>
+          </div>
           <input type="password" id="signin-password" placeholder="••••••••" required autocomplete="current-password">
         </div>
 
@@ -551,6 +562,60 @@
           </button>
           <p class="auth-switch-link">
             Already have an account? <a href="#" id="switch-to-signin">Sign in</a>
+          </p>
+        </div>
+      </form>
+
+      <!-- Password Recovery Request Form -->
+      <form id="recover-form" class="modal-body auth-form hidden">
+        <div class="auth-welcome">
+          <h3 class="auth-title">Recover your account</h3>
+          <p class="auth-subtitle">Enter your email address to receive password reset instructions.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="recover-email">Email Address</label>
+          <input type="email" id="recover-email" placeholder="name@example.com" required autocomplete="email">
+        </div>
+
+        <div id="recover-status-msg" class="config-status-msg hidden"></div>
+
+        <div class="auth-modal-footer">
+          <button type="submit" id="recover-submit-btn" class="btn-primary auth-submit-btn">
+            <span class="btn-text">Send Recovery Link</span>
+          </button>
+          <p class="auth-switch-link">
+            Remembered your password? <a href="#" id="switch-to-signin-from-recover">Sign in</a>
+          </p>
+        </div>
+      </form>
+
+      <!-- Set New Password Form (Upon Recovery / Update) -->
+      <form id="reset-password-form" class="modal-body auth-form hidden">
+        <div class="auth-welcome">
+          <h3 id="reset-password-title" class="auth-title">Set New Password</h3>
+          <p id="reset-password-subtitle" class="auth-subtitle">Enter your new secure password below to complete recovery.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="new-password">New Password</label>
+          <input type="password" id="new-password" placeholder="At least 6 characters" minlength="6" required autocomplete="new-password">
+          <span class="field-hint">Must be at least 6 characters.</span>
+        </div>
+
+        <div class="form-group">
+          <label for="confirm-new-password">Confirm New Password</label>
+          <input type="password" id="confirm-new-password" placeholder="Re-enter new password" minlength="6" required autocomplete="new-password">
+        </div>
+
+        <div id="reset-password-status-msg" class="config-status-msg hidden"></div>
+
+        <div class="auth-modal-footer">
+          <button type="submit" id="reset-password-submit-btn" class="btn-primary auth-submit-btn">
+            <span class="btn-text">Update Password</span>
+          </button>
+          <p class="auth-switch-link" id="reset-back-to-signin-wrap">
+            <a href="#" id="switch-to-signin-from-reset">Back to Sign in</a>
           </p>
         </div>
       </form>

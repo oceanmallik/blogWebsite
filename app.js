@@ -126,6 +126,7 @@ function initDOM() {
   dom.navUserName = document.getElementById('nav-user-name');
   dom.navUserRole = document.getElementById('nav-user-role');
   dom.navAdminBtn = document.getElementById('nav-admin-btn');
+  dom.navChangePasswordBtn = document.getElementById('nav-change-password-btn');
   dom.navLogoutBtn = document.getElementById('nav-logout-btn');
 
   // Comments Section Elements
@@ -181,6 +182,24 @@ function initDOM() {
   dom.signupStatusMsg = document.getElementById('signup-status-msg');
   dom.signupSubmitBtn = document.getElementById('signup-submit-btn');
   dom.switchToSignin = document.getElementById('switch-to-signin');
+
+  // Recovery & Password Reset Elements
+  dom.tabRecover = document.getElementById('tab-recover');
+  dom.forgotPasswordLink = document.getElementById('forgot-password-link');
+  dom.recoverForm = document.getElementById('recover-form');
+  dom.recoverEmail = document.getElementById('recover-email');
+  dom.recoverStatusMsg = document.getElementById('recover-status-msg');
+  dom.recoverSubmitBtn = document.getElementById('recover-submit-btn');
+  dom.switchToSigninFromRecover = document.getElementById('switch-to-signin-from-recover');
+
+  dom.resetPasswordForm = document.getElementById('reset-password-form');
+  dom.resetPasswordTitle = document.getElementById('reset-password-title');
+  dom.resetPasswordSubtitle = document.getElementById('reset-password-subtitle');
+  dom.newPassword = document.getElementById('new-password');
+  dom.confirmNewPassword = document.getElementById('confirm-new-password');
+  dom.resetPasswordStatusMsg = document.getElementById('reset-password-status-msg');
+  dom.resetPasswordSubmitBtn = document.getElementById('reset-password-submit-btn');
+  dom.switchToSigninFromReset = document.getElementById('switch-to-signin-from-reset');
 
   // Admin Markdown Editor Elements
   dom.editorTabWrite = document.getElementById('editor-tab-write');
@@ -439,8 +458,31 @@ async function initAuth() {
     handleUserLoggedOut();
   }
 
+  // Check if landing directly with password recovery hash or query parameters
+  const isRecoveryHash = window.location.hash && window.location.hash.includes('type=recovery');
+  const isRecoveryParam = new URLSearchParams(window.location.search).get('type') === 'recovery';
+  if (isRecoveryHash || isRecoveryParam) {
+    openAuthModal('reset-password');
+    showAuthSuccess(
+      dom.resetPasswordStatusMsg,
+      'Recovery link verified! Please enter your new password below.'
+    );
+  }
+
   // Real-time auth listener
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      if (session && session.user) {
+        await handleUserSession(session.user);
+      }
+      openAuthModal('reset-password');
+      showAuthSuccess(
+        dom.resetPasswordStatusMsg,
+        'Recovery link verified! Please enter your new password below.'
+      );
+      return;
+    }
+
     if (session && session.user) {
       await handleUserSession(session.user);
     } else {
@@ -460,8 +502,12 @@ function openAuthModal(mode = 'signin') {
     dom.authModal.classList.remove('hidden');
     if (mode === 'signin') {
       dom.signinEmail?.focus();
-    } else {
+    } else if (mode === 'signup') {
       dom.signupName?.focus();
+    } else if (mode === 'recover') {
+      dom.recoverEmail?.focus();
+    } else if (mode === 'reset-password') {
+      dom.newPassword?.focus();
     }
   }
 }
@@ -474,24 +520,32 @@ function closeAuthModal() {
 }
 
 function setAuthTab(tab) {
-  if (!dom.tabSignin || !dom.tabSignup) return;
-  if (tab === 'signin') {
-    dom.tabSignin.classList.add('active');
-    dom.tabSignin.setAttribute('aria-selected', 'true');
-    dom.tabSignup.classList.remove('active');
-    dom.tabSignup.setAttribute('aria-selected', 'false');
-
-    dom.signinForm?.classList.remove('hidden');
-    dom.signupForm?.classList.add('hidden');
-  } else {
-    dom.tabSignup.classList.add('active');
-    dom.tabSignup.setAttribute('aria-selected', 'true');
-    dom.tabSignin.classList.remove('active');
-    dom.tabSignin.setAttribute('aria-selected', 'false');
-
-    dom.signupForm?.classList.remove('hidden');
-    dom.signinForm?.classList.add('hidden');
+  // Update Tab States
+  if (dom.tabSignin) {
+    const isSignin = tab === 'signin';
+    dom.tabSignin.classList.toggle('active', isSignin);
+    dom.tabSignin.setAttribute('aria-selected', String(isSignin));
   }
+
+  if (dom.tabSignup) {
+    const isSignup = tab === 'signup';
+    dom.tabSignup.classList.toggle('active', isSignup);
+    dom.tabSignup.setAttribute('aria-selected', String(isSignup));
+  }
+
+  if (dom.tabRecover) {
+    const isRecoverOrReset = tab === 'recover' || tab === 'reset-password';
+    dom.tabRecover.classList.toggle('active', isRecoverOrReset);
+    dom.tabRecover.setAttribute('aria-selected', String(isRecoverOrReset));
+    dom.tabRecover.textContent = tab === 'reset-password' ? 'Set Password' : 'Recover Password';
+  }
+
+  // Update Form Visibilities
+  dom.signinForm?.classList.toggle('hidden', tab !== 'signin');
+  dom.signupForm?.classList.toggle('hidden', tab !== 'signup');
+  dom.recoverForm?.classList.toggle('hidden', tab !== 'recover');
+  dom.resetPasswordForm?.classList.toggle('hidden', tab !== 'reset-password');
+
   clearAuthMessages();
 }
 
@@ -503,6 +557,14 @@ function clearAuthMessages() {
   if (dom.signupStatusMsg) {
     dom.signupStatusMsg.className = 'config-status-msg hidden';
     dom.signupStatusMsg.textContent = '';
+  }
+  if (dom.recoverStatusMsg) {
+    dom.recoverStatusMsg.className = 'config-status-msg hidden';
+    dom.recoverStatusMsg.textContent = '';
+  }
+  if (dom.resetPasswordStatusMsg) {
+    dom.resetPasswordStatusMsg.className = 'config-status-msg hidden';
+    dom.resetPasswordStatusMsg.textContent = '';
   }
 }
 
@@ -612,6 +674,110 @@ async function handleSignOut() {
     console.error('Sign out error:', err);
   } finally {
     if (dom.navLogoutBtn) dom.navLogoutBtn.disabled = false;
+  }
+}
+
+async function handleRecoverPassword(e) {
+  e.preventDefault();
+  if (!supabaseClient) {
+    showAuthError(dom.recoverStatusMsg, 'Service is currently unavailable. Please try again.');
+    return;
+  }
+
+  const email = dom.recoverEmail?.value.trim();
+  if (!email) {
+    showAuthError(dom.recoverStatusMsg, 'Please enter your email address.');
+    return;
+  }
+
+  const submitBtn = dom.recoverSubmitBtn;
+  const btnText = submitBtn?.querySelector('.btn-text');
+  if (submitBtn) submitBtn.disabled = true;
+  if (btnText) btnText.textContent = 'Sending link...';
+
+  try {
+    const redirectUrl = window.location.origin && window.location.origin !== 'null'
+      ? (window.location.origin + window.location.pathname)
+      : window.location.href.split('#')[0].split('?')[0];
+
+    const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectUrl
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    showAuthSuccess(
+      dom.recoverStatusMsg,
+      'Recovery link sent! Please check your email inbox and spam folder for instructions to reset your password.'
+    );
+    dom.recoverForm?.reset();
+  } catch (err) {
+    showAuthError(dom.recoverStatusMsg, err.message || 'Failed to send recovery email. Please verify your address and try again.');
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+    if (btnText) btnText.textContent = 'Send Recovery Link';
+  }
+}
+
+async function handleResetPassword(e) {
+  e.preventDefault();
+  if (!supabaseClient) {
+    showAuthError(dom.resetPasswordStatusMsg, 'Service is currently unavailable. Please try again.');
+    return;
+  }
+
+  const newPassword = dom.newPassword?.value;
+  const confirmPassword = dom.confirmNewPassword?.value;
+
+  if (!newPassword || newPassword.length < 6) {
+    showAuthError(dom.resetPasswordStatusMsg, 'Password must be at least 6 characters.');
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    showAuthError(dom.resetPasswordStatusMsg, 'Passwords do not match. Please verify and try again.');
+    return;
+  }
+
+  const submitBtn = dom.resetPasswordSubmitBtn;
+  const btnText = submitBtn?.querySelector('.btn-text');
+  if (submitBtn) submitBtn.disabled = true;
+  if (btnText) btnText.textContent = 'Updating password...';
+
+  try {
+    const { data, error } = await supabaseClient.auth.updateUser({
+      password: newPassword
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    showAuthSuccess(dom.resetPasswordStatusMsg, 'Password updated successfully! You are now logged in.');
+
+    // Clean up recovery fragments or query parameters from browser URL
+    if (window.history && window.history.replaceState) {
+      const cleanUrl = window.location.origin && window.location.origin !== 'null'
+        ? (window.location.origin + window.location.pathname)
+        : window.location.pathname;
+      window.history.replaceState(null, document.title, cleanUrl);
+    }
+
+    if (data.user) {
+      await handleUserSession(data.user);
+    }
+
+    setTimeout(() => {
+      closeAuthModal();
+      dom.resetPasswordForm?.reset();
+    }, 1200);
+  } catch (err) {
+    showAuthError(dom.resetPasswordStatusMsg, err.message || 'Failed to update password. Recovery link may have expired.');
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+    if (btnText) btnText.textContent = 'Update Password';
   }
 }
 
@@ -1758,8 +1924,14 @@ function initEventListeners() {
   // Auth Event Listeners
   dom.navLoginBtn?.addEventListener('click', () => openAuthModal('signin'));
   dom.navLogoutBtn?.addEventListener('click', handleSignOut);
+  dom.navChangePasswordBtn?.addEventListener('click', () => {
+    openAuthModal('reset-password');
+    if (dom.resetPasswordTitle) dom.resetPasswordTitle.textContent = 'Change Password';
+    if (dom.resetPasswordSubtitle) dom.resetPasswordSubtitle.textContent = 'Enter your new password below.';
+  });
   dom.tabSignin?.addEventListener('click', () => setAuthTab('signin'));
   dom.tabSignup?.addEventListener('click', () => setAuthTab('signup'));
+  dom.tabRecover?.addEventListener('click', () => setAuthTab('recover'));
   dom.authModalCloseBtn?.addEventListener('click', closeAuthModal);
   dom.switchToSignup?.addEventListener('click', (e) => {
     e.preventDefault();
@@ -1769,8 +1941,22 @@ function initEventListeners() {
     e.preventDefault();
     setAuthTab('signin');
   });
+  dom.forgotPasswordLink?.addEventListener('click', (e) => {
+    e.preventDefault();
+    setAuthTab('recover');
+  });
+  dom.switchToSigninFromRecover?.addEventListener('click', (e) => {
+    e.preventDefault();
+    setAuthTab('signin');
+  });
+  dom.switchToSigninFromReset?.addEventListener('click', (e) => {
+    e.preventDefault();
+    setAuthTab('signin');
+  });
   dom.signinForm?.addEventListener('submit', handleSignIn);
   dom.signupForm?.addEventListener('submit', handleSignUp);
+  dom.recoverForm?.addEventListener('submit', handleRecoverPassword);
+  dom.resetPasswordForm?.addEventListener('submit', handleResetPassword);
 
   dom.authModal?.addEventListener('click', (e) => {
     if (e.target === dom.authModal) {

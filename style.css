@@ -529,6 +529,33 @@ img {
   height: 14px;
 }
 
+.nav-profile-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--bg-elevated);
+  border: var(--border-width) solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 0.775rem;
+  font-weight: 700;
+  padding: 0.35rem 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.nav-profile-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.nav-profile-btn:hover {
+  background: var(--accent-yellow);
+  color: #0A0A0A;
+  border-color: var(--border-color);
+}
+
 /* --------------------------------------------------------------------------
    Main Layout
    -------------------------------------------------------------------------- */
@@ -2272,17 +2299,24 @@ textarea::placeholder {
 .auth-tabs {
   display: flex;
   gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.auth-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .auth-tab-btn {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: var(--text-muted);
-  padding: 0.75rem 1rem 0.85rem;
+  padding: 0.75rem 0.85rem 0.85rem;
   position: relative;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   transition: color var(--transition-fast);
+  white-space: nowrap;
 }
 
 .auth-tab-btn:hover { color: var(--text-primary); }
@@ -2336,6 +2370,31 @@ textarea::placeholder {
 
 .auth-form { display: flex; flex-direction: column; gap: 0; }
 .auth-form .form-group { margin-bottom: 1rem; }
+
+.auth-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.35rem;
+}
+
+.auth-label-row label {
+  margin-bottom: 0;
+}
+
+.auth-forgot-link {
+  font-size: 0.775rem;
+  font-weight: 600;
+  color: var(--ocean-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.auth-forgot-link:hover {
+  color: var(--accent-coral);
+}
 
 .auth-modal-footer {
   margin-top: 1.5rem;
@@ -2486,6 +2545,7 @@ textarea::placeholder {
   .nav-user-name { max-width: 80px; }
 
   .logout-label,
+  .profile-btn-label,
   .admin-btn-label { display: none; }
 }
 
