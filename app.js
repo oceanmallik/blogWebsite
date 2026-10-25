@@ -82,6 +82,7 @@ function initDOM() {
   dom.homeView = document.getElementById('home-view');
   dom.articleView = document.getElementById('article-view');
   dom.adminView = document.getElementById('admin-view');
+  dom.profileView = document.getElementById('profile-view');
 
   // Home View elements
   dom.postsGrid = document.getElementById('posts-grid');
@@ -122,6 +123,8 @@ function initDOM() {
   dom.navAuthContainer = document.getElementById('nav-auth-container');
   dom.navLoginBtn = document.getElementById('nav-login-btn');
   dom.navUserProfile = document.getElementById('nav-user-profile');
+  dom.navUserChip = document.getElementById('nav-user-chip');
+  dom.navProfileBtn = document.getElementById('nav-profile-btn');
   dom.navUserAvatar = document.getElementById('nav-user-avatar');
   dom.navUserName = document.getElementById('nav-user-name');
   dom.navUserRole = document.getElementById('nav-user-role');
@@ -209,6 +212,37 @@ function initDOM() {
   dom.editorWritePane = document.getElementById('editor-write-pane');
   dom.editorPreviewPane = document.getElementById('editor-preview-pane');
   dom.adminContentPreview = document.getElementById('admin-content-preview');
+
+  // Profile View Elements
+  dom.profileBackBtn = document.getElementById('profile-back-btn');
+  dom.profileNavAdminBtn = document.getElementById('profile-nav-admin-btn');
+  dom.profileHeaderRole = document.getElementById('profile-header-role');
+  dom.profileAvatarLarge = document.getElementById('profile-avatar-large');
+  dom.profileAvatarBadge = document.getElementById('profile-avatar-badge');
+  dom.profileIdentityName = document.getElementById('profile-identity-name');
+  dom.profileIdentityRole = document.getElementById('profile-identity-role');
+  dom.profileIdentityEmail = document.getElementById('profile-identity-email');
+  dom.profileIdentityCreated = document.getElementById('profile-identity-created');
+  dom.profileIdentityId = document.getElementById('profile-identity-id');
+  dom.profileCopyIdBtn = document.getElementById('profile-copy-id-btn');
+  dom.profileCopyIdText = document.getElementById('profile-copy-id-text');
+  dom.profileStatComments = document.getElementById('profile-stat-comments');
+  dom.profileStatPosts = document.getElementById('profile-stat-posts');
+  dom.profileStatPostsWrap = document.getElementById('profile-stat-posts-wrap');
+  dom.profileStatStatus = document.getElementById('profile-stat-status');
+  dom.profileSidePasswordBtn = document.getElementById('profile-side-password-btn');
+  dom.profileSideLogoutBtn = document.getElementById('profile-side-logout-btn');
+  dom.profileForm = document.getElementById('profile-form');
+  dom.profileEditName = document.getElementById('profile-edit-name');
+  dom.profileEditAvatar = document.getElementById('profile-edit-avatar');
+  dom.profilePreviewAvatarBtn = document.getElementById('profile-preview-avatar-btn');
+  dom.profileClearAvatarBtn = document.getElementById('profile-clear-avatar-btn');
+  dom.profileEditEmail = document.getElementById('profile-edit-email');
+  dom.profileEditRole = document.getElementById('profile-edit-role');
+  dom.profileEditJoined = document.getElementById('profile-edit-joined');
+  dom.profileFormMsg = document.getElementById('profile-form-msg');
+  dom.profileSaveBtn = document.getElementById('profile-save-btn');
+  dom.profileResetBtn = document.getElementById('profile-reset-btn');
 }
 
 // ============================================================================
@@ -419,6 +453,9 @@ function updateAuthUI() {
     if (dom.navLoginBtn) dom.navLoginBtn.classList.remove('hidden');
     if (dom.navAdminBtn) dom.navAdminBtn.classList.add('hidden');
     if (dom.adminView && !dom.adminView.classList.contains('hidden')) {
+      returnToHomeView();
+    }
+    if (dom.profileView && !dom.profileView.classList.contains('hidden')) {
       returnToHomeView();
     }
   }
@@ -656,7 +693,11 @@ async function handleSignUp(e) {
       showAuthSuccess(dom.signupStatusMsg, 'Account created! Please check your email to confirm your account before signing in.');
     }
   } catch (err) {
-    showAuthError(dom.signupStatusMsg, err.message || 'Failed to create account.');
+    let msg = err.message || 'Failed to create account.';
+    if (msg.toLowerCase().includes('rate limit')) {
+      msg = 'Email rate limit reached. Supabase limits built-in confirmation emails. Please wait a few minutes or configure custom SMTP in your Supabase dashboard.';
+    }
+    showAuthError(dom.signupStatusMsg, msg);
   } finally {
     submitBtn.disabled = false;
     if (btnText) btnText.textContent = 'Create Account';
@@ -714,7 +755,11 @@ async function handleRecoverPassword(e) {
     );
     dom.recoverForm?.reset();
   } catch (err) {
-    showAuthError(dom.recoverStatusMsg, err.message || 'Failed to send recovery email. Please verify your address and try again.');
+    let msg = err.message || 'Failed to send recovery email. Please verify your address and try again.';
+    if (msg.toLowerCase().includes('rate limit')) {
+      msg = 'Email rate limit exceeded. Supabase default email service is capped at 3-4 emails per hour. Please wait a while before retrying, or configure custom SMTP in your Supabase dashboard.';
+    }
+    showAuthError(dom.recoverStatusMsg, msg);
   } finally {
     if (submitBtn) submitBtn.disabled = false;
     if (btnText) btnText.textContent = 'Send Recovery Link';
@@ -1008,6 +1053,7 @@ function openArticleView(post, updateHash = true) {
   // Toggle views
   dom.homeView?.classList.add('hidden');
   dom.adminView?.classList.add('hidden');
+  dom.profileView?.classList.add('hidden');
   dom.articleView?.classList.remove('hidden');
 
   // Load comments
@@ -1033,6 +1079,7 @@ function returnToHomeView() {
 
   dom.articleView?.classList.add('hidden');
   dom.adminView?.classList.add('hidden');
+  dom.profileView?.classList.add('hidden');
   dom.homeView?.classList.remove('hidden');
 
   if (window.location.hash) {
@@ -1049,6 +1096,15 @@ function handleHashChange() {
 
 function handleHashNavigation() {
   const hash = window.location.hash;
+  if (hash === '#/profile') {
+    if (currentUser) {
+      openProfileView();
+    } else {
+      openAuthModal('signin');
+      returnToHomeView();
+    }
+    return;
+  }
   if (hash === '#/admin') {
     if (currentUserRole === 'admin') {
       openAdminView();
@@ -1071,7 +1127,7 @@ function handleHashNavigation() {
       }
     }
   } else if (!hash || hash === '#' || hash === '#/') {
-    if (!dom.articleView?.classList.contains('hidden') || !dom.adminView?.classList.contains('hidden')) {
+    if (!dom.articleView?.classList.contains('hidden') || !dom.adminView?.classList.contains('hidden') || !dom.profileView?.classList.contains('hidden')) {
       returnToHomeView();
     }
   }
@@ -1336,6 +1392,7 @@ function openAdminView() {
 
   dom.homeView?.classList.add('hidden');
   dom.articleView?.classList.add('hidden');
+  dom.profileView?.classList.add('hidden');
   dom.adminView?.classList.remove('hidden');
 
   window.location.hash = '#/admin';
@@ -1827,6 +1884,311 @@ function toggleTheme() {
 }
 
 // ============================================================================
+// 12. PROFILE MANAGEMENT (public.profiles)
+// ============================================================================
+
+/**
+ * Opens and renders the user profile view
+ */
+async function openProfileView() {
+  if (!currentUser) {
+    openAuthModal('signin');
+    returnToHomeView();
+    return;
+  }
+
+  // Hide other views and show profile
+  dom.homeView?.classList.add('hidden');
+  dom.articleView?.classList.add('hidden');
+  dom.adminView?.classList.add('hidden');
+  dom.profileView?.classList.remove('hidden');
+
+  if (window.location.hash !== '#/profile') {
+    window.location.hash = '#/profile';
+  }
+  document.title = 'Account Profile — Ocean Verse';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  await populateProfileView();
+}
+
+/**
+ * Populates all profile fields, identity cards, and asynchronous activity stats
+ */
+async function populateProfileView() {
+  if (!currentUser) return;
+
+  // Refresh profile from database or fall back to current session
+  const profile = await fetchUserProfile(currentUser.id) || currentProfile || {};
+  currentProfile = {
+    ...profile,
+    id: currentUser.id,
+    email: currentUser.email,
+    created_at: profile.created_at || currentUser.created_at || new Date().toISOString()
+  };
+
+  const id = currentUser.id;
+  const email = currentUser.email || '';
+  const displayName = currentProfile.display_name || currentUser.user_metadata?.display_name || email.split('@')[0] || 'Member';
+  const avatarUrl = currentProfile.avatar_url || currentUser.user_metadata?.avatar_url || '';
+  const role = (currentProfile.role || currentUserRole || 'visitor').toLowerCase();
+  const createdAt = currentProfile.created_at;
+
+  // Identity Card
+  renderProfileLargeAvatar(displayName, avatarUrl);
+
+  if (dom.profileIdentityName) {
+    dom.profileIdentityName.textContent = displayName;
+  }
+
+  if (dom.profileIdentityEmail) {
+    dom.profileIdentityEmail.textContent = email;
+    dom.profileIdentityEmail.title = email;
+  }
+
+  if (dom.profileIdentityCreated) {
+    dom.profileIdentityCreated.textContent = `Member since ${formatDate(createdAt) || 'Recently'}`;
+  }
+
+  if (dom.profileIdentityId) {
+    dom.profileIdentityId.textContent = id;
+    dom.profileIdentityId.title = id;
+  }
+
+  // Role badges
+  const roleLabel = role === 'admin' ? '👑 Administrator' : 'Visitor';
+  if (dom.profileIdentityRole) {
+    dom.profileIdentityRole.className = `role-badge role-${role}`;
+    dom.profileIdentityRole.textContent = roleLabel;
+  }
+  if (dom.profileHeaderRole) {
+    dom.profileHeaderRole.className = `role-badge role-${role}`;
+    dom.profileHeaderRole.textContent = roleLabel;
+  }
+
+  // Admin button visibility
+  if (dom.profileNavAdminBtn) {
+    if (role === 'admin') {
+      dom.profileNavAdminBtn.classList.remove('hidden');
+    } else {
+      dom.profileNavAdminBtn.classList.add('hidden');
+    }
+  }
+
+  // Edit Form Fields
+  if (dom.profileEditName) dom.profileEditName.value = displayName;
+  if (dom.profileEditAvatar) dom.profileEditAvatar.value = avatarUrl;
+  if (dom.profileEditEmail) dom.profileEditEmail.value = email;
+  if (dom.profileEditRole) dom.profileEditRole.value = role === 'admin' ? 'Administrator' : 'Visitor';
+  if (dom.profileEditJoined) dom.profileEditJoined.value = createdAt ? new Date(createdAt).toLocaleString() : 'N/A';
+
+  // Clear previous status messages
+  clearProfileFormMsg();
+
+  // Async stats: Comments & Posts
+  fetchProfileStats(id, role);
+}
+
+/**
+ * Renders large avatar in profile view with image or initials fallback
+ */
+function renderProfileLargeAvatar(displayName, avatarUrl) {
+  if (!dom.profileAvatarLarge) return;
+
+  if (avatarUrl && typeof avatarUrl === 'string' && avatarUrl.trim() !== '') {
+    dom.profileAvatarLarge.innerHTML = '';
+    const img = document.createElement('img');
+    img.src = avatarUrl;
+    img.alt = displayName || 'User Avatar';
+    img.onerror = () => {
+      // Fallback to initials if image URL fails to load
+      renderProfileInitials(displayName);
+    };
+    dom.profileAvatarLarge.appendChild(img);
+  } else {
+    renderProfileInitials(displayName);
+  }
+}
+
+function renderProfileInitials(displayName) {
+  if (!dom.profileAvatarLarge) return;
+  const name = displayName || 'Member';
+  const initials = name
+    .split(' ')
+    .filter(Boolean)
+    .map(w => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase() || 'U';
+  dom.profileAvatarLarge.textContent = initials;
+}
+
+/**
+ * Fetches user activity stats (comments count & authored posts count)
+ */
+async function fetchProfileStats(userId, role) {
+  if (!supabaseClient || !userId) return;
+
+  try {
+    // 1. Comments Count
+    const { count: commentCount, error: commentErr } = await supabaseClient
+      .from('comments')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId);
+
+    if (!commentErr && typeof commentCount === 'number') {
+      if (dom.profileStatComments) dom.profileStatComments.textContent = commentCount;
+    }
+
+    // 2. Posts Authored (if role is admin)
+    if (role === 'admin') {
+      if (dom.profileStatPostsWrap) dom.profileStatPostsWrap.classList.remove('hidden');
+      const { count: postCount, error: postErr } = await supabaseClient
+        .from('posts')
+        .select('id', { count: 'exact', head: true })
+        .eq('author_id', userId);
+
+      if (!postErr && typeof postCount === 'number') {
+        if (dom.profileStatPosts) dom.profileStatPosts.textContent = postCount;
+      }
+    } else {
+      if (dom.profileStatPostsWrap) dom.profileStatPostsWrap.classList.add('hidden');
+    }
+  } catch (err) {
+    console.warn('Could not load user profile stats:', err);
+  }
+}
+
+/**
+ * Handles Profile form submission (updating public.profiles & user metadata)
+ */
+async function handleProfileFormSubmit(e) {
+  e.preventDefault();
+  if (!currentUser || !supabaseClient) {
+    showProfileError('You must be logged in to update your profile.');
+    return;
+  }
+
+  const newDisplayName = dom.profileEditName.value.trim();
+  const newAvatarUrl = dom.profileEditAvatar.value.trim();
+
+  if (!newDisplayName) {
+    showProfileError('Display Name cannot be empty.');
+    dom.profileEditName?.focus();
+    return;
+  }
+
+  const saveBtn = dom.profileSaveBtn;
+  const btnText = saveBtn?.querySelector('.btn-text');
+  if (saveBtn) saveBtn.disabled = true;
+  if (btnText) btnText.textContent = 'Saving...';
+  clearProfileFormMsg();
+
+  try {
+    // 1. Update/Upsert in public.profiles table
+    const profilePayload = {
+      id: currentUser.id,
+      email: currentUser.email,
+      display_name: newDisplayName,
+      avatar_url: newAvatarUrl || null,
+      role: currentProfile?.role || currentUserRole || 'visitor'
+    };
+
+    const { data: updatedProfile, error: dbError } = await supabaseClient
+      .from('profiles')
+      .upsert(profilePayload)
+      .select()
+      .maybeSingle();
+
+    if (dbError) {
+      console.warn('Database upsert error on public.profiles:', dbError.message);
+      throw dbError;
+    }
+
+    // 2. Sync to Supabase Auth metadata
+    try {
+      await supabaseClient.auth.updateUser({
+        data: {
+          display_name: newDisplayName,
+          avatar_url: newAvatarUrl || null
+        }
+      });
+    } catch (metaErr) {
+      console.warn('Could not sync user_metadata:', metaErr);
+    }
+
+    // 3. Update active session state
+    currentProfile = updatedProfile || {
+      ...currentProfile,
+      display_name: newDisplayName,
+      avatar_url: newAvatarUrl || null
+    };
+    window.currentProfile = currentProfile;
+
+    // 4. Update Navigation Bar UI
+    updateAuthUI();
+
+    // 5. Update Profile View cards
+    if (dom.profileIdentityName) dom.profileIdentityName.textContent = newDisplayName;
+    renderProfileLargeAvatar(newDisplayName, newAvatarUrl);
+
+    showProfileSuccess('Profile updated successfully!');
+  } catch (err) {
+    console.error('Profile update error:', err);
+    showProfileError(err.message || 'Failed to update profile. Please try again.');
+  } finally {
+    if (saveBtn) saveBtn.disabled = false;
+    if (btnText) btnText.textContent = 'Save Changes';
+  }
+}
+
+function handleCopyUserId() {
+  if (!currentUser?.id) return;
+  navigator.clipboard.writeText(currentUser.id).then(() => {
+    if (dom.profileCopyIdText) {
+      const orig = dom.profileCopyIdText.textContent;
+      dom.profileCopyIdText.textContent = 'Copied!';
+      setTimeout(() => {
+        if (dom.profileCopyIdText) dom.profileCopyIdText.textContent = orig;
+      }, 2000);
+    }
+  }).catch(() => {
+    const temp = document.createElement('textarea');
+    temp.value = currentUser.id;
+    document.body.appendChild(temp);
+    temp.select();
+    document.execCommand('copy');
+    document.body.removeChild(temp);
+    if (dom.profileCopyIdText) {
+      dom.profileCopyIdText.textContent = 'Copied!';
+      setTimeout(() => {
+        if (dom.profileCopyIdText) dom.profileCopyIdText.textContent = 'Copy';
+      }, 2000);
+    }
+  });
+}
+
+function showProfileError(msg) {
+  if (!dom.profileFormMsg) return;
+  dom.profileFormMsg.textContent = msg;
+  dom.profileFormMsg.className = 'config-status-msg error';
+  dom.profileFormMsg.classList.remove('hidden');
+}
+
+function showProfileSuccess(msg) {
+  if (!dom.profileFormMsg) return;
+  dom.profileFormMsg.textContent = msg;
+  dom.profileFormMsg.className = 'config-status-msg success';
+  dom.profileFormMsg.classList.remove('hidden');
+}
+
+function clearProfileFormMsg() {
+  if (!dom.profileFormMsg) return;
+  dom.profileFormMsg.textContent = '';
+  dom.profileFormMsg.className = 'config-status-msg hidden';
+}
+
+// ============================================================================
 // 13. EVENT LISTENERS
 // ============================================================================
 
@@ -1836,9 +2198,56 @@ function initEventListeners() {
   dom.bottomBackBtn?.addEventListener('click', returnToHomeView);
   dom.brandLogo?.addEventListener('click', (e) => {
     e.preventDefault();
-    if (!dom.articleView?.classList.contains('hidden') || !dom.adminView?.classList.contains('hidden')) {
+    if (!dom.articleView?.classList.contains('hidden') || !dom.adminView?.classList.contains('hidden') || !dom.profileView?.classList.contains('hidden')) {
       returnToHomeView();
     }
+  });
+
+  // Profile View Event Listeners
+  dom.profileBackBtn?.addEventListener('click', returnToHomeView);
+  dom.navUserChip?.addEventListener('click', openProfileView);
+  dom.navProfileBtn?.addEventListener('click', openProfileView);
+  dom.profileNavAdminBtn?.addEventListener('click', openAdminView);
+  dom.profileSidePasswordBtn?.addEventListener('click', () => openAuthModal('reset-password'));
+  dom.profileSideLogoutBtn?.addEventListener('click', handleSignOut);
+  dom.profileCopyIdBtn?.addEventListener('click', handleCopyUserId);
+  dom.profileForm?.addEventListener('submit', handleProfileFormSubmit);
+  dom.profileResetBtn?.addEventListener('click', populateProfileView);
+
+  // Avatar presets and preview
+  document.querySelectorAll('.avatar-preset-pill[data-preset]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const preset = btn.getAttribute('data-preset');
+      const seed = encodeURIComponent(dom.profileEditName?.value?.trim() || currentUser?.id || 'Explorer');
+      let url = '';
+      if (preset === 'dicebear-bot') {
+        url = `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}`;
+      } else if (preset === 'dicebear-adventurer') {
+        url = `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}`;
+      } else if (preset === 'dicebear-pixel') {
+        url = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${seed}`;
+      }
+      if (dom.profileEditAvatar) {
+        dom.profileEditAvatar.value = url;
+        renderProfileLargeAvatar(dom.profileEditName?.value, url);
+      }
+    });
+  });
+
+  dom.profileClearAvatarBtn?.addEventListener('click', () => {
+    if (dom.profileEditAvatar) {
+      dom.profileEditAvatar.value = '';
+      renderProfileLargeAvatar(dom.profileEditName?.value, '');
+    }
+  });
+
+  dom.profilePreviewAvatarBtn?.addEventListener('click', () => {
+    const url = dom.profileEditAvatar?.value.trim();
+    renderProfileLargeAvatar(dom.profileEditName?.value, url);
+  });
+
+  dom.profileEditAvatar?.addEventListener('input', (e) => {
+    renderProfileLargeAvatar(dom.profileEditName?.value, e.target.value.trim());
   });
 
   // Browser hash change
