@@ -39,32 +39,25 @@
       </a>
 
       <div class="header-right">
-        <!-- Live search bar for posts -->
-        <div class="search-container" id="search-container">
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <input type="text" id="search-input" placeholder="Search articles..." aria-label="Search articles">
-          <button id="search-clear-btn" class="search-clear-btn hidden" aria-label="Clear search">&times;</button>
-        </div>
-
         <!-- Theme Toggle (Dark / Light) -->
-        <button id="theme-toggle" class="icon-button" title="Toggle theme" aria-label="Toggle theme">
-          <svg class="sun-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="5"></circle>
-            <line x1="12" y1="1" x2="12" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="23"></line>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-            <line x1="1" y1="12" x2="3" y2="12"></line>
-            <line x1="21" y1="12" x2="23" y2="12"></line>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-          </svg>
-          <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-          </svg>
+        <button id="theme-toggle" class="theme-toggle-btn" title="Toggle theme" aria-label="Toggle theme">
+          <span class="theme-toggle-icon">
+            <svg class="sun-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </span>
+          <span class="theme-toggle-label">Theme</span>
         </button>
 
         <!-- Supabase Auth Actions -->
@@ -124,14 +117,40 @@
         <p class="hero-subtitle">
           Curated writings on software engineering, web design, and digital explorations.
         </p>
+        <div class="hero-actions">
+          <button id="hero-browse-btn" class="btn-primary hero-btn">
+            <span>Explore Articles</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <polyline points="19 12 12 19 5 12"></polyline>
+            </svg>
+          </button>
+          <button id="hero-search-btn" class="btn-outline hero-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span>Search Articles</span>
+          </button>
+        </div>
       </section>
 
       <!-- View Header / Stats Bar -->
-      <div class="posts-header-bar">
+      <div class="posts-header-bar" id="posts-toolbar">
         <div class="posts-count-indicator">
           <span id="posts-count-text">Loading posts...</span>
         </div>
         <div class="posts-controls">
+          <!-- Live search bar for posts -->
+          <div class="search-container" id="search-container">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="search-input" placeholder="Search articles..." aria-label="Search articles">
+            <button id="search-clear-btn" class="search-clear-btn hidden" aria-label="Clear search" title="Clear search">&times;</button>
+          </div>
+
           <button id="refresh-btn" class="btn-refresh" title="Reload posts">
             <svg class="refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M23 4v6h-6"></path>
@@ -211,11 +230,12 @@
         </button>
 
         <div class="article-actions">
-          <button id="copy-link-btn" class="icon-button-subtle" title="Copy article link" aria-label="Copy article link">
+          <button id="copy-link-btn" class="article-share-btn" title="Copy article link" aria-label="Copy article link">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
             </svg>
+            <span>Share Link</span>
             <span id="copy-feedback" class="copy-feedback hidden">Copied!</span>
           </button>
         </div>
@@ -290,19 +310,15 @@
 
       <!-- Article Footer Navigation -->
       <footer class="article-footer">
-        <button class="back-btn bottom-back-btn" aria-label="Back to Posts">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
-          </svg>
-          <span>Back to Posts</span>
-        </button>
-        <button id="scroll-top-btn" class="scroll-top-btn" title="Back to top" aria-label="Scroll to top">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="18 15 12 9 6 15"></polyline>
-          </svg>
-          <span>Top</span>
-        </button>
+        <div class="article-footer-inner">
+          <button class="back-btn bottom-back-btn" aria-label="Back to Posts">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>← Back to All Articles</span>
+          </button>
+        </div>
       </footer>
     </article>
 
@@ -313,15 +329,24 @@
       <!-- Admin Top Bar -->
       <div class="admin-top-bar">
         <button id="admin-back-btn" class="back-btn" aria-label="Back to Blog">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
           </svg>
           <span>Back to Blog</span>
         </button>
 
-        <div class="admin-header-badge">
-          <span class="role-badge role-admin">👑 Administrator</span>
+        <div class="admin-top-right">
+          <button type="button" id="admin-new-post-btn" class="btn-sm btn-primary admin-new-btn" title="Create a new article">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>New Post</span>
+          </button>
+          <div class="admin-header-badge">
+            <span class="role-badge role-admin">👑 Administrator</span>
+          </div>
         </div>
       </div>
 
@@ -531,6 +556,14 @@
       </form>
     </div>
   </div>
+
+  <!-- Global Floating Scroll-To-Top Button -->
+  <button id="scroll-top-btn" class="scroll-top-btn floating-top-btn" title="Back to top" aria-label="Scroll to top">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18 15 12 9 6 15"></polyline>
+    </svg>
+    <span>Top</span>
+  </button>
 
   <!-- Site Footer -->
   <footer class="site-footer">

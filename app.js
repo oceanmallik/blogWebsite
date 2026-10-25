@@ -95,6 +95,8 @@ function initDOM() {
   dom.searchClearBtn = document.getElementById('search-clear-btn');
   dom.emptyResetBtn = document.getElementById('empty-reset-btn');
   dom.errorRetryBtn = document.getElementById('error-retry-btn');
+  dom.heroBrowseBtn = document.getElementById('hero-browse-btn');
+  dom.heroSearchBtn = document.getElementById('hero-search-btn');
 
   // Article View elements
   dom.backBtn = document.getElementById('back-btn');
@@ -142,6 +144,7 @@ function initDOM() {
 
   // Admin View Elements
   dom.adminBackBtn = document.getElementById('admin-back-btn');
+  dom.adminNewPostBtn = document.getElementById('admin-new-post-btn');
   dom.adminEditorTitle = document.getElementById('admin-editor-title');
   dom.adminCancelEditBtn = document.getElementById('admin-cancel-edit-btn');
   dom.adminPostForm = document.getElementById('admin-post-form');
@@ -748,8 +751,10 @@ function createCardElement(post) {
   // Footer / Read More
   const footer = document.createElement('div');
   footer.className = 'card-footer';
+  const authorName = post.profiles?.display_name || post.author_name || 'Ocean Author';
   footer.innerHTML = `
-    <span class="read-more-link">
+    <span class="card-footer-author">by ${escapeHtml(authorName)}</span>
+    <span class="read-more-link" aria-hidden="true">
       Read article
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -1707,6 +1712,20 @@ function initEventListeners() {
     await loadPosts();
   });
 
+  // Hero Action Buttons
+  dom.heroBrowseBtn?.addEventListener('click', () => {
+    const target = document.getElementById('posts-toolbar') || dom.postsGrid;
+    target?.scrollIntoView({ behavior: 'smooth' });
+  });
+
+  dom.heroSearchBtn?.addEventListener('click', () => {
+    const target = document.getElementById('posts-toolbar') || dom.searchInput;
+    target?.scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => {
+      dom.searchInput?.focus();
+    }, 350);
+  });
+
   // Theme toggle
   dom.themeToggle?.addEventListener('click', toggleTheme);
 
@@ -1723,10 +1742,18 @@ function initEventListeners() {
     }
   });
 
-  // Scroll to Top
+  // Global Floating Scroll to Top
   dom.scrollTopBtn?.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 280) {
+      dom.scrollTopBtn?.classList.add('visible');
+    } else {
+      dom.scrollTopBtn?.classList.remove('visible');
+    }
+  }, { passive: true });
 
   // Auth Event Listeners
   dom.navLoginBtn?.addEventListener('click', () => openAuthModal('signin'));
@@ -1758,6 +1785,11 @@ function initEventListeners() {
   // Admin Panel Event Listeners
   dom.navAdminBtn?.addEventListener('click', openAdminView);
   dom.adminBackBtn?.addEventListener('click', returnToHomeView);
+  dom.adminNewPostBtn?.addEventListener('click', () => {
+    resetAdminEditor();
+    dom.adminTitle?.focus();
+    dom.adminTitle?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
   dom.adminPostForm?.addEventListener('submit', handleAdminPostSubmit);
   dom.adminResetFormBtn?.addEventListener('click', resetAdminEditor);
   dom.adminCancelEditBtn?.addEventListener('click', resetAdminEditor);
