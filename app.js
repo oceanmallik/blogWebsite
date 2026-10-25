@@ -129,7 +129,6 @@ function initDOM() {
   dom.navUserName = document.getElementById('nav-user-name');
   dom.navUserRole = document.getElementById('nav-user-role');
   dom.navAdminBtn = document.getElementById('nav-admin-btn');
-  dom.navChangePasswordBtn = document.getElementById('nav-change-password-btn');
   dom.navLogoutBtn = document.getElementById('nav-logout-btn');
 
   // Comments Section Elements
@@ -243,6 +242,11 @@ function initDOM() {
   dom.profileFormMsg = document.getElementById('profile-form-msg');
   dom.profileSaveBtn = document.getElementById('profile-save-btn');
   dom.profileResetBtn = document.getElementById('profile-reset-btn');
+  dom.profilePasswordForm = document.getElementById('profile-password-form');
+  dom.profileNewPassword = document.getElementById('profile-new-password');
+  dom.profileConfirmPassword = document.getElementById('profile-confirm-password');
+  dom.profilePasswordMsg = document.getElementById('profile-password-msg');
+  dom.profilePasswordSubmitBtn = document.getElementById('profile-password-submit-btn');
 }
 
 // ============================================================================
@@ -2188,6 +2192,77 @@ function clearProfileFormMsg() {
   dom.profileFormMsg.className = 'config-status-msg hidden';
 }
 
+/**
+ * Handles Password update from inside the Profile Page
+ */
+async function handleProfilePasswordSubmit(e) {
+  e.preventDefault();
+  if (!currentUser || !supabaseClient) {
+    showProfilePasswordError('You must be logged in to update your password.');
+    return;
+  }
+
+  const newPassword = dom.profileNewPassword?.value;
+  const confirmPassword = dom.profileConfirmPassword?.value;
+
+  if (!newPassword || newPassword.length < 6) {
+    showProfilePasswordError('Password must be at least 6 characters.');
+    dom.profileNewPassword?.focus();
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    showProfilePasswordError('Passwords do not match. Please verify and try again.');
+    dom.profileConfirmPassword?.focus();
+    return;
+  }
+
+  const submitBtn = dom.profilePasswordSubmitBtn;
+  const btnText = submitBtn?.querySelector('.btn-text');
+  if (submitBtn) submitBtn.disabled = true;
+  if (btnText) btnText.textContent = 'Updating...';
+  clearProfilePasswordMsg();
+
+  try {
+    const { data, error } = await supabaseClient.auth.updateUser({
+      password: newPassword
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    showProfilePasswordSuccess('Password updated successfully!');
+    dom.profilePasswordForm?.reset();
+  } catch (err) {
+    console.error('Password update error:', err);
+    showProfilePasswordError(err.message || 'Failed to update password.');
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+    if (btnText) btnText.textContent = 'Update Password';
+  }
+}
+
+function showProfilePasswordError(msg) {
+  if (!dom.profilePasswordMsg) return;
+  dom.profilePasswordMsg.textContent = msg;
+  dom.profilePasswordMsg.className = 'config-status-msg error';
+  dom.profilePasswordMsg.classList.remove('hidden');
+}
+
+function showProfilePasswordSuccess(msg) {
+  if (!dom.profilePasswordMsg) return;
+  dom.profilePasswordMsg.textContent = msg;
+  dom.profilePasswordMsg.className = 'config-status-msg success';
+  dom.profilePasswordMsg.classList.remove('hidden');
+}
+
+function clearProfilePasswordMsg() {
+  if (!dom.profilePasswordMsg) return;
+  dom.profilePasswordMsg.textContent = '';
+  dom.profilePasswordMsg.className = 'config-status-msg hidden';
+}
+
 // ============================================================================
 // 13. EVENT LISTENERS
 // ============================================================================
@@ -2208,10 +2283,17 @@ function initEventListeners() {
   dom.navUserChip?.addEventListener('click', openProfileView);
   dom.navProfileBtn?.addEventListener('click', openProfileView);
   dom.profileNavAdminBtn?.addEventListener('click', openAdminView);
-  dom.profileSidePasswordBtn?.addEventListener('click', () => openAuthModal('reset-password'));
+  dom.profileSidePasswordBtn?.addEventListener('click', () => {
+    const target = document.getElementById('profile-security-section') || dom.profileNewPassword;
+    target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => {
+      dom.profileNewPassword?.focus();
+    }, 350);
+  });
   dom.profileSideLogoutBtn?.addEventListener('click', handleSignOut);
   dom.profileCopyIdBtn?.addEventListener('click', handleCopyUserId);
   dom.profileForm?.addEventListener('submit', handleProfileFormSubmit);
+  dom.profilePasswordForm?.addEventListener('submit', handleProfilePasswordSubmit);
   dom.profileResetBtn?.addEventListener('click', populateProfileView);
 
   // Avatar presets and preview
@@ -2333,11 +2415,6 @@ function initEventListeners() {
   // Auth Event Listeners
   dom.navLoginBtn?.addEventListener('click', () => openAuthModal('signin'));
   dom.navLogoutBtn?.addEventListener('click', handleSignOut);
-  dom.navChangePasswordBtn?.addEventListener('click', () => {
-    openAuthModal('reset-password');
-    if (dom.resetPasswordTitle) dom.resetPasswordTitle.textContent = 'Change Password';
-    if (dom.resetPasswordSubtitle) dom.resetPasswordSubtitle.textContent = 'Enter your new password below.';
-  });
   dom.tabSignin?.addEventListener('click', () => setAuthTab('signin'));
   dom.tabSignup?.addEventListener('click', () => setAuthTab('signup'));
   dom.tabRecover?.addEventListener('click', () => setAuthTab('recover'));

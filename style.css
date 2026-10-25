@@ -2343,6 +2343,12 @@ textarea::placeholder {
   align-items: start;
 }
 
+.profile-main-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
 .profile-card {
   background: var(--bg-surface);
   border: var(--border-width) solid var(--border-color);

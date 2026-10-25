@@ -96,13 +96,6 @@
               </svg>
               <span class="admin-btn-label">Admin Panel</span>
             </button>
-            <button id="nav-change-password-btn" class="nav-profile-btn" title="Change Password" aria-label="Change Password">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-              </svg>
-              <span class="profile-btn-label">Password</span>
-            </button>
             <button id="nav-logout-btn" class="nav-logout-btn" title="Log out" aria-label="Log out">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -616,80 +609,115 @@
           </div>
         </div>
 
-        <!-- Profile Edit Form Card (Right) -->
-        <div class="profile-card profile-editor-card">
-          <div class="editor-card-header">
-            <div>
-              <h2 class="editor-heading">Edit Profile Information</h2>
-              <span class="field-hint">Database fields synced with <code>public.profiles</code></span>
+        <!-- Profile Main Content (Right) -->
+        <div class="profile-main-col">
+          <!-- Profile Edit Form Card -->
+          <div class="profile-card profile-editor-card">
+            <div class="editor-card-header">
+              <div>
+                <h2 class="editor-heading">Edit Profile Information</h2>
+                <span class="field-hint">Database fields synced with <code>public.profiles</code></span>
+              </div>
             </div>
+
+            <form id="profile-form" class="profile-form">
+              <!-- Display Name -->
+              <div class="form-group">
+                <label for="profile-edit-name">Display Name <span class="required-star">*</span></label>
+                <input type="text" id="profile-edit-name" placeholder="Your name or handle" required autocomplete="name">
+                <span class="field-hint">Displayed on all your blog comments and articles.</span>
+              </div>
+
+              <!-- Avatar URL -->
+              <div class="form-group">
+                <div class="label-with-action">
+                  <label for="profile-edit-avatar">Avatar Image URL</label>
+                  <button type="button" id="profile-preview-avatar-btn" class="btn-text-action">Preview Image</button>
+                </div>
+                <input type="url" id="profile-edit-avatar" placeholder="https://images.unsplash.com/... or https://api.dicebear.com/...">
+                <span class="field-hint">Direct URL to an image. Leave blank to display initials avatar.</span>
+                
+                <!-- Quick avatar generators/presets -->
+                <div class="avatar-presets-bar">
+                  <span class="avatar-presets-label">Sample presets:</span>
+                  <button type="button" class="avatar-preset-pill" data-preset="dicebear-bot">🤖 Robot</button>
+                  <button type="button" class="avatar-preset-pill" data-preset="dicebear-adventurer">🧭 Explorer</button>
+                  <button type="button" class="avatar-preset-pill" data-preset="dicebear-pixel">👾 Pixel</button>
+                  <button type="button" id="profile-clear-avatar-btn" class="avatar-preset-pill danger">✕ Clear</button>
+                </div>
+              </div>
+
+              <!-- Read-only Account Details Group -->
+              <div class="profile-readonly-group">
+                <div class="form-group">
+                  <label for="profile-edit-email">Email Address</label>
+                  <div class="readonly-input-wrap">
+                    <input type="email" id="profile-edit-email" readonly disabled>
+                    <span class="input-verified-tag">✓ Auth Provider</span>
+                  </div>
+                  <span class="field-hint">Linked to your Supabase credentials.</span>
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label for="profile-edit-role">User Role</label>
+                    <input type="text" id="profile-edit-role" readonly disabled>
+                    <span class="field-hint">Managed by administrator.</span>
+                  </div>
+                  <div class="form-group">
+                    <label for="profile-edit-joined">Created At</label>
+                    <input type="text" id="profile-edit-joined" readonly disabled>
+                    <span class="field-hint">Registration timestamp.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Status & Feedback Messages -->
+              <div id="profile-form-msg" class="config-status-msg hidden"></div>
+
+              <!-- Footer Actions -->
+              <div class="profile-form-actions">
+                <button type="submit" id="profile-save-btn" class="btn-primary">
+                  <span class="btn-text">Save Changes</span>
+                </button>
+                <button type="button" id="profile-reset-btn" class="btn-secondary">
+                  <span>Reset Changes</span>
+                </button>
+              </div>
+            </form>
           </div>
 
-          <form id="profile-form" class="profile-form">
-            <!-- Display Name -->
-            <div class="form-group">
-              <label for="profile-edit-name">Display Name <span class="required-star">*</span></label>
-              <input type="text" id="profile-edit-name" placeholder="Your name or handle" required autocomplete="name">
-              <span class="field-hint">Displayed on all your blog comments and articles.</span>
-            </div>
-
-            <!-- Avatar URL -->
-            <div class="form-group">
-              <div class="label-with-action">
-                <label for="profile-edit-avatar">Avatar Image URL</label>
-                <button type="button" id="profile-preview-avatar-btn" class="btn-text-action">Preview Image</button>
-              </div>
-              <input type="url" id="profile-edit-avatar" placeholder="https://images.unsplash.com/... or https://api.dicebear.com/...">
-              <span class="field-hint">Direct URL to an image. Leave blank to display initials avatar.</span>
-              
-              <!-- Quick avatar generators/presets -->
-              <div class="avatar-presets-bar">
-                <span class="avatar-presets-label">Sample presets:</span>
-                <button type="button" class="avatar-preset-pill" data-preset="dicebear-bot">🤖 Robot</button>
-                <button type="button" class="avatar-preset-pill" data-preset="dicebear-adventurer">🧭 Explorer</button>
-                <button type="button" class="avatar-preset-pill" data-preset="dicebear-pixel">👾 Pixel</button>
-                <button type="button" id="profile-clear-avatar-btn" class="avatar-preset-pill danger">✕ Clear</button>
+          <!-- Password & Security Card -->
+          <div class="profile-card profile-security-card" id="profile-security-section">
+            <div class="editor-card-header">
+              <div>
+                <h2 class="editor-heading">Account Security & Password</h2>
+                <span class="field-hint">Update your login password securely.</span>
               </div>
             </div>
 
-            <!-- Read-only Account Details Group -->
-            <div class="profile-readonly-group">
-              <div class="form-group">
-                <label for="profile-edit-email">Email Address</label>
-                <div class="readonly-input-wrap">
-                  <input type="email" id="profile-edit-email" readonly disabled>
-                  <span class="input-verified-tag">✓ Auth Provider</span>
-                </div>
-                <span class="field-hint">Linked to your Supabase credentials.</span>
-              </div>
-
+            <form id="profile-password-form" class="profile-form">
               <div class="form-row-2">
                 <div class="form-group">
-                  <label for="profile-edit-role">User Role</label>
-                  <input type="text" id="profile-edit-role" readonly disabled>
-                  <span class="field-hint">Managed by administrator.</span>
+                  <label for="profile-new-password">New Password <span class="required-star">*</span></label>
+                  <input type="password" id="profile-new-password" placeholder="At least 6 characters" minlength="6" required autocomplete="new-password">
+                  <span class="field-hint">Must be at least 6 characters.</span>
                 </div>
                 <div class="form-group">
-                  <label for="profile-edit-joined">Created At</label>
-                  <input type="text" id="profile-edit-joined" readonly disabled>
-                  <span class="field-hint">Registration timestamp.</span>
+                  <label for="profile-confirm-password">Confirm New Password <span class="required-star">*</span></label>
+                  <input type="password" id="profile-confirm-password" placeholder="Re-enter new password" minlength="6" required autocomplete="new-password">
                 </div>
               </div>
-            </div>
 
-            <!-- Status & Feedback Messages -->
-            <div id="profile-form-msg" class="config-status-msg hidden"></div>
+              <div id="profile-password-msg" class="config-status-msg hidden"></div>
 
-            <!-- Footer Actions -->
-            <div class="profile-form-actions">
-              <button type="submit" id="profile-save-btn" class="btn-primary">
-                <span class="btn-text">Save Changes</span>
-              </button>
-              <button type="button" id="profile-reset-btn" class="btn-secondary">
-                <span>Reset Changes</span>
-              </button>
-            </div>
-          </form>
+              <div class="profile-form-actions">
+                <button type="submit" id="profile-password-submit-btn" class="btn-primary">
+                  <span class="btn-text">Update Password</span>
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </section>
