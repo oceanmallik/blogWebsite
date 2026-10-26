@@ -2437,8 +2437,8 @@ function showErrorState(message) {
 
 function initTheme() {
   const savedTheme = localStorage.getItem('ocean_verse_theme');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const activeTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+  // Default to light theme if no saved preference, ensuring users aren't forced into dark mode
+  const activeTheme = savedTheme || 'light';
 
   setTheme(activeTheme);
 }
@@ -2450,9 +2450,11 @@ function setTheme(theme) {
   if (theme === 'dark') {
     dom.sunIcon?.classList.remove('hidden');
     dom.moonIcon?.classList.add('hidden');
+    if (dom.themeToggle) dom.themeToggle.title = 'Switch to Light mode';
   } else {
     dom.sunIcon?.classList.add('hidden');
     dom.moonIcon?.classList.remove('hidden');
+    if (dom.themeToggle) dom.themeToggle.title = 'Switch to Dark mode';
   }
 }
 

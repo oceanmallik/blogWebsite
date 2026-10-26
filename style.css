@@ -47,6 +47,11 @@
   --shadow-lg: 8px 8px 0px #0A0A0A;
   --shadow-hover: 2px 2px 0px #0A0A0A;
 
+  --tag-bg: rgba(0, 102, 255, 0.08);
+  --tag-text: #0066FF;
+  --code-bg: #0A0A0A;
+  --code-text: #FFFEF0;
+
   /* Layout */
   --container-max: 1200px;
   --article-max: 1140px;
@@ -64,40 +69,45 @@
   --transition-normal: 0.2s ease;
 }
 
-/* Dark Theme */
+/* Dark Theme — Modern Midnight Slate (Refined, High-Contrast & Comfortable) */
 [data-theme="dark"] {
-  --bg-primary: #0A0A0A;
-  --bg-surface: #141414;
-  --bg-elevated: #1F1F1F;
-  --bg-glass: rgba(10, 10, 10, 0.96);
+  /* Rich midnight charcoal surfaces — eliminates suffocating pitch-black void */
+  --bg-primary: #0F141C;
+  --bg-surface: #181F2A;
+  --bg-elevated: #222B3A;
+  --bg-glass: rgba(15, 20, 28, 0.96);
 
-  --text-primary: #FFFEF0;
-  --text-secondary: #E4E2D7;
-  --text-muted: #A8A79E;
-  --text-inverse: #0A0A0A;
+  /* High-contrast, clean, ultra-readable typography */
+  --text-primary: #F8FAFC;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+  --text-inverse: #0F141C;
 
-  --border-color: #FFFEF0;
-  --border-focus: #FFE500;
+  /* Crisp structural borders & focus highlights — eliminates glaring white lines */
+  --border-color: #334155;
+  --border-focus: #38BDF8;
 
-  --accent-yellow:  #FFE500;
-  --accent-lime:    #C8FF00;
-  --accent-coral:   #FF5C3A;
-  --accent-blue:    #4D8FFF;
-  --accent-pink:    #FF3DBC;
+  /* Vibrant, balanced neo-brutalist accents */
+  --accent-yellow:  #FACC15;
+  --accent-lime:    #A3E635;
+  --accent-coral:   #FB7185;
+  --accent-blue:    #38BDF8;
+  --accent-pink:    #F472B6;
 
-  --ocean-primary: #4D8FFF;
-  --ocean-teal:    #00C2B8;
+  --ocean-primary: #38BDF8;
+  --ocean-teal:    #2DD4BF;
 
-  --shadow-xs: 3px 3px 0px #FFFEF0;
-  --shadow-sm: 4px 4px 0px #FFFEF0;
-  --shadow-md: 6px 6px 0px #FFFEF0;
-  --shadow-lg: 8px 8px 0px #FFFEF0;
-  --shadow-hover: 2px 2px 0px #FFFEF0;
+  /* Tactile dark offset drop shadows — authentic neo-brutalist depth */
+  --shadow-xs: 3px 3px 0px #070A0F;
+  --shadow-sm: 4px 4px 0px #070A0F;
+  --shadow-md: 6px 6px 0px #070A0F;
+  --shadow-lg: 8px 8px 0px #070A0F;
+  --shadow-hover: 2px 2px 0px #070A0F;
 
-  --tag-bg: rgba(255, 229, 0, 0.15);
-  --tag-text: #FFE500;
-  --code-bg: #0D0D0D;
-  --code-text: #FFFEF0;
+  --tag-bg: rgba(250, 204, 21, 0.15);
+  --tag-text: #FACC15;
+  --code-bg: #111827;
+  --code-text: #F8FAFC;
 }
 
 /* --------------------------------------------------------------------------
@@ -136,6 +146,30 @@ button {
   cursor: pointer;
   border: none;
   background: none;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+  color: inherit;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+/* Ensure disabled and readonly inputs are clearly legible in both themes */
+input:disabled,
+input[readonly],
+textarea:disabled,
+textarea[readonly] {
+  color: var(--text-primary) !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+  cursor: default;
+  opacity: 0.9;
 }
 
 img {
@@ -863,7 +897,7 @@ img {
 }
 
 [data-theme="dark"] .card-placeholder-image {
-  background: #222200;
+  background: var(--bg-elevated);
   color: var(--accent-yellow);
 }
 
@@ -939,7 +973,7 @@ img {
 .card-footer-author {
   font-size: 0.76rem;
   font-family: var(--font-mono);
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
@@ -966,9 +1000,9 @@ img {
 }
 
 [data-theme="dark"] .read-more-link {
-  color: #0A0A0A;
+  color: #0F141C;
   background: var(--accent-yellow);
-  border-color: #FFFEF0;
+  border-color: var(--border-color);
 }
 
 .post-card:hover .read-more-link {
@@ -1083,12 +1117,12 @@ img {
 
 [data-theme="dark"] .btn-primary {
   background: var(--accent-yellow);
-  color: #0A0A0A;
+  color: #0F141C;
 }
 
 [data-theme="dark"] .btn-primary:hover {
   background: var(--accent-lime);
-  color: #0A0A0A;
+  color: #0F141C;
 }
 
 .btn-outline {
@@ -1575,8 +1609,8 @@ img {
 .article-body blockquote p:last-child { margin-bottom: 0; }
 
 .article-body pre {
-  background: #0A0A0A;
-  color: #FFFEF0;
+  background: var(--code-bg, #0A0A0A);
+  color: var(--code-text, #FFFEF0);
   padding: 1.35rem 1.5rem;
   overflow-x: auto;
   margin: 2rem 0;
@@ -1938,9 +1972,9 @@ img {
 
 [data-theme="dark"] .scroll-top-btn.floating-top-btn {
   background: var(--accent-yellow);
-  color: #0A0A0A;
-  border-color: #FFFEF0;
-  box-shadow: 4px 4px 0px #FFFEF0;
+  color: #0F141C;
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .scroll-top-btn.floating-top-btn.visible {
@@ -1957,7 +1991,8 @@ img {
 }
 
 [data-theme="dark"] .scroll-top-btn.floating-top-btn:hover {
-  box-shadow: 6px 6px 0px #FFFEF0;
+  color: #0F141C;
+  box-shadow: var(--shadow-md);
 }
 
 .scroll-top-btn.floating-top-btn:active {
@@ -2222,7 +2257,7 @@ textarea::placeholder {
 }
 
 [data-theme="dark"] .upload-thumbnail-btn:active {
-  box-shadow: 1px 1px 0px #FFFEF0;
+  box-shadow: 1px 1px 0px #070A0F;
 }
 
 .upload-thumbnail-btn:disabled {
@@ -2583,7 +2618,7 @@ input[type="datetime-local"] {
 
 .status-badge.draft {
   background: var(--bg-elevated);
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .admin-post-actions {
@@ -2699,7 +2734,7 @@ input[type="datetime-local"] {
   color: var(--text-primary);
 }
 
-[data-theme="dark"] .editor-tab-btn.active { color: #0A0A0A; }
+[data-theme="dark"] .editor-tab-btn.active { color: #0F141C; }
 
 .editor-view-container {
   display: flex;
@@ -2717,6 +2752,18 @@ input[type="datetime-local"] {
   font-family: var(--font-mono);
   font-size: 0.875rem;
   line-height: 1.6;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: var(--border-width) solid var(--border-color);
+  padding: 0.85rem;
+  outline: none;
+  resize: vertical;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.editor-write-pane textarea:focus {
+  border-color: var(--ocean-primary);
+  box-shadow: var(--shadow-xs);
 }
 
 .editor-preview-pane {
@@ -3132,7 +3179,10 @@ input[type="datetime-local"] {
 
 .readonly-input-wrap input {
   padding-right: 8rem;
-  opacity: 0.9;
+  opacity: 0.95;
+  background: var(--bg-elevated);
+  color: var(--text-primary) !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
 }
 
 .input-verified-tag {
@@ -3377,7 +3427,7 @@ input[type="datetime-local"] {
 }
 
 [data-theme="dark"] .site-footer {
-  background: var(--bg-elevated);
+  background: var(--bg-surface);
   color: var(--text-primary);
   border-color: var(--border-color);
 }
