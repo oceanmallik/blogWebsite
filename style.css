@@ -97,12 +97,12 @@
   --ocean-primary: #38BDF8;
   --ocean-teal:    #2DD4BF;
 
-  /* Tactile dark offset drop shadows — authentic neo-brutalist depth */
-  --shadow-xs: 3px 3px 0px #070A0F;
-  --shadow-sm: 4px 4px 0px #070A0F;
-  --shadow-md: 6px 6px 0px #070A0F;
-  --shadow-lg: 8px 8px 0px #070A0F;
-  --shadow-hover: 2px 2px 0px #070A0F;
+  /* High-contrast crisp white offset drop shadows for Dark Mode — authentic Neo-Brutalism depth */
+  --shadow-xs: 3px 3px 0px #FFFFFF;
+  --shadow-sm: 4px 4px 0px #FFFFFF;
+  --shadow-md: 6px 6px 0px #FFFFFF;
+  --shadow-lg: 8px 8px 0px #FFFFFF;
+  --shadow-hover: 2px 2px 0px #FFFFFF;
 
   --tag-bg: rgba(250, 204, 21, 0.15);
   --tag-text: #FACC15;
@@ -2300,7 +2300,7 @@ textarea::placeholder {
 }
 
 [data-theme="dark"] .upload-thumbnail-btn:active {
-  box-shadow: 1px 1px 0px #070A0F;
+  box-shadow: 1px 1px 0px #FFFFFF;
 }
 
 .upload-thumbnail-btn:disabled {
@@ -3944,6 +3944,10 @@ input[type="datetime-local"] {
   padding: 0.22rem 0.55rem;
   border: 1.5px solid var(--border-color);
   box-shadow: 1.5px 1.5px 0 var(--border-color);
+}
+
+[data-theme="dark"] .admin-card-badge {
+  box-shadow: 1.5px 1.5px 0 #FFFFFF;
 }
 
 .admin-card-body {
