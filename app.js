@@ -102,6 +102,11 @@ function initDOM() {
   // Article View elements
   dom.backBtn = document.getElementById('back-btn');
   dom.bottomBackBtn = document.querySelector('.bottom-back-btn');
+  dom.articleAuthorCard = document.getElementById('article-author-card');
+  dom.articleAuthorAvatarImg = document.getElementById('article-author-avatar-img');
+  dom.articleAuthorAvatarFallback = document.getElementById('article-author-avatar-fallback');
+  dom.articleAuthorName = document.getElementById('article-author-name');
+  dom.articleAuthorEmail = document.getElementById('article-author-email');
   dom.articleTitle = document.getElementById('article-title');
   dom.articleSummary = document.getElementById('article-summary');
   dom.articleDate = document.getElementById('article-date');
@@ -111,6 +116,7 @@ function initDOM() {
   dom.articleContent = document.getElementById('article-content');
   dom.scrollTopBtn = document.getElementById('scroll-top-btn');
   dom.copyLinkBtn = document.getElementById('copy-link-btn');
+  dom.sidebarShareBtn = document.getElementById('sidebar-share-btn');
   dom.copyFeedback = document.getElementById('copy-feedback');
 
   // Header & Theme
@@ -220,6 +226,11 @@ function initDOM() {
   dom.editorViewContainer = document.getElementById('editor-view-container');
   dom.editorWritePane = document.getElementById('editor-write-pane');
   dom.editorPreviewPane = document.getElementById('editor-preview-pane');
+  dom.adminPreviewAuthorCard = document.getElementById('admin-preview-author-card');
+  dom.adminPreviewAvatarImg = document.getElementById('admin-preview-avatar-img');
+  dom.adminPreviewAvatarFallback = document.getElementById('admin-preview-avatar-fallback');
+  dom.adminPreviewAuthorName = document.getElementById('admin-preview-author-name');
+  dom.adminPreviewAuthorEmail = document.getElementById('admin-preview-author-email');
   dom.adminContentPreview = document.getElementById('admin-content-preview');
 
   // Profile View Elements
@@ -1097,6 +1108,130 @@ function getPlaceholderIconSvg() {
 // 7. ARTICLE VIEW TOGGLING & CONTENT RENDERING
 // ============================================================================
 
+const authorProfilesCache = new Map();
+
+/**
+ * Resolves the author profile for a given post
+ * @param {object} post
+ * @returns {Promise<{display_name: string, email: string, avatar_url: string|null}>}
+ */
+async function getPostAuthorProfile(post) {
+  if (!post) return { display_name: 'Ocean Author', email: '', avatar_url: null };
+
+  // 1. Attached profiles object
+  if (post.profiles && typeof post.profiles === 'object') {
+    const p = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
+    return {
+      display_name: p.display_name || post.author_name || 'Ocean Author',
+      email: p.email || '',
+      avatar_url: p.avatar_url || null
+    };
+  }
+
+  // 2. Author is current user
+  if (currentUser && post.author_id && post.author_id === currentUser.id) {
+    return {
+      display_name: currentProfile?.display_name || currentUser.user_metadata?.display_name || (currentUser.email ? currentUser.email.split('@')[0] : 'Ocean Author'),
+      email: currentUser.email || currentProfile?.email || '',
+      avatar_url: currentProfile?.avatar_url || currentUser.user_metadata?.avatar_url || null
+    };
+  }
+
+  // 3. Cache lookup
+  if (post.author_id && authorProfilesCache.has(post.author_id)) {
+    return authorProfilesCache.get(post.author_id);
+  }
+
+  // 4. Supabase fetch from public.profiles
+  if (supabaseClient && post.author_id) {
+    try {
+      const { data, error } = await supabaseClient
+        .from('profiles')
+        .select('id, email, display_name, avatar_url')
+        .eq('id', post.author_id)
+        .maybeSingle();
+
+      if (!error && data) {
+        const result = {
+          display_name: data.display_name || post.author_name || (data.email ? data.email.split('@')[0] : 'Ocean Author'),
+          email: data.email || '',
+          avatar_url: data.avatar_url || null
+        };
+        authorProfilesCache.set(post.author_id, result);
+        return result;
+      }
+    } catch (err) {
+      console.warn('Could not fetch author profile:', err);
+    }
+  }
+
+  // 5. Fallback for demo or unspecified authors
+  return {
+    display_name: post.author_name || 'Ocean Author',
+    email: post.author_email || '',
+    avatar_url: post.author_avatar || null
+  };
+}
+
+/**
+ * Sets avatar image or fallback initials
+ */
+function setAuthorAvatar(imgEl, fallbackEl, avatarUrl, name) {
+  const initial = (name || 'A').trim().charAt(0).toUpperCase();
+  if (fallbackEl) {
+    fallbackEl.textContent = initial;
+  }
+
+  if (avatarUrl && typeof avatarUrl === 'string' && avatarUrl.trim() !== '') {
+    if (imgEl) {
+      imgEl.src = avatarUrl.trim();
+      imgEl.classList.remove('hidden');
+      if (fallbackEl) fallbackEl.classList.add('hidden');
+
+      imgEl.onerror = () => {
+        imgEl.classList.add('hidden');
+        if (fallbackEl) fallbackEl.classList.remove('hidden');
+      };
+      imgEl.onload = () => {
+        imgEl.classList.remove('hidden');
+        if (fallbackEl) fallbackEl.classList.add('hidden');
+      };
+    }
+  } else {
+    if (imgEl) {
+      imgEl.src = '';
+      imgEl.classList.add('hidden');
+    }
+    if (fallbackEl) fallbackEl.classList.remove('hidden');
+  }
+}
+
+/**
+ * Renders the author card on the article view
+ */
+function renderArticleAuthor(author) {
+  const name = author?.display_name || 'Ocean Author';
+  const email = author?.email || '';
+  const avatarUrl = author?.avatar_url || null;
+
+  if (dom.articleAuthorName) {
+    dom.articleAuthorName.textContent = name;
+  }
+
+  if (dom.articleAuthorEmail) {
+    if (email) {
+      dom.articleAuthorEmail.textContent = email;
+      dom.articleAuthorEmail.href = `mailto:${email}`;
+      dom.articleAuthorEmail.title = email;
+      dom.articleAuthorEmail.classList.remove('hidden');
+    } else {
+      dom.articleAuthorEmail.classList.add('hidden');
+    }
+  }
+
+  setAuthorAvatar(dom.articleAuthorAvatarImg, dom.articleAuthorAvatarFallback, avatarUrl, name);
+}
+
 /**
  * Displays full article view and hides home grid
  * @param {object} post - Post object to display
@@ -1113,8 +1248,17 @@ function openArticleView(post, updateHash = true) {
   activePost = post;
 
   dom.articleTitle.textContent = post.title || 'Untitled';
-  dom.articleDate.textContent = formatDate(post.created_at);
+  const formattedDate = formatDate(post.created_at);
+  const daysAgo = formatDaysAgo(post.created_at);
+  dom.articleDate.textContent = formattedDate ? `${formattedDate}${daysAgo ? ` (${daysAgo})` : ''}` : '';
   dom.articleReadingTime.textContent = calculateReadingTime(post.content || post.summary || '');
+
+  // Populate author card (photo, name, email on left)
+  getPostAuthorProfile(post).then(author => {
+    if (activePost && (activePost.id === post.id || activePost.slug === post.slug)) {
+      renderArticleAuthor(author);
+    }
+  });
 
   // Summary
   if (post.summary && post.summary.trim() !== '') {
@@ -1856,6 +2000,26 @@ let currentEditorTab = 'write';
  * Updates the live rendered markdown preview in the admin editor
  */
 function updateAdminPreview() {
+  // Update author card in the editor's live preview pane (photo, name, email on left)
+  const authorName = currentProfile?.display_name || currentUser?.user_metadata?.display_name || (currentUser?.email ? currentUser.email.split('@')[0] : 'Admin Author');
+  const authorEmail = currentUser?.email || currentProfile?.email || 'admin@oceanverse.dev';
+  const authorAvatarUrl = currentProfile?.avatar_url || currentUser?.user_metadata?.avatar_url || '';
+
+  if (dom.adminPreviewAuthorName) {
+    dom.adminPreviewAuthorName.textContent = authorName;
+  }
+  if (dom.adminPreviewAuthorEmail) {
+    if (authorEmail) {
+      dom.adminPreviewAuthorEmail.textContent = authorEmail;
+      dom.adminPreviewAuthorEmail.href = `mailto:${authorEmail}`;
+      dom.adminPreviewAuthorEmail.title = authorEmail;
+      dom.adminPreviewAuthorEmail.classList.remove('hidden');
+    } else {
+      dom.adminPreviewAuthorEmail.classList.add('hidden');
+    }
+  }
+  setAuthorAvatar(dom.adminPreviewAvatarImg, dom.adminPreviewAvatarFallback, authorAvatarUrl, authorName);
+
   if (!dom.adminContent || !dom.adminContentPreview) return;
   const raw = dom.adminContent.value.trim();
   if (!raw) {
@@ -2187,6 +2351,36 @@ function formatDate(isoString) {
       month: 'short',
       day: 'numeric'
     });
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Calculates how many days ago a post was published
+ * e.g. "0 days ago", "1 day ago", "260 days ago"
+ * @param {string} isoString
+ * @returns {string}
+ */
+function formatDaysAgo(isoString) {
+  if (!isoString) return '';
+  try {
+    const pubDate = new Date(isoString);
+    if (isNaN(pubDate.getTime())) return '';
+    const now = new Date();
+    // Normalize to midnight in local time for accurate calendar day difference
+    const pubMidnight = new Date(pubDate.getFullYear(), pubDate.getMonth(), pubDate.getDate());
+    const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diffTime = nowMidnight.getTime() - pubMidnight.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 0) {
+      return '0 days ago';
+    } else if (diffDays === 1) {
+      return '1 day ago';
+    } else {
+      return `${diffDays} days ago`;
+    }
   } catch {
     return '';
   }
@@ -2799,6 +2993,10 @@ function initEventListeners() {
     } catch {
       alert('Link copied to clipboard: ' + window.location.href);
     }
+  });
+
+  dom.sidebarShareBtn?.addEventListener('click', () => {
+    dom.copyLinkBtn?.click();
   });
 
   // Global Floating Scroll to Top

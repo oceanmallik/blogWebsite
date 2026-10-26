@@ -250,85 +250,121 @@
         </div>
       </div>
 
-      <!-- Article Header -->
-      <header class="article-header">
-        <div class="article-meta">
-          <span id="article-date" class="meta-item"></span>
-          <span class="meta-dot">&bull;</span>
-          <span id="article-reading-time" class="meta-item"></span>
-        </div>
-
-        <h1 id="article-title" class="article-title"></h1>
-
-        <p id="article-summary" class="article-summary-lead"></p>
-      </header>
-
-      <!-- Article Cover Image Banner -->
-      <div id="article-cover-wrap" class="article-cover-wrapper hidden">
-        <img id="article-cover" class="article-cover-image" src="" alt="Post cover image">
-      </div>
-
-      <!-- Full Article Content Body -->
-      <div id="article-content" class="article-body"></div>
-
-      <!-- Comments Section -->
-      <section id="comments-section" class="comments-section">
-        <div class="comments-header">
-          <div class="comments-title-wrap">
-            <svg class="comments-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-            <h3 class="comments-title">Discussion (<span id="comments-count">0</span>)</h3>
-          </div>
-        </div>
-
-        <!-- Add Comment Form (Shown when logged in) -->
-        <div id="comment-form-container" class="comment-form-container">
-          <form id="comment-form" class="comment-form">
-            <div class="comment-input-wrap">
-              <textarea id="comment-content" placeholder="Share your perspective or ask a question..." required rows="3"></textarea>
+      <!-- Article Layout Grid (Minecraft Style Left Sidebar + Main Content) -->
+      <div class="article-layout-grid">
+        <!-- Left Sidebar: Author & Metadata -->
+        <aside class="article-sidebar-left">
+          <div class="article-author-sidebar-card" id="article-author-card">
+            <div class="author-avatar-large-wrap">
+              <img id="article-author-avatar-img" class="author-avatar-large-img hidden" src="" alt="Author Photo">
+              <div id="article-author-avatar-fallback" class="author-avatar-large-fallback">A</div>
             </div>
-            <div class="comment-form-actions">
-              <span id="comment-form-msg" class="comment-msg hidden"></span>
-              <button type="submit" id="comment-submit-btn" class="btn-primary btn-sm">
-                <span>Post Comment</span>
+
+            <div class="sidebar-section author-byline-section">
+              <span class="sidebar-label">Written By</span>
+              <h3 id="article-author-name" class="sidebar-author-name">Ocean Author</h3>
+              <a id="article-author-email" href="" class="sidebar-author-email">author@example.com</a>
+            </div>
+
+            <div class="sidebar-section">
+              <span class="sidebar-label">Published</span>
+              <span id="article-date" class="sidebar-meta-val"></span>
+            </div>
+
+            <div class="sidebar-section">
+              <span class="sidebar-label">Read Time</span>
+              <span id="article-reading-time" class="sidebar-meta-val"></span>
+            </div>
+
+            <div class="sidebar-section sidebar-share-section">
+              <span class="sidebar-label">Share Post</span>
+              <button type="button" id="sidebar-share-btn" class="sidebar-share-btn" title="Copy article link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                </svg>
+                <span>Copy Link</span>
               </button>
             </div>
-          </form>
-        </div>
+          </div>
+        </aside>
 
-        <!-- Logged out notice (Shown when not logged in) -->
-        <div id="comment-login-prompt" class="comment-login-prompt hidden">
-          <p>Please <button type="button" id="comment-login-btn" class="btn-inline-link">Sign in</button> to join the discussion.</p>
-        </div>
+        <!-- Right Main Column: Content, Media & Comments -->
+        <div class="article-main-col">
+          <!-- Article Header -->
+          <header class="article-header">
+            <h1 id="article-title" class="article-title"></h1>
+            <p id="article-summary" class="article-summary-lead"></p>
+          </header>
 
-        <!-- Loading state for comments -->
-        <div id="comments-loading" class="comments-loading hidden">
-          <div class="skeleton-line sm skeleton-anim" style="width: 130px;"></div>
-          <div class="skeleton-line md skeleton-anim"></div>
-        </div>
+          <!-- Article Cover Image Banner -->
+          <div id="article-cover-wrap" class="article-cover-wrapper hidden">
+            <img id="article-cover" class="article-cover-image" src="" alt="Post cover image">
+          </div>
 
-        <!-- Comments List -->
-        <div id="comments-list" class="comments-list"></div>
+          <!-- Full Article Content Body -->
+          <div id="article-content" class="article-body"></div>
 
-        <!-- Empty Comments State -->
-        <div id="comments-empty" class="comments-empty hidden">
-          <p>No comments yet. Be the first to share your thoughts!</p>
-        </div>
-      </section>
+          <!-- Comments Section -->
+          <section id="comments-section" class="comments-section">
+            <div class="comments-header">
+              <div class="comments-title-wrap">
+                <svg class="comments-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <h3 class="comments-title">Discussion (<span id="comments-count">0</span>)</h3>
+              </div>
+            </div>
 
-      <!-- Article Footer Navigation -->
-      <footer class="article-footer">
-        <div class="article-footer-inner">
-          <button class="back-btn bottom-back-btn" aria-label="Back to Posts">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="19" y1="12" x2="5" y2="12"></line>
-              <polyline points="12 19 5 12 12 5"></polyline>
-            </svg>
-            <span>← Back to All Articles</span>
-          </button>
+            <!-- Add Comment Form (Shown when logged in) -->
+            <div id="comment-form-container" class="comment-form-container">
+              <form id="comment-form" class="comment-form">
+                <div class="comment-input-wrap">
+                  <textarea id="comment-content" placeholder="Share your perspective or ask a question..." required rows="3"></textarea>
+                </div>
+                <div class="comment-form-actions">
+                  <span id="comment-form-msg" class="comment-msg hidden"></span>
+                  <button type="submit" id="comment-submit-btn" class="btn-primary btn-sm">
+                    <span>Post Comment</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Logged out notice (Shown when not logged in) -->
+            <div id="comment-login-prompt" class="comment-login-prompt hidden">
+              <p>Please <button type="button" id="comment-login-btn" class="btn-inline-link">Sign in</button> to join the discussion.</p>
+            </div>
+
+            <!-- Loading state for comments -->
+            <div id="comments-loading" class="comments-loading hidden">
+              <div class="skeleton-line sm skeleton-anim" style="width: 130px;"></div>
+              <div class="skeleton-line md skeleton-anim"></div>
+            </div>
+
+            <!-- Comments List -->
+            <div id="comments-list" class="comments-list"></div>
+
+            <!-- Empty Comments State -->
+            <div id="comments-empty" class="comments-empty hidden">
+              <p>No comments yet. Be the first to share your thoughts!</p>
+            </div>
+          </section>
+
+          <!-- Article Footer Navigation -->
+          <footer class="article-footer">
+            <div class="article-footer-inner">
+              <button class="back-btn bottom-back-btn" aria-label="Back to Posts">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="19" y1="12" x2="5" y2="12"></line>
+                  <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                <span>Back to All Articles</span>
+              </button>
+            </div>
+          </footer>
         </div>
-      </footer>
+      </div>
     </article>
 
     <!-- ==============================================
@@ -492,6 +528,20 @@
                   <textarea id="admin-content" rows="12" placeholder="Write article content using Markdown (## Headings, **bold**, > Quotes, ```code```) or HTML..." required></textarea>
                 </div>
                 <div id="editor-preview-pane" class="editor-pane editor-preview-pane hidden">
+                  <!-- Live Preview Header with Author on Left -->
+                  <div class="admin-preview-header">
+                    <div class="article-author-sidebar-card preview-sidebar-card" id="admin-preview-author-card">
+                      <div class="author-avatar-large-wrap">
+                        <img id="admin-preview-avatar-img" class="author-avatar-large-img hidden" src="" alt="Author Photo">
+                        <div id="admin-preview-avatar-fallback" class="author-avatar-large-fallback">A</div>
+                      </div>
+                      <div class="sidebar-section author-byline-section">
+                        <span class="sidebar-label">Written By</span>
+                        <h4 id="admin-preview-author-name" class="sidebar-author-name">Admin</h4>
+                        <a id="admin-preview-author-email" class="sidebar-author-email" href="">admin@example.com</a>
+                      </div>
+                    </div>
+                  </div>
                   <div id="admin-content-preview" class="article-body admin-markdown-preview">
                     <p class="preview-empty-hint">Type in the editor to see live Markdown preview...</p>
                   </div>
