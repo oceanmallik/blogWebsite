@@ -2783,8 +2783,7 @@ input[type="datetime-local"] {
   flex-direction: column;
   gap: 1.25rem;
   padding: 1.25rem;
-  max-height: 760px;
-  overflow-y: auto;
+  overflow: visible;
 }
 
 .admin-post-row {

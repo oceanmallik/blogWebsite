@@ -1867,7 +1867,7 @@ async function loadAdminPosts() {
   }
 }
 
-const ADMIN_POSTS_PER_PAGE = 5;
+const ADMIN_POSTS_PER_PAGE = 2;
 let adminCurrentPage = 1;
 
 function updateAdminPagination(totalPosts) {
