@@ -1340,7 +1340,7 @@ function returnToHomeView() {
   if (window.location.hash) {
     history.pushState(null, '', window.location.pathname);
   }
-  document.title = 'Ocean Verse — Stories, Technology & Reflections';
+  document.title = 'OceanVerse - A Blog site';
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }

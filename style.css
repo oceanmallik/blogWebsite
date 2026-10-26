@@ -249,10 +249,23 @@ img {
   font-weight: 700;
   letter-spacing: -0.03em;
   color: var(--text-primary);
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  flex-wrap: wrap;
 }
 
 .brand-highlight {
   color: var(--ocean-primary);
+}
+
+.brand-subtitle {
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 
 .brand-tagline {
