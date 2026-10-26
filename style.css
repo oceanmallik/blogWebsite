@@ -4081,7 +4081,7 @@ input[type="datetime-local"] {
   box-shadow: var(--shadow-xs);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
@@ -4188,7 +4188,7 @@ input[type="datetime-local"] {
 
 .admin-card-actions-row,
 .admin-card-footer {
-  display: flex;
+  display: flex !important;
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
@@ -4196,6 +4196,8 @@ input[type="datetime-local"] {
   padding-top: 0.75rem;
   border-top: var(--border-width) solid var(--border-color);
   flex-wrap: wrap;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .admin-card-actions-group {
@@ -4207,20 +4209,22 @@ input[type="datetime-local"] {
 
 .admin-card-btn,
 .card-admin-btn {
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
   font-size: 0.74rem;
   font-weight: 700;
   padding: 0.38rem 0.75rem;
-  border: var(--border-width) solid var(--border-color);
+  border: var(--border-width) solid var(--border-color) !important;
   box-shadow: var(--shadow-xs);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   font-family: var(--font-sans);
   cursor: pointer;
   transition: all var(--transition-fast);
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .admin-card-btn:hover,
