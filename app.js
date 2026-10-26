@@ -342,8 +342,47 @@ async function fetchUserProfile(userId) {
 }
 
 /**
+ * Safely resolves the user's intended display name.
+ * Prevents defaulting to the email username (before '@') when the user has
+ * explicitly set a display name during signup or in user_metadata.
+ */
+function getEffectiveDisplayName(profile, user, fallback) {
+  const emailPrefix = user?.email ? user.email.split('@')[0] : '';
+  const metaName = fallback
+    || user?.user_metadata?.display_name
+    || user?.user_metadata?.full_name
+    || user?.user_metadata?.name
+    || '';
+
+  const profileName = profile?.display_name || '';
+
+  // 1. If profileName exists and is NOT just the email prefix, prioritize it
+  if (profileName && profileName.trim() !== '' && profileName.trim() !== emailPrefix) {
+    return profileName.trim();
+  }
+
+  // 2. If user metadata or fallback has an explicit display name, prefer it over the email prefix!
+  if (metaName && metaName.trim() !== '' && metaName.trim() !== emailPrefix) {
+    return metaName.trim();
+  }
+
+  // 3. If profileName exists (even matching emailPrefix), use it
+  if (profileName && profileName.trim() !== '') {
+    return profileName.trim();
+  }
+
+  // 4. Fallback to metaName if present
+  if (metaName && metaName.trim() !== '') {
+    return metaName.trim();
+  }
+
+  // 5. Final fallback to email username or 'Member'
+  return emailPrefix || 'Member';
+}
+
+/**
  * Handles active user session, populates profile, and determines role ('visitor' | 'admin')
- * FIX 4: Clear fallback if no profile row exists
+ * Automatically syncs the user's intended display name to public.profiles if missing or defaulted.
  */
 async function handleUserSession(user, fallbackDisplayName) {
   if (!user) {
@@ -354,22 +393,20 @@ async function handleUserSession(user, fallbackDisplayName) {
   currentUser = user;
   let profile = await fetchUserProfile(user.id);
 
-  // FIX 4: Missing profile row fallback
-  if (!profile) {
-    console.warn('Warning: No profile row found in public.profiles for user ID:', user.id);
-    const displayName = fallbackDisplayName
-      || user.user_metadata?.display_name
-      || user.email?.split('@')[0]
-      || 'Visitor';
+  const effectiveDisplayName = getEffectiveDisplayName(profile, user, fallbackDisplayName);
+  const effectiveAvatarUrl = profile?.avatar_url || user.user_metadata?.avatar_url || null;
+  const effectiveRole = profile?.role || user.user_metadata?.role || 'visitor';
+  const effectiveCreatedAt = profile?.created_at || user.created_at || new Date().toISOString();
 
-    profile = {
-      id: user.id,
-      email: user.email,
-      display_name: displayName,
-      avatar_url: user.user_metadata?.avatar_url || null,
-      role: 'visitor'
-    };
-  }
+  profile = {
+    ...(profile || {}),
+    id: user.id,
+    email: user.email,
+    display_name: effectiveDisplayName,
+    avatar_url: effectiveAvatarUrl,
+    role: effectiveRole,
+    created_at: effectiveCreatedAt
+  };
 
   currentProfile = profile;
   currentUserRole = profile.role || 'visitor';
@@ -378,6 +415,25 @@ async function handleUserSession(user, fallbackDisplayName) {
   window.currentUser = currentUser;
   window.currentUserRole = currentUserRole;
   window.currentProfile = currentProfile;
+
+  // Auto-sync: If the database public.profiles table has no row, or has null/emailPrefix instead
+  // of the user's real display name, persist the intended display name to public.profiles now!
+  const emailPrefix = user.email ? user.email.split('@')[0] : '';
+  if (effectiveDisplayName && effectiveDisplayName !== emailPrefix && supabaseClient) {
+    supabaseClient
+      .from('profiles')
+      .upsert({
+        id: user.id,
+        email: user.email,
+        display_name: effectiveDisplayName,
+        avatar_url: effectiveAvatarUrl,
+        role: effectiveRole
+      })
+      .then(({ error }) => {
+        if (error) console.warn('Could not auto-sync profile display_name to DB:', error.message);
+      })
+      .catch(err => console.warn('Exception during profile auto-sync:', err));
+  }
 
   updateAuthUI();
 }
@@ -405,7 +461,7 @@ function updateAuthUI() {
     if (dom.navLoginBtn) dom.navLoginBtn.classList.add('hidden');
     if (dom.navUserProfile) dom.navUserProfile.classList.remove('hidden');
 
-    const displayName = currentProfile.display_name || currentUser.email?.split('@')[0] || 'Member';
+    const displayName = getEffectiveDisplayName(currentProfile, currentUser);
     if (dom.navUserName) {
       dom.navUserName.textContent = displayName;
       dom.navUserName.title = `${displayName} (${currentUser.email || ''})`;
@@ -676,13 +732,29 @@ async function handleSignUp(e) {
       password,
       options: {
         data: {
-          display_name: displayName
+          display_name: displayName,
+          full_name: displayName,
+          name: displayName
         }
       }
     });
 
     if (error) {
       throw error;
+    }
+
+    // Persist displayName immediately to public.profiles table if user was created
+    if (data.user && displayName) {
+      try {
+        await supabaseClient.from('profiles').upsert({
+          id: data.user.id,
+          email: data.user.email,
+          display_name: displayName,
+          role: 'visitor'
+        });
+      } catch (upsertErr) {
+        console.warn('Could not immediately upsert profile during signup:', upsertErr);
+      }
     }
 
     if (data.session) {
@@ -1924,19 +1996,41 @@ async function populateProfileView() {
 
   // Refresh profile from database or fall back to current session
   const profile = await fetchUserProfile(currentUser.id) || currentProfile || {};
+  const displayName = getEffectiveDisplayName(profile, currentUser);
+  const avatarUrl = profile.avatar_url || currentUser.user_metadata?.avatar_url || currentProfile?.avatar_url || '';
+  const role = (profile.role || currentUserRole || 'visitor').toLowerCase();
+  const createdAt = profile.created_at || currentUser.created_at || new Date().toISOString();
+
   currentProfile = {
     ...profile,
     id: currentUser.id,
     email: currentUser.email,
-    created_at: profile.created_at || currentUser.created_at || new Date().toISOString()
+    display_name: displayName,
+    avatar_url: avatarUrl,
+    role: role,
+    created_at: createdAt
   };
 
   const id = currentUser.id;
   const email = currentUser.email || '';
-  const displayName = currentProfile.display_name || currentUser.user_metadata?.display_name || email.split('@')[0] || 'Member';
-  const avatarUrl = currentProfile.avatar_url || currentUser.user_metadata?.avatar_url || '';
-  const role = (currentProfile.role || currentUserRole || 'visitor').toLowerCase();
-  const createdAt = currentProfile.created_at;
+
+  // Auto-sync intended display name to public.profiles if DB had null or email prefix
+  const emailPrefix = email ? email.split('@')[0] : '';
+  if (displayName && displayName !== emailPrefix && profile.display_name !== displayName && supabaseClient) {
+    supabaseClient
+      .from('profiles')
+      .upsert({
+        id: id,
+        email: email,
+        display_name: displayName,
+        avatar_url: avatarUrl,
+        role: role
+      })
+      .then(({ error }) => {
+        if (error) console.warn('Could not auto-sync profile display_name to DB:', error.message);
+      })
+      .catch(err => console.warn('Exception during profile auto-sync:', err));
+  }
 
   // Identity Card
   renderProfileLargeAvatar(displayName, avatarUrl);
