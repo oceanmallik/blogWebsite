@@ -106,6 +106,7 @@ function initDOM() {
   dom.articleAuthorAvatarImg = document.getElementById('article-author-avatar-img');
   dom.articleAuthorAvatarFallback = document.getElementById('article-author-avatar-fallback');
   dom.articleAuthorName = document.getElementById('article-author-name');
+  dom.articleAuthorUsername = document.getElementById('article-author-username');
   dom.articleAuthorEmail = document.getElementById('article-author-email');
   dom.articleTitle = document.getElementById('article-title');
   dom.articleSummary = document.getElementById('article-summary');
@@ -114,6 +115,9 @@ function initDOM() {
   dom.articleCoverWrap = document.getElementById('article-cover-wrap');
   dom.articleCover = document.getElementById('article-cover');
   dom.articleContent = document.getElementById('article-content');
+  dom.articleAdminActions = document.getElementById('article-admin-actions');
+  dom.articleAdminEditBtn = document.getElementById('article-admin-edit-btn');
+  dom.articleAdminDeleteBtn = document.getElementById('article-admin-delete-btn');
   dom.scrollTopBtn = document.getElementById('scroll-top-btn');
   dom.copyLinkBtn = document.getElementById('copy-link-btn');
   dom.sidebarShareBtn = document.getElementById('sidebar-share-btn');
@@ -156,6 +160,7 @@ function initDOM() {
   dom.adminNewPostBtn = document.getElementById('admin-new-post-btn');
   dom.adminEditorTitle = document.getElementById('admin-editor-title');
   dom.adminCancelEditBtn = document.getElementById('admin-cancel-edit-btn');
+  dom.adminHeaderDeleteBtn = document.getElementById('admin-header-delete-btn');
   dom.adminPostForm = document.getElementById('admin-post-form');
   dom.adminPostId = document.getElementById('admin-post-id');
   dom.adminTitle = document.getElementById('admin-title');
@@ -177,8 +182,10 @@ function initDOM() {
   dom.adminIsPublished = document.getElementById('admin-is-published');
   dom.adminFormMsg = document.getElementById('admin-form-msg');
   dom.adminResetFormBtn = document.getElementById('admin-reset-form-btn');
+  dom.adminDeleteBtn = document.getElementById('admin-delete-btn');
   dom.adminSubmitBtn = document.getElementById('admin-submit-btn');
   dom.adminBottomResetBtn = document.getElementById('admin-bottom-reset-btn');
+  dom.adminBottomDeleteBtn = document.getElementById('admin-bottom-delete-btn');
   dom.adminBottomSubmitBtn = document.getElementById('admin-bottom-submit-btn');
   dom.adminPostsCount = document.getElementById('admin-posts-count');
   dom.adminRefreshPostsBtn = document.getElementById('admin-refresh-posts-btn');
@@ -203,6 +210,7 @@ function initDOM() {
   dom.switchToSignup = document.getElementById('switch-to-signup');
   dom.signupForm = document.getElementById('signup-form');
   dom.signupName = document.getElementById('signup-name');
+  dom.signupUsername = document.getElementById('signup-username');
   dom.signupEmail = document.getElementById('signup-email');
   dom.signupPassword = document.getElementById('signup-password');
   dom.signupStatusMsg = document.getElementById('signup-status-msg');
@@ -238,6 +246,7 @@ function initDOM() {
   dom.adminPreviewAvatarImg = document.getElementById('admin-preview-avatar-img');
   dom.adminPreviewAvatarFallback = document.getElementById('admin-preview-avatar-fallback');
   dom.adminPreviewAuthorName = document.getElementById('admin-preview-author-name');
+  dom.adminPreviewAuthorUsername = document.getElementById('admin-preview-author-username');
   dom.adminPreviewAuthorEmail = document.getElementById('admin-preview-author-email');
   dom.adminContentPreview = document.getElementById('admin-content-preview');
 
@@ -249,6 +258,7 @@ function initDOM() {
   dom.profileAvatarLarge = document.getElementById('profile-avatar-large');
   dom.profileAvatarBadge = document.getElementById('profile-avatar-badge');
   dom.profileIdentityName = document.getElementById('profile-identity-name');
+  dom.profileIdentityUsername = document.getElementById('profile-identity-username');
   dom.profileIdentityRole = document.getElementById('profile-identity-role');
   dom.profileIdentityEmail = document.getElementById('profile-identity-email');
   dom.profileIdentityCreated = document.getElementById('profile-identity-created');
@@ -263,6 +273,7 @@ function initDOM() {
   dom.profileSideLogoutBtn = document.getElementById('profile-side-logout-btn');
   dom.profileForm = document.getElementById('profile-form');
   dom.profileEditName = document.getElementById('profile-edit-name');
+  dom.profileEditUsername = document.getElementById('profile-edit-username');
   dom.profileEditAvatar = document.getElementById('profile-edit-avatar');
   dom.profileAvatarFile = document.getElementById('profile-avatar-file');
   dom.profileUploadBtn = document.getElementById('profile-upload-btn');
@@ -427,8 +438,47 @@ function getEffectiveDisplayName(profile, user, fallback) {
 }
 
 /**
+ * Sanitizes username input to lowercase alphanumeric and underscore, capped at 24 chars
+ */
+function sanitizeUsernameInput(val) {
+  if (!val) return '';
+  return String(val).toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 24);
+}
+
+/**
+ * Validates username format (3-24 characters: lowercase letters, numbers, and underscores only)
+ */
+function isValidUsername(username) {
+  return /^[a-z0-9_]{3,24}$/.test(username);
+}
+
+/**
+ * Safely resolves the user's intended username handle.
+ */
+function getEffectiveUsername(profile, user, fallback) {
+  const profileUsername = profile?.username ? sanitizeUsernameInput(profile.username) : '';
+  if (profileUsername && isValidUsername(profileUsername)) {
+    return profileUsername;
+  }
+  const metaUsername = user?.user_metadata?.username ? sanitizeUsernameInput(user.user_metadata.username) : '';
+  if (metaUsername && isValidUsername(metaUsername)) {
+    return metaUsername;
+  }
+  if (fallback) {
+    const cleanFallback = sanitizeUsernameInput(fallback);
+    if (isValidUsername(cleanFallback)) return cleanFallback;
+  }
+  const emailPrefix = user?.email ? sanitizeUsernameInput(user.email.split('@')[0]) : '';
+  if (emailPrefix) {
+    const padded = emailPrefix.length < 3 ? (emailPrefix + '_usr').slice(0, 24) : emailPrefix;
+    if (isValidUsername(padded)) return padded;
+  }
+  return 'member';
+}
+
+/**
  * Handles active user session, populates profile, and determines role ('visitor' | 'admin')
- * Automatically syncs the user's intended display name to public.profiles if missing or defaulted.
+ * Automatically syncs the user's intended display name and username to public.profiles if missing.
  */
 async function handleUserSession(user, fallbackDisplayName) {
   if (!user) {
@@ -440,6 +490,7 @@ async function handleUserSession(user, fallbackDisplayName) {
   let profile = await fetchUserProfile(user.id);
 
   const effectiveDisplayName = getEffectiveDisplayName(profile, user, fallbackDisplayName);
+  const effectiveUsername = getEffectiveUsername(profile, user);
   const effectiveAvatarUrl = profile?.avatar_url || user.user_metadata?.avatar_url || null;
   const effectiveRole = profile?.role || user.user_metadata?.role || 'visitor';
   const effectiveCreatedAt = profile?.created_at || user.created_at || new Date().toISOString();
@@ -449,6 +500,7 @@ async function handleUserSession(user, fallbackDisplayName) {
     id: user.id,
     email: user.email,
     display_name: effectiveDisplayName,
+    username: effectiveUsername,
     avatar_url: effectiveAvatarUrl,
     role: effectiveRole,
     created_at: effectiveCreatedAt
@@ -462,21 +514,22 @@ async function handleUserSession(user, fallbackDisplayName) {
   window.currentUserRole = currentUserRole;
   window.currentProfile = currentProfile;
 
-  // Auto-sync: If the database public.profiles table has no row, or has null/emailPrefix instead
-  // of the user's real display name, persist the intended display name to public.profiles now!
+  // Auto-sync: If the database public.profiles table has no row or missing username/display_name
   const emailPrefix = user.email ? user.email.split('@')[0] : '';
-  if (effectiveDisplayName && effectiveDisplayName !== emailPrefix && supabaseClient) {
+  const needsSync = !profile?.username || (effectiveDisplayName && effectiveDisplayName !== emailPrefix);
+  if (needsSync && supabaseClient) {
     supabaseClient
       .from('profiles')
       .upsert({
         id: user.id,
         email: user.email,
         display_name: effectiveDisplayName,
+        username: effectiveUsername,
         avatar_url: effectiveAvatarUrl,
         role: effectiveRole
       })
       .then(({ error }) => {
-        if (error) console.warn('Could not auto-sync profile display_name to DB:', error.message);
+        if (error) console.warn('Could not auto-sync profile to DB:', error.message);
       })
       .catch(err => console.warn('Exception during profile auto-sync:', err));
   }
@@ -508,9 +561,10 @@ function updateAuthUI() {
     if (dom.navUserProfile) dom.navUserProfile.classList.remove('hidden');
 
     const displayName = getEffectiveDisplayName(currentProfile, currentUser);
+    const username = currentProfile?.username ? `@${currentProfile.username}` : '';
     if (dom.navUserName) {
       dom.navUserName.textContent = displayName;
-      dom.navUserName.title = `${displayName} (${currentUser.email || ''})`;
+      dom.navUserName.title = `${displayName}${username ? ` (${username})` : ''} • ${currentUser.email || ''}`;
     }
 
     // Avatar
@@ -563,6 +617,25 @@ function updateAuthUI() {
     }
     if (dom.profileView && !dom.profileView.classList.contains('hidden')) {
       returnToHomeView();
+    }
+  }
+
+  // Re-render home posts grid if posts exist
+  if (allPosts && allPosts.length > 0) {
+    renderPostsGrid(allPosts);
+  }
+
+  // Ensure admin posts list is loaded if currently on admin view
+  if (currentUserRole === 'admin' && dom.adminView && !dom.adminView.classList.contains('hidden') && adminPosts.length === 0) {
+    loadAdminPosts();
+  }
+
+  // Toggle article view admin action bar visibility if viewing an article
+  if (dom.articleAdminActions) {
+    if (currentUserRole === 'admin' && activePost && dom.articleView && !dom.articleView.classList.contains('hidden')) {
+      dom.articleAdminActions.classList.remove('hidden');
+    } else {
+      dom.articleAdminActions.classList.add('hidden');
     }
   }
 
@@ -758,28 +831,67 @@ async function handleSignUp(e) {
     return;
   }
 
-  const displayName = dom.signupName.value.trim();
-  const email = dom.signupEmail.value.trim();
-  const password = dom.signupPassword.value;
+  const displayName = dom.signupName ? dom.signupName.value.trim() : '';
+  const rawUsername = dom.signupUsername ? dom.signupUsername.value.trim() : '';
+  const cleanUsername = sanitizeUsernameInput(rawUsername);
+  const email = dom.signupEmail ? dom.signupEmail.value.trim() : '';
+  const password = dom.signupPassword ? dom.signupPassword.value : '';
+
+  if (!displayName) {
+    showAuthError(dom.signupStatusMsg, 'Please enter a display name.');
+    dom.signupName?.focus();
+    return;
+  }
+
+  if (!cleanUsername) {
+    showAuthError(dom.signupStatusMsg, 'Please enter a username.');
+    dom.signupUsername?.focus();
+    return;
+  }
+
+  if (!isValidUsername(cleanUsername)) {
+    showAuthError(dom.signupStatusMsg, 'Username must be 3–24 characters (lowercase letters, numbers, and underscores only).');
+    dom.signupUsername?.focus();
+    return;
+  }
 
   if (password.length < 6) {
     showAuthError(dom.signupStatusMsg, 'Password must be at least 6 characters.');
+    dom.signupPassword?.focus();
     return;
   }
 
   const submitBtn = dom.signupSubmitBtn;
-  const btnText = submitBtn.querySelector('.btn-text');
-  submitBtn.disabled = true;
-  if (btnText) btnText.textContent = 'Creating account...';
+  const btnText = submitBtn?.querySelector('.btn-text');
+  if (submitBtn) submitBtn.disabled = true;
+  if (btnText) btnText.textContent = 'Checking availability...';
 
   try {
+    // Pre-Signup Availability Check: query public.profiles for username
+    const { data: existingUser, error: checkErr } = await supabaseClient
+      .from('profiles')
+      .select('id')
+      .eq('username', cleanUsername)
+      .maybeSingle();
+
+    if (checkErr) {
+      console.warn('Username check query warning:', checkErr.message);
+    } else if (existingUser) {
+      showAuthError(dom.signupStatusMsg, `Username @${cleanUsername} is already taken. Please choose another.`);
+      dom.signupUsername?.focus();
+      return;
+    }
+
+    if (btnText) btnText.textContent = 'Creating account...';
+
     const { data, error } = await supabaseClient.auth.signUp({
       email,
       password,
       options: {
         data: {
-          display_name: displayName,
+          username: cleanUsername,
           full_name: displayName,
+          display_name: displayName,
           name: displayName
         }
       }
@@ -789,13 +901,14 @@ async function handleSignUp(e) {
       throw error;
     }
 
-    // Persist displayName immediately to public.profiles table if user was created
-    if (data.user && displayName) {
+    // Persist displayName & username immediately to public.profiles table if user was created
+    if (data.user) {
       try {
         await supabaseClient.from('profiles').upsert({
           id: data.user.id,
           email: data.user.email,
           display_name: displayName,
+          username: cleanUsername,
           role: 'visitor'
         });
       } catch (upsertErr) {
@@ -821,7 +934,7 @@ async function handleSignUp(e) {
     }
     showAuthError(dom.signupStatusMsg, msg);
   } finally {
-    submitBtn.disabled = false;
+    if (submitBtn) submitBtn.disabled = false;
     if (btnText) btnText.textContent = 'Create Account';
   }
 }
@@ -1084,9 +1197,14 @@ function createCardElement(post) {
   // Footer / Read More
   const footer = document.createElement('div');
   footer.className = 'card-footer';
-  const authorName = post.profiles?.display_name || post.author_name || 'Ocean Author';
+  const prof = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
+  const cachedAuthor = post.author_id ? authorProfilesCache.get(post.author_id) : null;
+  const authorName = prof?.display_name || cachedAuthor?.display_name || post.author_name || 'Ocean Author';
+  const authorUsername = prof?.username || cachedAuthor?.username || post.author_username || '';
+  const handle = authorUsername || (authorName ? authorName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '') : 'author');
+
   footer.innerHTML = `
-    <span class="card-footer-author">by ${escapeHtml(authorName)}</span>
+    <span class="card-footer-author" title="${escapeHtml(authorName)}">by <span class="author-handle">@${escapeHtml(handle)}</span></span>
     <span class="read-more-link" aria-hidden="true">
       Read article
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1095,6 +1213,19 @@ function createCardElement(post) {
       </svg>
     </span>
   `;
+
+  if (post.author_id && !authorUsername) {
+    getPostAuthorProfile(post).then(resolvedAuthor => {
+      if (resolvedAuthor) {
+        const resolvedHandle = resolvedAuthor.username || (resolvedAuthor.display_name ? resolvedAuthor.display_name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '') : handle);
+        const authorEl = card.querySelector('.card-footer-author');
+        if (authorEl && resolvedHandle) {
+          authorEl.title = resolvedAuthor.display_name || authorName;
+          authorEl.innerHTML = `by <span class="author-handle">@${escapeHtml(resolvedHandle)}</span>`;
+        }
+      }
+    }).catch(() => {});
+  }
 
   body.appendChild(meta);
   body.appendChild(title);
@@ -1109,6 +1240,7 @@ function createCardElement(post) {
   });
 
   card.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       openArticleView(post);
@@ -1138,16 +1270,17 @@ const authorProfilesCache = new Map();
 /**
  * Resolves the author profile for a given post
  * @param {object} post
- * @returns {Promise<{display_name: string, email: string, avatar_url: string|null}>}
+ * @returns {Promise<{display_name: string, username: string, email: string, avatar_url: string|null}>}
  */
 async function getPostAuthorProfile(post) {
-  if (!post) return { display_name: 'Ocean Author', email: '', avatar_url: null };
+  if (!post) return { display_name: 'Ocean Author', username: '', email: '', avatar_url: null };
 
   // 1. Attached profiles object
   if (post.profiles && typeof post.profiles === 'object') {
     const p = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
     return {
       display_name: p.display_name || post.author_name || 'Ocean Author',
+      username: p.username || '',
       email: p.email || '',
       avatar_url: p.avatar_url || null
     };
@@ -1157,6 +1290,7 @@ async function getPostAuthorProfile(post) {
   if (currentUser && post.author_id && post.author_id === currentUser.id) {
     return {
       display_name: currentProfile?.display_name || currentUser.user_metadata?.display_name || (currentUser.email ? currentUser.email.split('@')[0] : 'Ocean Author'),
+      username: currentProfile?.username || currentUser.user_metadata?.username || '',
       email: currentUser.email || currentProfile?.email || '',
       avatar_url: currentProfile?.avatar_url || currentUser.user_metadata?.avatar_url || null
     };
@@ -1172,13 +1306,14 @@ async function getPostAuthorProfile(post) {
     try {
       const { data, error } = await supabaseClient
         .from('profiles')
-        .select('id, email, display_name, avatar_url')
+        .select('id, email, display_name, username, avatar_url')
         .eq('id', post.author_id)
         .maybeSingle();
 
       if (!error && data) {
         const result = {
           display_name: data.display_name || post.author_name || (data.email ? data.email.split('@')[0] : 'Ocean Author'),
+          username: data.username || '',
           email: data.email || '',
           avatar_url: data.avatar_url || null
         };
@@ -1193,6 +1328,7 @@ async function getPostAuthorProfile(post) {
   // 5. Fallback for demo or unspecified authors
   return {
     display_name: post.author_name || 'Ocean Author',
+    username: post.author_username || '',
     email: post.author_email || '',
     avatar_url: post.author_avatar || null
   };
@@ -1236,11 +1372,22 @@ function setAuthorAvatar(imgEl, fallbackEl, avatarUrl, name) {
  */
 function renderArticleAuthor(author) {
   const name = author?.display_name || 'Ocean Author';
+  const username = author?.username || '';
   const email = author?.email || '';
   const avatarUrl = author?.avatar_url || null;
 
   if (dom.articleAuthorName) {
     dom.articleAuthorName.textContent = name;
+  }
+
+  if (dom.articleAuthorUsername) {
+    if (username) {
+      dom.articleAuthorUsername.textContent = `@${username}`;
+      dom.articleAuthorUsername.classList.remove('hidden');
+    } else {
+      dom.articleAuthorUsername.textContent = '';
+      dom.articleAuthorUsername.classList.add('hidden');
+    }
   }
 
   if (dom.articleAuthorEmail) {
@@ -1310,6 +1457,15 @@ function openArticleView(post, updateHash = true) {
   dom.adminView?.classList.add('hidden');
   dom.profileView?.classList.add('hidden');
   dom.articleView?.classList.remove('hidden');
+
+  // Article admin action buttons
+  if (dom.articleAdminActions) {
+    if (currentUserRole === 'admin') {
+      dom.articleAdminActions.classList.remove('hidden');
+    } else {
+      dom.articleAdminActions.classList.add('hidden');
+    }
+  }
 
   // Load comments
   loadCommentsForPost(post.id);
@@ -1412,7 +1568,7 @@ async function loadCommentsForPost(postId) {
   try {
     const { data, error } = await supabaseClient
       .from('comments')
-      .select('id, post_id, user_id, content, created_at, profiles(display_name, avatar_url)')
+      .select('id, post_id, user_id, content, created_at, profiles(display_name, username, avatar_url)')
       .eq('post_id', postId)
       .order('created_at', { ascending: true });
 
@@ -1430,7 +1586,7 @@ async function loadCommentsForPost(postId) {
         if (userIds.length > 0) {
           const { data: profs } = await supabaseClient
             .from('profiles')
-            .select('id, display_name, avatar_url')
+            .select('id, display_name, username, avatar_url')
             .in('id', userIds);
           if (profs) profs.forEach(p => { profilesMap[p.id] = p; });
         }
@@ -1501,6 +1657,7 @@ function createCommentCardElement(comment) {
 
   const profile = Array.isArray(comment.profiles) ? comment.profiles[0] : comment.profiles;
   const displayName = profile?.display_name || 'Community Member';
+  const username = profile?.username || '';
   const avatarUrl = profile?.avatar_url;
 
   if (avatarUrl && typeof avatarUrl === 'string' && avatarUrl.trim() !== '') {
@@ -1519,15 +1676,30 @@ function createCommentCardElement(comment) {
   const meta = document.createElement('div');
   meta.className = 'comment-meta';
 
+  const authorNameRow = document.createElement('div');
+  authorNameRow.className = 'comment-author-row';
+  authorNameRow.style.display = 'flex';
+  authorNameRow.style.alignItems = 'center';
+  authorNameRow.style.gap = '0.35rem';
+  authorNameRow.style.flexWrap = 'wrap';
+
   const authorName = document.createElement('span');
   authorName.className = 'comment-author-name';
   authorName.textContent = displayName;
+  authorNameRow.appendChild(authorName);
+
+  if (username) {
+    const authorHandle = document.createElement('span');
+    authorHandle.className = 'comment-author-handle';
+    authorHandle.textContent = `@${username}`;
+    authorNameRow.appendChild(authorHandle);
+  }
 
   const time = document.createElement('span');
   time.className = 'comment-time';
   time.textContent = formatDate(comment.created_at);
 
-  meta.appendChild(authorName);
+  meta.appendChild(authorNameRow);
   meta.appendChild(time);
   authorWrap.appendChild(avatar);
   authorWrap.appendChild(meta);
@@ -1661,26 +1833,35 @@ function openAdminView() {
  * FIX 3: Fetch all posts using simple .select('*')
  */
 async function loadAdminPosts() {
-  if (!supabaseClient) return;
-
   if (dom.adminPostsCount) dom.adminPostsCount.textContent = 'Loading...';
   dom.adminRefreshPostsBtn?.classList.add('spinning');
 
   try {
-    const { data, error } = await supabaseClient
-      .from('posts')
-      .select('*')
-      .order('created_at', { ascending: false });
+    if (supabaseClient) {
+      const { data, error } = await supabaseClient
+        .from('posts')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      throw error;
+      if (error) {
+        console.warn('Could not select all posts for admin:', error.message);
+        adminPosts = (allPosts && allPosts.length > 0) ? allPosts : [];
+      } else {
+        adminPosts = (data && data.length > 0) ? data : ((allPosts && allPosts.length > 0) ? allPosts : []);
+      }
+    } else {
+      adminPosts = (allPosts && allPosts.length > 0) ? allPosts : [];
     }
 
-    adminPosts = data || [];
     renderAdminPostsList(adminPosts);
   } catch (err) {
     console.error('Failed to load admin posts:', err);
-    if (dom.adminPostsCount) dom.adminPostsCount.textContent = 'Error loading posts';
+    if (allPosts && allPosts.length > 0) {
+      adminPosts = allPosts;
+      renderAdminPostsList(adminPosts);
+    } else if (dom.adminPostsCount) {
+      dom.adminPostsCount.textContent = 'Error loading posts';
+    }
   } finally {
     dom.adminRefreshPostsBtn?.classList.remove('spinning');
   }
@@ -1813,23 +1994,25 @@ function renderAdminPostsList(posts) {
       </div>
       <h3 class="card-title admin-card-title">${escapeHtml(post.title || 'Untitled Post')}</h3>
       <p class="card-summary admin-card-summary">${escapeHtml(post.summary || 'No summary excerpt provided.')}</p>
-      <div class="admin-card-actions-row">
-        <button type="button" class="admin-action-btn edit-btn" data-id="${post.id}" title="Edit this post in Editor">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
-            <path d="M12 20h9"></path>
-            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-          </svg>
-          <span>Edit</span>
-        </button>
-        <button type="button" class="admin-action-btn delete-btn" data-id="${post.id}" title="Permanently delete post">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
-            <polyline points="3 6 5 6 21 6"></polyline>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-          </svg>
-          <span>Delete</span>
-        </button>
-        <button type="button" class="admin-action-btn view-btn" data-id="${post.id}" title="Preview article in viewer">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+      <div class="card-footer admin-card-footer admin-card-actions-row">
+        <div class="admin-card-actions-group admin-post-actions">
+          <button type="button" class="admin-card-btn admin-action-btn admin-card-btn-edit edit-btn" data-id="${post.id}" title="Edit this post in Editor">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+            <span>Edit</span>
+          </button>
+          <button type="button" class="admin-card-btn admin-action-btn admin-card-btn-delete delete-btn" data-id="${post.id}" title="Permanently delete post">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            <span>Delete</span>
+          </button>
+        </div>
+        <button type="button" class="admin-card-btn admin-action-btn admin-card-btn-view view-btn" data-id="${post.id}" title="Preview article in viewer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13">
             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
             <circle cx="12" cy="12" r="3"></circle>
           </svg>
@@ -1838,17 +2021,26 @@ function renderAdminPostsList(posts) {
       </div>
     `;
 
+    // Only explicit buttons trigger actions; prevent any card-body click from opening the editor
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('button') || e.target.closest('a')) return;
+      e.stopPropagation();
+    });
+
     body.querySelector('.edit-btn')?.addEventListener('click', (e) => {
+      e.preventDefault();
       e.stopPropagation();
       editPost(post.id);
     });
 
     body.querySelector('.delete-btn')?.addEventListener('click', (e) => {
+      e.preventDefault();
       e.stopPropagation();
       deletePost(post.id);
     });
 
     body.querySelector('.view-btn')?.addEventListener('click', (e) => {
+      e.preventDefault();
       e.stopPropagation();
       openArticleView(post);
     });
@@ -1967,7 +2159,7 @@ async function handleAdminPostSubmit(e) {
 }
 
 function editPost(postId) {
-  const post = adminPosts.find(p => p.id === postId);
+  const post = adminPosts.find(p => p.id === postId) || allPosts.find(p => p.id === postId) || (activePost?.id === postId ? activePost : null);
   if (!post) return;
 
   editingPostId = post.id;
@@ -1989,7 +2181,10 @@ function editPost(postId) {
   if (submitText) submitText.textContent = 'Save Changes';
   const bottomSubmitText = dom.adminBottomSubmitBtn?.querySelector('.btn-text');
   if (bottomSubmitText) bottomSubmitText.textContent = 'Save Changes';
-  dom.adminCancelEditBtn.classList.remove('hidden');
+  dom.adminCancelEditBtn?.classList.remove('hidden');
+  dom.adminHeaderDeleteBtn?.classList.remove('hidden');
+  dom.adminDeleteBtn?.classList.remove('hidden');
+  dom.adminBottomDeleteBtn?.classList.remove('hidden');
   if (dom.adminBottomResetBtn) dom.adminBottomResetBtn.textContent = 'Cancel Edit';
 
   updateAdminPreview();
@@ -2011,7 +2206,10 @@ function resetAdminEditor() {
   if (submitText) submitText.textContent = 'Publish Post';
   const bottomSubmitText = dom.adminBottomSubmitBtn?.querySelector('.btn-text');
   if (bottomSubmitText) bottomSubmitText.textContent = 'Publish Post';
-  dom.adminCancelEditBtn.classList.add('hidden');
+  dom.adminCancelEditBtn?.classList.add('hidden');
+  dom.adminHeaderDeleteBtn?.classList.add('hidden');
+  dom.adminDeleteBtn?.classList.add('hidden');
+  dom.adminBottomDeleteBtn?.classList.add('hidden');
   if (dom.adminBottomResetBtn) dom.adminBottomResetBtn.textContent = 'Clear Form';
   updateAdminPreview();
   setEditorTab('write');
@@ -2023,7 +2221,7 @@ async function deletePost(postId) {
     return;
   }
 
-  const post = adminPosts.find(p => p.id === postId);
+  const post = adminPosts.find(p => p.id === postId) || allPosts.find(p => p.id === postId) || (activePost?.id === postId ? activePost : null);
   const title = post ? post.title : 'this post';
 
   if (!confirm(`Are you sure you want to permanently delete "${title}"?`)) {
@@ -2042,8 +2240,13 @@ async function deletePost(postId) {
     if (editingPostId === postId) {
       resetAdminEditor();
     }
-    await loadAdminPosts();
+    if (currentUserRole === 'admin') {
+      await loadAdminPosts();
+    }
     await loadPosts();
+    if (activePost && activePost.id === postId) {
+      returnToHomeView();
+    }
   } catch (err) {
     console.error('Delete post error:', err);
     alert('Failed to delete post: ' + err.message);
@@ -2216,13 +2419,23 @@ function initSplitViewScrollSync() {
  * Updates the live rendered markdown preview in the admin editor
  */
 function updateAdminPreview() {
-  // Update author card in the editor's live preview pane (photo, name, email on left)
+  // Update author card in the editor's live preview pane (photo, name, username, email on left)
   const authorName = currentProfile?.display_name || currentUser?.user_metadata?.display_name || (currentUser?.email ? currentUser.email.split('@')[0] : 'Admin Author');
+  const authorUsername = currentProfile?.username || currentUser?.user_metadata?.username || (currentUser?.email ? currentUser.email.split('@')[0] : 'admin');
   const authorEmail = currentUser?.email || currentProfile?.email || 'admin@oceanverse.dev';
   const authorAvatarUrl = currentProfile?.avatar_url || currentUser?.user_metadata?.avatar_url || '';
 
   if (dom.adminPreviewAuthorName) {
     dom.adminPreviewAuthorName.textContent = authorName;
+  }
+  if (dom.adminPreviewAuthorUsername) {
+    if (authorUsername) {
+      dom.adminPreviewAuthorUsername.textContent = `@${authorUsername}`;
+      dom.adminPreviewAuthorUsername.classList.remove('hidden');
+    } else {
+      dom.adminPreviewAuthorUsername.textContent = '';
+      dom.adminPreviewAuthorUsername.classList.add('hidden');
+    }
   }
   if (dom.adminPreviewAuthorEmail) {
     if (authorEmail) {
@@ -2723,6 +2936,7 @@ async function populateProfileView() {
   // Refresh profile from database or fall back to current session
   const profile = await fetchUserProfile(currentUser.id) || currentProfile || {};
   const displayName = getEffectiveDisplayName(profile, currentUser);
+  const username = getEffectiveUsername(profile, currentUser);
   const avatarUrl = profile.avatar_url || currentUser.user_metadata?.avatar_url || currentProfile?.avatar_url || '';
   const role = (profile.role || currentUserRole || 'visitor').toLowerCase();
   const createdAt = profile.created_at || currentUser.created_at || new Date().toISOString();
@@ -2732,6 +2946,7 @@ async function populateProfileView() {
     id: currentUser.id,
     email: currentUser.email,
     display_name: displayName,
+    username: username,
     avatar_url: avatarUrl,
     role: role,
     created_at: createdAt
@@ -2740,20 +2955,22 @@ async function populateProfileView() {
   const id = currentUser.id;
   const email = currentUser.email || '';
 
-  // Auto-sync intended display name to public.profiles if DB had null or email prefix
+  // Auto-sync intended display name & username to public.profiles if DB had missing/stale values
   const emailPrefix = email ? email.split('@')[0] : '';
-  if (displayName && displayName !== emailPrefix && profile.display_name !== displayName && supabaseClient) {
+  const needsSync = !profile.username || (displayName && displayName !== emailPrefix && profile.display_name !== displayName);
+  if (needsSync && supabaseClient) {
     supabaseClient
       .from('profiles')
       .upsert({
         id: id,
         email: email,
         display_name: displayName,
+        username: username,
         avatar_url: avatarUrl,
         role: role
       })
       .then(({ error }) => {
-        if (error) console.warn('Could not auto-sync profile display_name to DB:', error.message);
+        if (error) console.warn('Could not auto-sync profile to DB:', error.message);
       })
       .catch(err => console.warn('Exception during profile auto-sync:', err));
   }
@@ -2763,6 +2980,10 @@ async function populateProfileView() {
 
   if (dom.profileIdentityName) {
     dom.profileIdentityName.textContent = displayName;
+  }
+
+  if (dom.profileIdentityUsername) {
+    dom.profileIdentityUsername.textContent = username ? `@${username}` : '';
   }
 
   if (dom.profileIdentityEmail) {
@@ -2808,6 +3029,7 @@ async function populateProfileView() {
 
   // Edit Form Fields
   if (dom.profileEditName) dom.profileEditName.value = displayName;
+  if (dom.profileEditUsername) dom.profileEditUsername.value = username;
   if (dom.profileEditAvatar) dom.profileEditAvatar.value = avatarUrl;
   if (dom.profileEditEmail) dom.profileEditEmail.value = email;
   if (dom.profileEditRole) dom.profileEditRole.value = role === 'admin' ? 'Administrator' : 'Visitor';
@@ -2900,12 +3122,26 @@ async function handleProfileFormSubmit(e) {
     return;
   }
 
-  const newDisplayName = dom.profileEditName.value.trim();
-  const newAvatarUrl = dom.profileEditAvatar.value.trim();
+  const newDisplayName = dom.profileEditName?.value?.trim() || '';
+  const rawUsername = dom.profileEditUsername ? dom.profileEditUsername.value.trim() : '';
+  const newUsername = sanitizeUsernameInput(rawUsername);
+  const newAvatarUrl = dom.profileEditAvatar?.value?.trim() || '';
 
   if (!newDisplayName) {
     showProfileError('Display Name cannot be empty.');
     dom.profileEditName?.focus();
+    return;
+  }
+
+  if (!newUsername) {
+    showProfileError('Username cannot be empty.');
+    dom.profileEditUsername?.focus();
+    return;
+  }
+
+  if (!isValidUsername(newUsername)) {
+    showProfileError('Username must be 3–24 characters (lowercase letters, numbers, and underscores only).');
+    dom.profileEditUsername?.focus();
     return;
   }
 
@@ -2916,11 +3152,28 @@ async function handleProfileFormSubmit(e) {
   clearProfileFormMsg();
 
   try {
+    // Pre-save uniqueness check: ensure no other user has this username
+    const { data: existingUser, error: checkErr } = await supabaseClient
+      .from('profiles')
+      .select('id')
+      .eq('username', newUsername)
+      .neq('id', currentUser.id)
+      .maybeSingle();
+
+    if (checkErr) {
+      console.warn('Username uniqueness check warning:', checkErr.message);
+    } else if (existingUser) {
+      showProfileError(`Username @${newUsername} is already taken. Please choose another.`);
+      dom.profileEditUsername?.focus();
+      return;
+    }
+
     // 1. Update/Upsert in public.profiles table
     const profilePayload = {
       id: currentUser.id,
       email: currentUser.email,
       display_name: newDisplayName,
+      username: newUsername,
       avatar_url: newAvatarUrl || null,
       role: currentProfile?.role || currentUserRole || 'visitor'
     };
@@ -2941,6 +3194,8 @@ async function handleProfileFormSubmit(e) {
       await supabaseClient.auth.updateUser({
         data: {
           display_name: newDisplayName,
+          full_name: newDisplayName,
+          username: newUsername,
           avatar_url: newAvatarUrl || null
         }
       });
@@ -2952,6 +3207,7 @@ async function handleProfileFormSubmit(e) {
     currentProfile = updatedProfile || {
       ...currentProfile,
       display_name: newDisplayName,
+      username: newUsername,
       avatar_url: newAvatarUrl || null
     };
     window.currentProfile = currentProfile;
@@ -2961,6 +3217,7 @@ async function handleProfileFormSubmit(e) {
 
     // 5. Update Profile View cards
     if (dom.profileIdentityName) dom.profileIdentityName.textContent = newDisplayName;
+    if (dom.profileIdentityUsername) dom.profileIdentityUsername.textContent = `@${newUsername}`;
     renderProfileLargeAvatar(newDisplayName, newAvatarUrl);
 
     showProfileSuccess('Profile updated successfully!');
@@ -3352,6 +3609,12 @@ function initEventListeners() {
   dom.profileForm?.addEventListener('submit', handleProfileFormSubmit);
   dom.profilePasswordForm?.addEventListener('submit', handleProfilePasswordSubmit);
   dom.profileResetBtn?.addEventListener('click', populateProfileView);
+  dom.profileEditUsername?.addEventListener('input', (e) => {
+    const clean = sanitizeUsernameInput(e.target.value);
+    if (e.target.value !== clean) {
+      e.target.value = clean;
+    }
+  });
 
   // Avatar presets and preview
   document.querySelectorAll('.avatar-preset-pill[data-preset]').forEach(btn => {
@@ -3499,6 +3762,22 @@ function initEventListeners() {
     dom.copyLinkBtn?.click();
   });
 
+  // Article Admin Action Buttons
+  dom.articleAdminEditBtn?.addEventListener('click', () => {
+    if (activePost) {
+      const postId = activePost.id;
+      openAdminView();
+      editPost(postId);
+    }
+  });
+
+  dom.articleAdminDeleteBtn?.addEventListener('click', async () => {
+    if (activePost) {
+      const postId = activePost.id;
+      await deletePost(postId);
+    }
+  });
+
   // Global Floating Scroll to Top
   dom.scrollTopBtn?.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -3539,6 +3818,12 @@ function initEventListeners() {
     e.preventDefault();
     setAuthTab('signin');
   });
+  dom.signupUsername?.addEventListener('input', (e) => {
+    const clean = sanitizeUsernameInput(e.target.value);
+    if (e.target.value !== clean) {
+      e.target.value = clean;
+    }
+  });
   dom.signinForm?.addEventListener('submit', handleSignIn);
   dom.signupForm?.addEventListener('submit', handleSignUp);
   dom.recoverForm?.addEventListener('submit', handleRecoverPassword);
@@ -3565,6 +3850,15 @@ function initEventListeners() {
   dom.adminPostForm?.addEventListener('submit', handleAdminPostSubmit);
   dom.adminResetFormBtn?.addEventListener('click', resetAdminEditor);
   dom.adminCancelEditBtn?.addEventListener('click', resetAdminEditor);
+  dom.adminHeaderDeleteBtn?.addEventListener('click', () => {
+    if (editingPostId) deletePost(editingPostId);
+  });
+  dom.adminDeleteBtn?.addEventListener('click', () => {
+    if (editingPostId) deletePost(editingPostId);
+  });
+  dom.adminBottomDeleteBtn?.addEventListener('click', () => {
+    if (editingPostId) deletePost(editingPostId);
+  });
   dom.adminRefreshPostsBtn?.addEventListener('click', loadAdminPosts);
   dom.adminPaginationPrev?.addEventListener('click', handleAdminPrevPage);
   dom.adminPaginationNext?.addEventListener('click', handleAdminNextPage);
@@ -3679,6 +3973,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initDOM();
   initTheme();
   initEventListeners();
-  await loadPosts();
+  initSupabase();
   await initAuth();
+  await loadPosts();
 });

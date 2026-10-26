@@ -23,7 +23,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=2.2">
 </head>
 <body>
   <!-- Header / Navigation -->
@@ -267,6 +267,7 @@
             <div class="sidebar-section author-byline-section">
               <span class="sidebar-label">Written By</span>
               <h3 id="article-author-name" class="sidebar-author-name">Ocean Author</h3>
+              <span id="article-author-username" class="sidebar-author-username hidden">@author</span>
               <a id="article-author-email" href="" class="sidebar-author-email">author@example.com</a>
             </div>
 
@@ -297,6 +298,22 @@
         <div class="article-main-col">
           <!-- Article Header -->
           <header class="article-header">
+            <div id="article-admin-actions" class="article-admin-actions-bar hidden">
+              <button type="button" id="article-admin-edit-btn" class="card-admin-btn card-edit-btn" title="Edit this post (Admin)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+                <span>Edit Post</span>
+              </button>
+              <button type="button" id="article-admin-delete-btn" class="card-admin-btn card-delete-btn" title="Delete this post (Admin)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                <span>Delete Post</span>
+              </button>
+            </div>
             <h1 id="article-title" class="article-title"></h1>
             <p id="article-summary" class="article-summary-lead"></p>
           </header>
@@ -414,7 +431,16 @@
                 <h2 id="admin-editor-title" class="editor-heading">Create New Post</h2>
                 <span class="field-hint">Post details, cover thumbnail &amp; publishing options</span>
               </div>
-              <button type="button" id="admin-cancel-edit-btn" class="btn-sm btn-ghost hidden">Cancel Edit</button>
+              <div class="editor-header-actions">
+                <button type="button" id="admin-header-delete-btn" class="btn-sm btn-danger hidden" title="Permanently delete this post">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                  <span>Delete Post</span>
+                </button>
+                <button type="button" id="admin-cancel-edit-btn" class="btn-sm btn-ghost hidden">Cancel Edit</button>
+              </div>
             </div>
 
             <div class="admin-form">
@@ -514,6 +540,13 @@
               <div id="admin-form-msg" class="config-status-msg hidden"></div>
 
               <div class="admin-form-actions">
+                <button type="button" id="admin-delete-btn" class="btn-danger btn-sm hidden" title="Permanently delete this post">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                  <span>Delete Post</span>
+                </button>
                 <button type="button" id="admin-reset-form-btn" class="btn-outline">Clear Form</button>
                 <button type="submit" id="admin-submit-btn" class="btn-primary">
                   <span class="btn-text">Publish Post</span>
@@ -621,6 +654,7 @@
                     <div class="sidebar-section author-byline-section">
                       <span class="sidebar-label">Written By</span>
                       <h4 id="admin-preview-author-name" class="sidebar-author-name">Admin</h4>
+                      <span id="admin-preview-author-username" class="sidebar-author-username hidden">@admin</span>
                       <a id="admin-preview-author-email" class="sidebar-author-email" href="">admin@example.com</a>
                     </div>
                   </div>
@@ -634,6 +668,13 @@
             <div class="standalone-content-footer">
               <span class="field-hint">Supports full GitHub Flavored Markdown (headings, lists, quotes, code fences, tables).</span>
               <div class="standalone-footer-actions">
+                <button type="button" id="admin-bottom-delete-btn" class="btn-danger btn-sm hidden" title="Permanently delete this post">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                  <span>Delete Post</span>
+                </button>
                 <button type="button" id="admin-bottom-reset-btn" class="btn-outline btn-sm">Clear Form</button>
                 <button type="submit" id="admin-bottom-submit-btn" class="btn-primary btn-sm">
                   <span class="btn-text">Publish Post</span>
@@ -690,6 +731,7 @@
           </div>
 
           <h2 id="profile-identity-name" class="profile-identity-name">Member</h2>
+          <span id="profile-identity-username" class="profile-identity-username"></span>
           <div class="profile-role-wrap">
             <span id="profile-identity-role" class="role-badge role-visitor">Visitor</span>
           </div>
@@ -792,6 +834,16 @@
                 <label for="profile-edit-name">Display Name <span class="required-star">*</span></label>
                 <input type="text" id="profile-edit-name" placeholder="Your name or handle" required autocomplete="name">
                 <span class="field-hint">Displayed on all your blog comments and articles.</span>
+              </div>
+
+              <!-- Username -->
+              <div class="form-group">
+                <label for="profile-edit-username">Username <span class="required-star">*</span></label>
+                <div class="username-input-wrap">
+                  <span class="username-prefix">@</span>
+                  <input type="text" id="profile-edit-username" placeholder="username" required autocomplete="username" pattern="^[a-z0-9_]{3,24}$" maxlength="24" spellcheck="false" autocapitalize="none">
+                </div>
+                <span class="field-hint">Unique handle across the platform (3–24 characters: a–z, 0–9, _).</span>
               </div>
 
               <!-- Avatar URL -->
@@ -958,8 +1010,17 @@
         </div>
 
         <div class="form-group">
-          <label for="signup-name">Display Name</label>
+          <label for="signup-name">Display Name <span class="required-star">*</span></label>
           <input type="text" id="signup-name" placeholder="Ocean Explorer" required autocomplete="name">
+        </div>
+
+        <div class="form-group">
+          <label for="signup-username">Username <span class="required-star">*</span></label>
+          <div class="username-input-wrap">
+            <span class="username-prefix">@</span>
+            <input type="text" id="signup-username" placeholder="ocean_explorer" required autocomplete="username" pattern="^[a-z0-9_]{3,24}$" maxlength="24" spellcheck="false" autocapitalize="none">
+          </div>
+          <span class="field-hint">3–24 characters: lowercase letters, numbers, and underscores only.</span>
         </div>
 
         <div class="form-group">
@@ -1136,7 +1197,7 @@
   </footer>
 
   <!-- Application Logic -->
-  <script src="app.js"></script>
+  <script src="app.js?v=2.2"></script>
 </body>
 </html>
 
