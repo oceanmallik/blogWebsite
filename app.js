@@ -178,9 +178,17 @@ function initDOM() {
   dom.adminFormMsg = document.getElementById('admin-form-msg');
   dom.adminResetFormBtn = document.getElementById('admin-reset-form-btn');
   dom.adminSubmitBtn = document.getElementById('admin-submit-btn');
+  dom.adminBottomResetBtn = document.getElementById('admin-bottom-reset-btn');
+  dom.adminBottomSubmitBtn = document.getElementById('admin-bottom-submit-btn');
   dom.adminPostsCount = document.getElementById('admin-posts-count');
   dom.adminRefreshPostsBtn = document.getElementById('admin-refresh-posts-btn');
   dom.adminPostsList = document.getElementById('admin-posts-list');
+  dom.adminPagination = document.getElementById('admin-pagination');
+  dom.adminPaginationPrev = document.getElementById('admin-pagination-prev');
+  dom.adminPaginationNext = document.getElementById('admin-pagination-next');
+  dom.adminPageCurrent = document.getElementById('admin-page-current');
+  dom.adminPageTotal = document.getElementById('admin-page-total');
+  dom.adminPageRange = document.getElementById('admin-page-range');
 
   // Auth Modal Elements
   dom.authModal = document.getElementById('auth-modal');
@@ -1677,6 +1685,56 @@ async function loadAdminPosts() {
   }
 }
 
+const ADMIN_POSTS_PER_PAGE = 5;
+let adminCurrentPage = 1;
+
+function updateAdminPagination(totalPosts) {
+  if (!dom.adminPagination) return;
+
+  const totalPages = Math.ceil(totalPosts / ADMIN_POSTS_PER_PAGE) || 1;
+  if (adminCurrentPage > totalPages) {
+    adminCurrentPage = totalPages;
+  }
+  if (adminCurrentPage < 1) {
+    adminCurrentPage = 1;
+  }
+
+  const startIndex = totalPosts === 0 ? 0 : (adminCurrentPage - 1) * ADMIN_POSTS_PER_PAGE + 1;
+  const endIndex = Math.min(adminCurrentPage * ADMIN_POSTS_PER_PAGE, totalPosts);
+
+  if (dom.adminPageCurrent) dom.adminPageCurrent.textContent = adminCurrentPage;
+  if (dom.adminPageTotal) dom.adminPageTotal.textContent = totalPages;
+  if (dom.adminPageRange) {
+    dom.adminPageRange.textContent = totalPosts === 0
+      ? '(0 posts)'
+      : `(${startIndex}–${endIndex} of ${totalPosts})`;
+  }
+
+  if (dom.adminPaginationPrev) {
+    dom.adminPaginationPrev.disabled = adminCurrentPage <= 1;
+  }
+  if (dom.adminPaginationNext) {
+    dom.adminPaginationNext.disabled = adminCurrentPage >= totalPages || totalPosts === 0;
+  }
+}
+
+function handleAdminPrevPage() {
+  if (adminCurrentPage > 1) {
+    adminCurrentPage--;
+    renderAdminPostsList(adminPosts);
+    dom.adminPostsList?.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function handleAdminNextPage() {
+  const totalPages = Math.ceil(adminPosts.length / ADMIN_POSTS_PER_PAGE) || 1;
+  if (adminCurrentPage < totalPages) {
+    adminCurrentPage++;
+    renderAdminPostsList(adminPosts);
+    dom.adminPostsList?.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
 function renderAdminPostsList(posts) {
   if (!dom.adminPostsList) return;
   dom.adminPostsList.innerHTML = '';
@@ -1688,49 +1746,89 @@ function renderAdminPostsList(posts) {
     dom.adminPostsCount.textContent = `${total} total (${published} published, ${drafts} drafts)`;
   }
 
+  updateAdminPagination(total);
+
   if (posts.length === 0) {
     dom.adminPostsList.innerHTML = '<p class="comments-empty">No posts found in database.</p>';
     return;
   }
 
+  const totalPages = Math.ceil(total / ADMIN_POSTS_PER_PAGE) || 1;
+  if (adminCurrentPage > totalPages) adminCurrentPage = totalPages;
+  if (adminCurrentPage < 1) adminCurrentPage = 1;
+
+  const startIndex = (adminCurrentPage - 1) * ADMIN_POSTS_PER_PAGE;
+  const pagePosts = posts.slice(startIndex, startIndex + ADMIN_POSTS_PER_PAGE);
+
   const fragment = document.createDocumentFragment();
 
-  posts.forEach(post => {
-    const item = document.createElement('div');
-    item.className = 'admin-post-item';
-    item.dataset.id = post.id;
+  pagePosts.forEach(post => {
+    const card = document.createElement('article');
+    card.className = 'post-card admin-post-card';
+    card.dataset.id = post.id;
 
     const isPublished = Boolean(post.is_published);
     const statusClass = isPublished ? 'status-published' : 'status-draft';
     const statusText = isPublished ? 'Published' : 'Draft';
 
-    item.innerHTML = `
-      <div class="admin-post-header">
-        <h3 class="admin-post-title">${escapeHtml(post.title || 'Untitled Post')}</h3>
-        <span class="status-badge ${statusClass}">${statusText}</span>
+    // Thumbnail Wrap (matching homescreen .card-image-wrap)
+    const thumbWrap = document.createElement('div');
+    thumbWrap.className = 'card-image-wrap admin-card-image-wrap';
+
+    const statusBadge = document.createElement('span');
+    statusBadge.className = `status-badge ${statusClass} admin-card-badge`;
+    statusBadge.textContent = statusText;
+
+    if (post.cover_image && typeof post.cover_image === 'string' && post.cover_image.trim() !== '') {
+      const img = document.createElement('img');
+      img.className = 'card-image';
+      img.src = post.cover_image;
+      img.alt = post.title || 'Post thumbnail';
+      img.loading = 'lazy';
+      img.onerror = () => {
+        thumbWrap.innerHTML = getPlaceholderIconSvg();
+        thumbWrap.appendChild(statusBadge);
+      };
+      thumbWrap.appendChild(img);
+    } else {
+      thumbWrap.innerHTML = getPlaceholderIconSvg();
+    }
+    thumbWrap.appendChild(statusBadge);
+
+    // Card Body
+    const body = document.createElement('div');
+    body.className = 'card-body admin-card-body';
+
+    const readingTime = calculateReadingTime(post.content || post.summary || '');
+    const dateFormatted = formatDate(post.created_at);
+
+    body.innerHTML = `
+      <div class="card-meta">
+        <span class="card-date">${dateFormatted}</span>
+        <span class="card-dot">•</span>
+        <span class="card-reading-time">${readingTime}</span>
+        <span class="card-dot">•</span>
+        <code class="admin-slug-chip" title="/${escapeHtml(post.slug || 'no-slug')}">/${escapeHtml(post.slug || 'no-slug')}</code>
       </div>
-      <div class="admin-post-meta">
-        <span>Slug: <code>${escapeHtml(post.slug || 'no-slug')}</code></span>
-        <span>•</span>
-        <span>${formatDate(post.created_at)}</span>
-      </div>
-      <div class="admin-post-actions">
-        <button type="button" class="admin-action-btn edit-btn" data-id="${post.id}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <h3 class="card-title admin-card-title">${escapeHtml(post.title || 'Untitled Post')}</h3>
+      <p class="card-summary admin-card-summary">${escapeHtml(post.summary || 'No summary excerpt provided.')}</p>
+      <div class="admin-card-actions-row">
+        <button type="button" class="admin-action-btn edit-btn" data-id="${post.id}" title="Edit this post in Editor">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
             <path d="M12 20h9"></path>
             <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
           </svg>
           <span>Edit</span>
         </button>
-        <button type="button" class="admin-action-btn delete-btn" data-id="${post.id}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <button type="button" class="admin-action-btn delete-btn" data-id="${post.id}" title="Permanently delete post">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
             <polyline points="3 6 5 6 21 6"></polyline>
             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
           </svg>
           <span>Delete</span>
         </button>
-        <button type="button" class="admin-action-btn view-btn" data-id="${post.id}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <button type="button" class="admin-action-btn view-btn" data-id="${post.id}" title="Preview article in viewer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
             <circle cx="12" cy="12" r="3"></circle>
           </svg>
@@ -1739,11 +1837,24 @@ function renderAdminPostsList(posts) {
       </div>
     `;
 
-    item.querySelector('.edit-btn').addEventListener('click', () => editPost(post.id));
-    item.querySelector('.delete-btn').addEventListener('click', () => deletePost(post.id));
-    item.querySelector('.view-btn').addEventListener('click', () => openArticleView(post));
+    body.querySelector('.edit-btn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      editPost(post.id);
+    });
 
-    fragment.appendChild(item);
+    body.querySelector('.delete-btn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deletePost(post.id);
+    });
+
+    body.querySelector('.view-btn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openArticleView(post);
+    });
+
+    card.appendChild(thumbWrap);
+    card.appendChild(body);
+    fragment.appendChild(card);
   });
 
   dom.adminPostsList.appendChild(fragment);
@@ -1785,7 +1896,10 @@ async function handleAdminPostSubmit(e) {
   const submitBtn = dom.adminSubmitBtn;
   const btnText = submitBtn.querySelector('.btn-text');
   submitBtn.disabled = true;
+  if (dom.adminBottomSubmitBtn) dom.adminBottomSubmitBtn.disabled = true;
   if (btnText) btnText.textContent = 'Saving...';
+  const bottomBtnText = dom.adminBottomSubmitBtn?.querySelector('.btn-text');
+  if (bottomBtnText) bottomBtnText.textContent = 'Saving...';
 
   try {
     if (editingPostId) {
@@ -1834,6 +1948,7 @@ async function handleAdminPostSubmit(e) {
 
       showAdminMsg('Post created successfully!', 'success');
       resetAdminEditor();
+      adminCurrentPage = 1;
     }
 
     await loadAdminPosts();
@@ -1843,7 +1958,10 @@ async function handleAdminPostSubmit(e) {
     showAdminMsg(err.message || 'Failed to save post.', 'error');
   } finally {
     submitBtn.disabled = false;
-    if (btnText) btnText.textContent = editingPostId ? 'Save Changes' : 'Publish Post';
+    if (dom.adminBottomSubmitBtn) dom.adminBottomSubmitBtn.disabled = false;
+    const actionLabel = editingPostId ? 'Save Changes' : 'Publish Post';
+    if (btnText) btnText.textContent = actionLabel;
+    if (bottomBtnText) bottomBtnText.textContent = actionLabel;
   }
 }
 
@@ -1866,8 +1984,12 @@ function editPost(postId) {
   }
 
   dom.adminEditorTitle.textContent = `Edit Post: ${post.title || 'Untitled'}`;
-  dom.adminSubmitBtn.querySelector('.btn-text').textContent = 'Save Changes';
+  const submitText = dom.adminSubmitBtn?.querySelector('.btn-text');
+  if (submitText) submitText.textContent = 'Save Changes';
+  const bottomSubmitText = dom.adminBottomSubmitBtn?.querySelector('.btn-text');
+  if (bottomSubmitText) bottomSubmitText.textContent = 'Save Changes';
   dom.adminCancelEditBtn.classList.remove('hidden');
+  if (dom.adminBottomResetBtn) dom.adminBottomResetBtn.textContent = 'Cancel Edit';
 
   updateAdminPreview();
 
@@ -1884,8 +2006,12 @@ function resetAdminEditor() {
   }
   clearCoverImage();
   dom.adminEditorTitle.textContent = 'Create New Post';
-  dom.adminSubmitBtn.querySelector('.btn-text').textContent = 'Publish Post';
+  const submitText = dom.adminSubmitBtn?.querySelector('.btn-text');
+  if (submitText) submitText.textContent = 'Publish Post';
+  const bottomSubmitText = dom.adminBottomSubmitBtn?.querySelector('.btn-text');
+  if (bottomSubmitText) bottomSubmitText.textContent = 'Publish Post';
   dom.adminCancelEditBtn.classList.add('hidden');
+  if (dom.adminBottomResetBtn) dom.adminBottomResetBtn.textContent = 'Clear Form';
   updateAdminPreview();
   setEditorTab('write');
 }
@@ -2011,6 +2137,79 @@ function renderMarkdown(rawText) {
 // ============================================================================
 
 let currentEditorTab = 'write';
+let activeSplitScrollSource = null;
+let splitScrollTimeout = null;
+
+/**
+ * Synchronizes scroll position from writing textarea to live preview pane
+ */
+function syncSplitScroll() {
+  if (!dom.editorViewContainer?.classList.contains('split-view')) return;
+  const writeTextarea = dom.adminContent;
+  const previewPane = dom.editorPreviewPane;
+  if (!writeTextarea || !previewPane) return;
+
+  const writeScrollable = writeTextarea.scrollHeight - writeTextarea.clientHeight;
+  if (writeScrollable > 0) {
+    const scrollRatio = writeTextarea.scrollTop / writeScrollable;
+    const previewScrollable = previewPane.scrollHeight - previewPane.clientHeight;
+    if (previewScrollable > 0) {
+      previewPane.scrollTop = scrollRatio * previewScrollable;
+    }
+  }
+}
+
+/**
+ * Initializes bidirectional linked scrolling between writing pane and live preview pane
+ */
+function initSplitViewScrollSync() {
+  const writeTextarea = dom.adminContent;
+  const previewPane = dom.editorPreviewPane;
+
+  if (!writeTextarea || !previewPane) return;
+
+  // 1. Write textarea scroll -> moves preview pane smoothly
+  writeTextarea.addEventListener('scroll', () => {
+    if (!dom.editorViewContainer?.classList.contains('split-view')) return;
+    if (activeSplitScrollSource === 'preview') return;
+    activeSplitScrollSource = 'write';
+    clearTimeout(splitScrollTimeout);
+
+    const writeScrollable = writeTextarea.scrollHeight - writeTextarea.clientHeight;
+    if (writeScrollable > 0) {
+      const scrollRatio = writeTextarea.scrollTop / writeScrollable;
+      const previewScrollable = previewPane.scrollHeight - previewPane.clientHeight;
+      if (previewScrollable > 0) {
+        previewPane.scrollTop = scrollRatio * previewScrollable;
+      }
+    }
+
+    splitScrollTimeout = setTimeout(() => {
+      activeSplitScrollSource = null;
+    }, 60);
+  }, { passive: true });
+
+  // 2. Preview pane scroll -> moves write textarea smoothly
+  previewPane.addEventListener('scroll', () => {
+    if (!dom.editorViewContainer?.classList.contains('split-view')) return;
+    if (activeSplitScrollSource === 'write') return;
+    activeSplitScrollSource = 'preview';
+    clearTimeout(splitScrollTimeout);
+
+    const previewScrollable = previewPane.scrollHeight - previewPane.clientHeight;
+    if (previewScrollable > 0) {
+      const scrollRatio = previewPane.scrollTop / previewScrollable;
+      const writeScrollable = writeTextarea.scrollHeight - writeTextarea.clientHeight;
+      if (writeScrollable > 0) {
+        writeTextarea.scrollTop = scrollRatio * writeScrollable;
+      }
+    }
+
+    splitScrollTimeout = setTimeout(() => {
+      activeSplitScrollSource = null;
+    }, 60);
+  }, { passive: true });
+}
 
 /**
  * Updates the live rendered markdown preview in the admin editor
@@ -2043,6 +2242,11 @@ function updateAdminPreview() {
     return;
   }
   dom.adminContentPreview.innerHTML = renderMarkdown(dom.adminContent.value);
+
+  // If in split view, sync preview scroll to follow cursor/writing scroll position
+  if (dom.editorViewContainer?.classList.contains('split-view')) {
+    requestAnimationFrame(syncSplitScroll);
+  }
 }
 
 /**
@@ -2065,6 +2269,7 @@ function setEditorTab(tab) {
     dom.editorToggleSplit?.classList.add('active');
 
     updateAdminPreview();
+    setTimeout(syncSplitScroll, 50);
   } else if (tab === 'preview') {
     dom.editorViewContainer.classList.remove('split-view');
     dom.editorWritePane?.classList.add('hidden');
@@ -3352,6 +3557,8 @@ function initEventListeners() {
   dom.adminResetFormBtn?.addEventListener('click', resetAdminEditor);
   dom.adminCancelEditBtn?.addEventListener('click', resetAdminEditor);
   dom.adminRefreshPostsBtn?.addEventListener('click', loadAdminPosts);
+  dom.adminPaginationPrev?.addEventListener('click', handleAdminPrevPage);
+  dom.adminPaginationNext?.addEventListener('click', handleAdminNextPage);
   dom.adminGenerateSlug?.addEventListener('click', () => {
     if (dom.adminSlug && dom.adminTitle) {
       dom.adminSlug.value = generateSlugFromText(dom.adminTitle.value);
@@ -3432,7 +3639,7 @@ function initEventListeners() {
     }
   });
 
-  // Admin Markdown Editor Tabs & Live Preview
+  // Admin Markdown Editor Tabs, Live Preview & Synchronized Scrolling
   dom.editorTabWrite?.addEventListener('click', () => setEditorTab('write'));
   dom.editorTabPreview?.addEventListener('click', () => setEditorTab('preview'));
   dom.editorToggleSplit?.addEventListener('click', toggleEditorSplit);
@@ -3441,6 +3648,8 @@ function initEventListeners() {
       updateAdminPreview();
     }
   });
+  dom.adminBottomResetBtn?.addEventListener('click', resetAdminEditor);
+  initSplitViewScrollSync();
 
   // Escape key closes open modals
   window.addEventListener('keydown', (e) => {
