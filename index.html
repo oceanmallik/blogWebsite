@@ -401,6 +401,24 @@
               <span class="field-hint">Direct image URL (e.g. Unsplash or hosted image link).</span>
             </div>
 
+            <!-- Publication Date (Backdate Option) -->
+            <div class="form-group admin-date-group">
+              <div class="label-with-action">
+                <label for="admin-custom-date">Publication Date (Backdate / Custom Date)</label>
+                <button type="button" id="admin-clear-date-btn" class="btn-text-action">Reset to Current</button>
+              </div>
+              <input type="datetime-local" id="admin-custom-date" class="admin-date-input">
+              <div class="date-presets-bar">
+                <span class="date-presets-label">Quick set:</span>
+                <button type="button" class="date-preset-pill" data-days="0">Now</button>
+                <button type="button" class="date-preset-pill" data-days="1">Yesterday</button>
+                <button type="button" class="date-preset-pill" data-days="7">1 Week Ago</button>
+                <button type="button" class="date-preset-pill" data-days="30">1 Month Ago</button>
+                <button type="button" class="date-preset-pill" data-days="365">1 Year Ago</button>
+              </div>
+              <span class="field-hint">Select a previous date to backdate this post, or leave blank to use the current date &amp; time.</span>
+            </div>
+
             <div class="form-group admin-content-group">
               <div class="editor-tabs-bar">
                 <label for="admin-content" class="editor-tabs-label">Article Content (Markdown)</label>

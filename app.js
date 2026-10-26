@@ -157,6 +157,8 @@ function initDOM() {
   dom.adminGenerateSlug = document.getElementById('admin-generate-slug');
   dom.adminSummary = document.getElementById('admin-summary');
   dom.adminCoverImage = document.getElementById('admin-cover-image');
+  dom.adminCustomDate = document.getElementById('admin-custom-date');
+  dom.adminClearDateBtn = document.getElementById('admin-clear-date-btn');
   dom.adminContent = document.getElementById('admin-content');
   dom.adminIsPublished = document.getElementById('admin-is-published');
   dom.adminFormMsg = document.getElementById('admin-form-msg');
@@ -1603,6 +1605,15 @@ async function handleAdminPostSubmit(e) {
     dom.adminSlug.value = slug;
   }
 
+  const customDateVal = dom.adminCustomDate?.value;
+  let customCreatedAt = null;
+  if (customDateVal) {
+    const parsedDate = new Date(customDateVal);
+    if (!isNaN(parsedDate.getTime())) {
+      customCreatedAt = parsedDate.toISOString();
+    }
+  }
+
   const submitBtn = dom.adminSubmitBtn;
   const btnText = submitBtn.querySelector('.btn-text');
   submitBtn.disabled = true;
@@ -1610,16 +1621,21 @@ async function handleAdminPostSubmit(e) {
 
   try {
     if (editingPostId) {
+      const updatePayload = {
+        title,
+        slug,
+        summary,
+        cover_image,
+        content,
+        is_published
+      };
+      if (customCreatedAt) {
+        updatePayload.created_at = customCreatedAt;
+      }
+
       const { data, error } = await supabaseClient
         .from('posts')
-        .update({
-          title,
-          slug,
-          summary,
-          cover_image,
-          content,
-          is_published
-        })
+        .update(updatePayload)
         .eq('id', editingPostId)
         .select();
 
@@ -1628,17 +1644,22 @@ async function handleAdminPostSubmit(e) {
       showAdminMsg('Post updated successfully!', 'success');
       resetAdminEditor();
     } else {
+      const insertPayload = {
+        title,
+        slug,
+        summary,
+        cover_image,
+        content,
+        is_published,
+        author_id: currentUser ? currentUser.id : null
+      };
+      if (customCreatedAt) {
+        insertPayload.created_at = customCreatedAt;
+      }
+
       const { data, error } = await supabaseClient
         .from('posts')
-        .insert({
-          title,
-          slug,
-          summary,
-          cover_image,
-          content,
-          is_published,
-          author_id: currentUser ? currentUser.id : null
-        })
+        .insert(insertPayload)
         .select();
 
       if (error) throw error;
@@ -1670,6 +1691,9 @@ function editPost(postId) {
   dom.adminCoverImage.value = post.cover_image || '';
   dom.adminContent.value = post.content || '';
   dom.adminIsPublished.checked = Boolean(post.is_published);
+  if (dom.adminCustomDate) {
+    dom.adminCustomDate.value = post.created_at ? formatDatetimeLocal(post.created_at) : '';
+  }
 
   dom.adminEditorTitle.textContent = `Edit Post: ${post.title || 'Untitled'}`;
   dom.adminSubmitBtn.querySelector('.btn-text').textContent = 'Save Changes';
@@ -1685,6 +1709,9 @@ function resetAdminEditor() {
   dom.adminPostId.value = '';
   dom.adminPostForm.reset();
   dom.adminIsPublished.checked = true;
+  if (dom.adminCustomDate) {
+    dom.adminCustomDate.value = '';
+  }
   dom.adminEditorTitle.textContent = 'Create New Post';
   dom.adminSubmitBtn.querySelector('.btn-text').textContent = 'Publish Post';
   dom.adminCancelEditBtn.classList.add('hidden');
@@ -1899,6 +1926,26 @@ function formatDate(isoString) {
       month: 'short',
       day: 'numeric'
     });
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Formats a Date or ISO string into YYYY-MM-DDTHH:mm format for datetime-local inputs
+ */
+function formatDatetimeLocal(date) {
+  if (!date) return '';
+  try {
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return '';
+    const pad = (n) => String(n).padStart(2, '0');
+    const year = d.getFullYear();
+    const month = pad(d.getMonth() + 1);
+    const day = pad(d.getDate());
+    const hours = pad(d.getHours());
+    const minutes = pad(d.getMinutes());
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
   } catch {
     return '';
   }
@@ -2568,6 +2615,24 @@ function initEventListeners() {
   dom.adminTitle?.addEventListener('input', () => {
     if (!editingPostId && dom.adminSlug && !dom.adminSlug.value) {
       dom.adminSlug.value = generateSlugFromText(dom.adminTitle.value);
+    }
+  });
+
+  // Admin Custom Date Presets & Clear
+  document.querySelectorAll('.date-preset-pill[data-days]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const days = parseInt(btn.getAttribute('data-days'), 10) || 0;
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() - days);
+      if (dom.adminCustomDate) {
+        dom.adminCustomDate.value = formatDatetimeLocal(targetDate);
+      }
+    });
+  });
+
+  dom.adminClearDateBtn?.addEventListener('click', () => {
+    if (dom.adminCustomDate) {
+      dom.adminCustomDate.value = '';
     }
   });
 
