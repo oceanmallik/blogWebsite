@@ -1975,6 +1975,208 @@ textarea::placeholder {
 
 .btn-text-action:hover { color: var(--accent-coral); }
 
+.btn-text-action.danger {
+  color: var(--accent-coral);
+}
+
+.btn-text-action.danger:hover {
+  text-decoration: underline;
+}
+
+/* Cover Image Hybrid & WebP Compressor */
+.admin-cover-group.drag-active {
+  outline: 2px dashed var(--ocean-primary);
+  outline-offset: 4px;
+}
+
+.cover-input-hybrid-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.cover-input-hybrid-row .cover-url-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cover-upload-wrapper {
+  flex: 0 0 auto;
+  display: flex;
+}
+
+.upload-thumbnail-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  padding: 0.65rem 0.95rem;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.upload-thumbnail-btn:hover {
+  background: var(--accent-lime);
+  color: #0A0A0A;
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.upload-thumbnail-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px #0A0A0A;
+}
+
+[data-theme="dark"] .upload-thumbnail-btn:active {
+  box-shadow: 1px 1px 0px #FFFEF0;
+}
+
+.upload-thumbnail-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: var(--shadow-xs);
+}
+
+/* Status Badge for Compression Savings & Upload Progress */
+.cover-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 0.4rem 0.75rem;
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-xs);
+  margin-top: 0.35rem;
+  width: fit-content;
+  max-width: 100%;
+  word-break: break-word;
+  animation: fadeIn 0.15s ease-in;
+}
+
+.cover-status-badge.loading {
+  background: var(--accent-yellow);
+  color: #0A0A0A;
+}
+
+.cover-status-badge.success {
+  background: var(--accent-lime);
+  color: #0A0A0A;
+}
+
+.cover-status-badge.error {
+  background: var(--accent-coral);
+  color: #FFFFFF;
+}
+
+.cover-status-badge.info {
+  background: var(--accent-blue);
+  color: #FFFFFF;
+}
+
+/* Live Image Preview Box */
+.cover-preview-box {
+  margin-top: 0.5rem;
+  border: var(--border-width) solid var(--border-color);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+}
+
+.cover-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.75rem;
+  background: var(--bg-elevated);
+  border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.cover-preview-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.cover-preview-media {
+  max-height: 240px;
+  min-height: 120px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-elevated);
+}
+
+.cover-preview-media img {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  display: block;
+}
+
+.cover-preview-box.preview-error .cover-preview-media::after {
+  content: 'Unable to load image preview from this URL';
+  display: block;
+  padding: 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--accent-coral);
+  font-weight: 700;
+  text-align: center;
+}
+
+.cover-preview-box.preview-error img {
+  display: none;
+}
+
+.spinner-small {
+  width: 13px;
+  height: 13px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 640px) {
+  .cover-input-hybrid-row {
+    flex-direction: column;
+  }
+  .upload-thumbnail-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* Date Presets & Picker */
 .date-presets-bar {
   display: flex;

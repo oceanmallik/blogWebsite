@@ -156,7 +156,15 @@ function initDOM() {
   dom.adminSlug = document.getElementById('admin-slug');
   dom.adminGenerateSlug = document.getElementById('admin-generate-slug');
   dom.adminSummary = document.getElementById('admin-summary');
+  dom.adminCoverGroup = document.getElementById('admin-cover-group');
   dom.adminCoverImage = document.getElementById('admin-cover-image');
+  dom.adminCoverFile = document.getElementById('admin-cover-file');
+  dom.adminUploadBtn = document.getElementById('admin-upload-btn');
+  dom.adminCoverStatus = document.getElementById('admin-cover-status');
+  dom.adminCoverPreview = document.getElementById('admin-cover-preview');
+  dom.adminCoverPreviewImg = document.getElementById('admin-cover-preview-img');
+  dom.adminCoverRemoveBtn = document.getElementById('admin-cover-remove-btn');
+  dom.adminCoverClearBtn = document.getElementById('admin-cover-clear-btn');
   dom.adminCustomDate = document.getElementById('admin-custom-date');
   dom.adminClearDateBtn = document.getElementById('admin-clear-date-btn');
   dom.adminContent = document.getElementById('admin-content');
@@ -1689,6 +1697,8 @@ function editPost(postId) {
   dom.adminSlug.value = post.slug || '';
   dom.adminSummary.value = post.summary || '';
   dom.adminCoverImage.value = post.cover_image || '';
+  updateCoverPreview(post.cover_image || '');
+  hideCoverStatus();
   dom.adminContent.value = post.content || '';
   dom.adminIsPublished.checked = Boolean(post.is_published);
   if (dom.adminCustomDate) {
@@ -1712,6 +1722,7 @@ function resetAdminEditor() {
   if (dom.adminCustomDate) {
     dom.adminCustomDate.value = '';
   }
+  clearCoverImage();
   dom.adminEditorTitle.textContent = 'Create New Post';
   dom.adminSubmitBtn.querySelector('.btn-text').textContent = 'Publish Post';
   dom.adminCancelEditBtn.classList.add('hidden');
@@ -1913,8 +1924,258 @@ function toggleEditorSplit() {
 }
 
 // ============================================================================
+// 10C. ADMIN COVER IMAGE: WEBP COMPRESSOR & SUPABASE STORAGE UPLOADER
+// ============================================================================
+
+/**
+ * Client-Side HTML5 Canvas WebP Compression
+ * 1. Loads image into an Image object via URL.createObjectURL(file).
+ * 2. Calculates new dimensions: max 1200px width, max 800px height (preserving aspect ratio; no upscaling).
+ * 3. Draws image onto HTML5 <canvas> and converts to WebP Blob via canvas.toBlob(callback, 'image/webp', 0.82).
+ * @param {File} file
+ * @returns {Promise<Blob>}
+ */
+function compressToWebP(file) {
+  return new Promise((resolve, reject) => {
+    if (!file || !file.type.startsWith('image/')) {
+      return reject(new Error('Selected file is not an image.'));
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      const MAX_WIDTH = 1200;
+      const MAX_HEIGHT = 800;
+
+      let width = img.naturalWidth || img.width;
+      let height = img.naturalHeight || img.height;
+
+      // Preserve aspect ratio; do not upscale smaller images
+      if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+        const ratio = Math.min(MAX_WIDTH / width, MAX_HEIGHT / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        return reject(new Error('Canvas 2D context is not available.'));
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            return reject(new Error('Canvas WebP compression failed.'));
+          }
+          blob.originalSize = file.size;
+          blob.compressedSize = blob.size;
+          blob.width = width;
+          blob.height = height;
+          resolve(blob);
+        },
+        'image/webp',
+        0.82
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Failed to load image file into memory.'));
+    };
+
+    img.src = objectUrl;
+  });
+}
+
+/**
+ * Handles compressing and uploading a thumbnail image to Supabase Storage ('blog-images' bucket)
+ * @param {File} file
+ */
+async function handleCoverImageUpload(file) {
+  if (!file) return;
+
+  if (currentUserRole !== 'admin' || !supabaseClient) {
+    showCoverStatus('Unauthorized: Admin role required to upload images.', 'error');
+    return;
+  }
+
+  const uploadBtn = dom.adminUploadBtn;
+  const originalBtnHtml = uploadBtn ? uploadBtn.innerHTML : '';
+  if (uploadBtn) {
+    uploadBtn.disabled = true;
+    uploadBtn.innerHTML = `
+      <span class="spinner-small" aria-hidden="true"></span>
+      <span>Compressing...</span>
+    `;
+  }
+  showCoverStatus('Compressing image to WebP (max 1200×800)...', 'loading');
+
+  try {
+    // 1. Compress to WebP via HTML5 Canvas
+    const webpBlob = await compressToWebP(file);
+
+    if (uploadBtn) {
+      uploadBtn.innerHTML = `
+        <span class="spinner-small" aria-hidden="true"></span>
+        <span>Uploading...</span>
+      `;
+    }
+    showCoverStatus('Uploading to Supabase Storage...', 'loading');
+
+    // 2. Sanitize original file name (lowercase, alphanumeric + hyphens only)
+    const rawName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+    const cleanName = rawName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'thumbnail';
+
+    const filePath = `thumbnails/${Date.now()}-${cleanName}.webp`;
+
+    // 3. Upload WebP Blob to Supabase Storage ('blog-images' bucket)
+    const { data: uploadData, error: uploadError } = await supabaseClient
+      .storage
+      .from('blog-images')
+      .upload(filePath, webpBlob, {
+        contentType: 'image/webp',
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    // 4. Get public URL
+    const { data: publicData } = supabaseClient
+      .storage
+      .from('blog-images')
+      .getPublicUrl(filePath);
+
+    const publicUrl = publicData?.publicUrl;
+    if (!publicUrl) {
+      throw new Error('Could not retrieve public URL for uploaded WebP image.');
+    }
+
+    // 5. Automatically set cover_image input value and show live preview
+    if (dom.adminCoverImage) {
+      dom.adminCoverImage.value = publicUrl;
+    }
+    updateCoverPreview(publicUrl);
+
+    // 6. Display status badge with compression savings
+    const origFormatted = formatFileSize(file.size);
+    const compFormatted = formatFileSize(webpBlob.size);
+    showCoverStatus(`Compressed: ${origFormatted} → ${compFormatted} (.webp) — Uploaded!`, 'success');
+  } catch (err) {
+    console.error('Thumbnail upload error:', err);
+    let errMsg = err.message || 'Failed to upload image.';
+    if (errMsg.toLowerCase().includes('bucket not found')) {
+      errMsg = "Storage bucket 'blog-images' not found. Please create the public 'blog-images' bucket in Supabase.";
+    }
+    showCoverStatus(`Upload failed: ${errMsg}`, 'error');
+  } finally {
+    if (uploadBtn) {
+      uploadBtn.disabled = false;
+      uploadBtn.innerHTML = originalBtnHtml;
+    }
+    if (dom.adminCoverFile) {
+      dom.adminCoverFile.value = '';
+    }
+  }
+}
+
+/**
+ * Displays status badge message with optional type styling
+ * @param {string} message
+ * @param {'loading'|'success'|'error'|'info'} type
+ */
+function showCoverStatus(message, type = 'info') {
+  if (!dom.adminCoverStatus) return;
+
+  dom.adminCoverStatus.className = `cover-status-badge ${type}`;
+
+  let iconSvg = '';
+  if (type === 'loading') {
+    iconSvg = `<span class="spinner-small" aria-hidden="true"></span>`;
+  } else if (type === 'success') {
+    iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+  } else if (type === 'error') {
+    iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+  }
+
+  dom.adminCoverStatus.innerHTML = `${iconSvg}<span>${message}</span>`;
+  dom.adminCoverStatus.classList.remove('hidden');
+}
+
+/**
+ * Hides the cover image status badge
+ */
+function hideCoverStatus() {
+  if (!dom.adminCoverStatus) return;
+  dom.adminCoverStatus.classList.add('hidden');
+  dom.adminCoverStatus.innerHTML = '';
+}
+
+/**
+ * Updates the live image preview box whenever a URL is pasted or a file is uploaded
+ * @param {string} [forceUrl]
+ */
+function updateCoverPreview(forceUrl) {
+  const url = (typeof forceUrl === 'string' ? forceUrl : dom.adminCoverImage?.value || '').trim();
+
+  if (!dom.adminCoverPreview || !dom.adminCoverPreviewImg) return;
+
+  if (!url) {
+    dom.adminCoverPreview.classList.add('hidden');
+    dom.adminCoverPreviewImg.src = '';
+    dom.adminCoverPreview.classList.remove('preview-error');
+    if (dom.adminCoverClearBtn) dom.adminCoverClearBtn.classList.add('hidden');
+    return;
+  }
+
+  dom.adminCoverPreview.classList.remove('preview-error');
+  dom.adminCoverPreviewImg.src = url;
+  dom.adminCoverPreview.classList.remove('hidden');
+  if (dom.adminCoverClearBtn) dom.adminCoverClearBtn.classList.remove('hidden');
+}
+
+/**
+ * Clears the cover image input, preview box, file input, and status badge
+ */
+function clearCoverImage() {
+  if (dom.adminCoverImage) dom.adminCoverImage.value = '';
+  if (dom.adminCoverFile) dom.adminCoverFile.value = '';
+  updateCoverPreview('');
+  hideCoverStatus();
+}
+
+// ============================================================================
 // 11. HELPERS & FORMATTING
 // ============================================================================
+
+/**
+ * Formats a file size in bytes to a human-readable string (e.g. 3.4 MB, 74 KB)
+ * @param {number} bytes
+ * @returns {string}
+ */
+function formatFileSize(bytes) {
+  if (typeof bytes !== 'number' || isNaN(bytes) || bytes <= 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  if (i === 0) return `${bytes} B`;
+  const val = bytes / Math.pow(k, i);
+  return `${val < 10 ? val.toFixed(1) : Math.round(val)} ${sizes[i]}`;
+}
 
 function formatDate(isoString) {
   if (!isoString) return '';
@@ -2633,6 +2894,57 @@ function initEventListeners() {
   dom.adminClearDateBtn?.addEventListener('click', () => {
     if (dom.adminCustomDate) {
       dom.adminCustomDate.value = '';
+    }
+  });
+
+  // Admin Cover Image URL input & Live Preview
+  dom.adminCoverImage?.addEventListener('input', () => updateCoverPreview());
+  dom.adminCoverImage?.addEventListener('change', () => updateCoverPreview());
+
+  // Admin Cover Image Upload (Auto-WebP)
+  dom.adminUploadBtn?.addEventListener('click', () => {
+    dom.adminCoverFile?.click();
+  });
+
+  dom.adminCoverFile?.addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleCoverImageUpload(file);
+    }
+  });
+
+  dom.adminCoverRemoveBtn?.addEventListener('click', clearCoverImage);
+  dom.adminCoverClearBtn?.addEventListener('click', clearCoverImage);
+
+  // Live preview image load / error listeners
+  dom.adminCoverPreviewImg?.addEventListener('error', () => {
+    if (dom.adminCoverPreviewImg?.getAttribute('src')) {
+      dom.adminCoverPreview?.classList.add('preview-error');
+    }
+  });
+  dom.adminCoverPreviewImg?.addEventListener('load', () => {
+    dom.adminCoverPreview?.classList.remove('preview-error');
+  });
+
+  // Drag and drop image files onto cover group
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dom.adminCoverGroup?.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dom.adminCoverGroup.classList.add('drag-active');
+    });
+  });
+  ['dragleave', 'drop'].forEach(eventName => {
+    dom.adminCoverGroup?.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dom.adminCoverGroup.classList.remove('drag-active');
+    });
+  });
+  dom.adminCoverGroup?.addEventListener('drop', (e) => {
+    const file = e.dataTransfer?.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      handleCoverImageUpload(file);
     }
   });
 
