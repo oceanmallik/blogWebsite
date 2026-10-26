@@ -122,6 +122,7 @@
 html {
   font-size: 16px;
   scroll-behavior: smooth;
+  scroll-padding-top: calc(75px + 1.25rem);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -733,17 +734,17 @@ img {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.55rem 1.15rem;
-  font-size: 0.82rem;
+  padding: 0.65rem 1.35rem;
+  font-size: 0.85rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   cursor: pointer;
   text-decoration: none;
   border: var(--border-width) solid var(--border-color);
   box-shadow: var(--shadow-sm);
-  transition: all var(--transition-fast);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .hero-btn:hover {
@@ -752,28 +753,44 @@ img {
 }
 
 .hero-btn:active {
-  transform: translate(1px, 1px);
+  transform: translate(0, 0);
   box-shadow: none;
 }
 
 .hero-btn.btn-primary {
   background: var(--accent-yellow);
   color: #0A0A0A;
+  box-shadow: var(--shadow-sm);
 }
 
 .hero-btn.btn-primary:hover {
   background: var(--accent-lime);
   color: #0A0A0A;
+  transform: translate(-3px, -3px);
+  box-shadow: var(--shadow-md);
+}
+
+.hero-btn.btn-primary:active {
+  transform: translate(0, 0);
+  box-shadow: none;
 }
 
 .hero-btn.btn-outline {
   background: var(--bg-surface);
   color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .hero-btn.btn-outline:hover {
   background: var(--accent-yellow);
   color: #0A0A0A;
+  transform: translate(-3px, -3px);
+  box-shadow: var(--shadow-md);
+}
+
+.hero-btn.btn-outline:active {
+  transform: translate(0, 0);
+  box-shadow: none;
 }
 
 /* --------------------------------------------------------------------------
@@ -788,6 +805,7 @@ img {
   padding-bottom: 1.25rem;
   border-bottom: var(--border-width) solid var(--border-color);
   flex-wrap: wrap;
+  scroll-margin-top: calc(75px + 1.25rem);
 }
 
 .posts-count-indicator {

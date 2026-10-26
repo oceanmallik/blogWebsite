@@ -92,6 +92,7 @@ function initDOM() {
   dom.errorState = document.getElementById('error-state');
   dom.errorMessage = document.getElementById('error-message');
   dom.postsCountText = document.getElementById('posts-count-text');
+  dom.postsToolbar = document.getElementById('posts-toolbar');
   dom.refreshBtn = document.getElementById('refresh-btn');
   dom.searchInput = document.getElementById('search-input');
   dom.searchClearBtn = document.getElementById('search-clear-btn');
@@ -4358,18 +4359,57 @@ function initEventListeners() {
     await loadPosts();
   });
 
+  // Smoothly scroll to posts toolbar below the sticky header without jarring jumps
+  function scrollToPostsToolbar(focusSearch = false) {
+    const target = dom.postsToolbar || document.getElementById('posts-toolbar') || dom.postsGrid;
+    if (!target) return;
+
+    // Dynamically calculate sticky header height and offset
+    const header = document.querySelector('.site-header');
+    const headerHeight = header ? header.offsetHeight : 70;
+    const extraOffset = 20; // 20px comfortable breathing space below sticky header
+
+    const targetRect = target.getBoundingClientRect();
+    const absoluteTargetTop = targetRect.top + window.pageYOffset;
+    const targetScrollTop = Math.max(0, Math.round(absoluteTargetTop - headerHeight - extraOffset));
+
+    // Focus input synchronously within user gesture with preventScroll: true
+    // so virtual keyboards on mobile can open and browser will not perform an abrupt scroll jump
+    if (focusSearch && dom.searchInput) {
+      try {
+        dom.searchInput.focus({ preventScroll: true });
+      } catch {
+        dom.searchInput.focus();
+      }
+    }
+
+    window.scrollTo({
+      top: targetScrollTop,
+      behavior: 'smooth'
+    });
+
+    // Re-verify focus and selection once smooth scroll finishes
+    if (focusSearch && dom.searchInput) {
+      setTimeout(() => {
+        try {
+          dom.searchInput.focus({ preventScroll: true });
+          if (dom.searchInput.value) {
+            dom.searchInput.select();
+          }
+        } catch {
+          dom.searchInput.focus();
+        }
+      }, 500);
+    }
+  }
+
   // Hero Action Buttons
   dom.heroBrowseBtn?.addEventListener('click', () => {
-    const target = document.getElementById('posts-toolbar') || dom.postsGrid;
-    target?.scrollIntoView({ behavior: 'smooth' });
+    scrollToPostsToolbar(false);
   });
 
   dom.heroSearchBtn?.addEventListener('click', () => {
-    const target = document.getElementById('posts-toolbar') || dom.searchInput;
-    target?.scrollIntoView({ behavior: 'smooth' });
-    setTimeout(() => {
-      dom.searchInput?.focus();
-    }, 350);
+    scrollToPostsToolbar(true);
   });
 
   // Theme toggle
