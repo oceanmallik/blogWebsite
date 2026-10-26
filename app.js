@@ -255,6 +255,9 @@ function initDOM() {
   dom.profileForm = document.getElementById('profile-form');
   dom.profileEditName = document.getElementById('profile-edit-name');
   dom.profileEditAvatar = document.getElementById('profile-edit-avatar');
+  dom.profileAvatarFile = document.getElementById('profile-avatar-file');
+  dom.profileUploadBtn = document.getElementById('profile-upload-btn');
+  dom.profileAvatarStatus = document.getElementById('profile-avatar-status');
   dom.profilePreviewAvatarBtn = document.getElementById('profile-preview-avatar-btn');
   dom.profileClearAvatarBtn = document.getElementById('profile-clear-avatar-btn');
   dom.profileEditEmail = document.getElementById('profile-edit-email');
@@ -268,6 +271,19 @@ function initDOM() {
   dom.profileConfirmPassword = document.getElementById('profile-confirm-password');
   dom.profilePasswordMsg = document.getElementById('profile-password-msg');
   dom.profilePasswordSubmitBtn = document.getElementById('profile-password-submit-btn');
+
+  // Avatar Crop Modal Elements
+  dom.avatarCropModal = document.getElementById('avatar-crop-modal');
+  dom.avatarCropCloseBtn = document.getElementById('avatar-crop-close-btn');
+  dom.avatarCropImage = document.getElementById('avatar-crop-image');
+  dom.cropZoomInBtn = document.getElementById('crop-zoom-in-btn');
+  dom.cropZoomOutBtn = document.getElementById('crop-zoom-out-btn');
+  dom.cropRotateLeftBtn = document.getElementById('crop-rotate-left-btn');
+  dom.cropResetBtn = document.getElementById('crop-reset-btn');
+  dom.cropCancelBtn = document.getElementById('crop-cancel-btn');
+  dom.cropUploadBtn = document.getElementById('crop-upload-btn');
+  dom.cropUploadText = document.getElementById('crop-upload-text');
+  dom.cropStatusMsg = document.getElementById('crop-status-msg');
 }
 
 // ============================================================================
@@ -2862,6 +2878,235 @@ function clearProfilePasswordMsg() {
 }
 
 // ============================================================================
+// 12C. INTERACTIVE 1:1 SQUARE AVATAR CROPPER & AUTO-WEBP UPLOADER
+// ============================================================================
+
+let avatarCropper = null;
+let currentCropObjectUrl = null;
+
+/**
+ * Opens the interactive 1:1 square Cropper modal for a chosen image file
+ * @param {File} file
+ */
+function openAvatarCropModal(file) {
+  if (!file) return;
+
+  if (!currentUser) {
+    alert('Please sign in to update your profile picture.');
+    return;
+  }
+
+  if (!file.type || !file.type.startsWith('image/')) {
+    alert('Please select a valid image file (PNG, JPG, WebP, etc.).');
+    return;
+  }
+
+  // Revoke previous object URL to avoid memory leaks
+  if (currentCropObjectUrl) {
+    URL.revokeObjectURL(currentCropObjectUrl);
+    currentCropObjectUrl = null;
+  }
+
+  // Destroy previous cropper instance
+  if (avatarCropper) {
+    avatarCropper.destroy();
+    avatarCropper = null;
+  }
+
+  currentCropObjectUrl = URL.createObjectURL(file);
+  const cropImg = dom.avatarCropImage;
+  if (!cropImg) return;
+
+  cropImg.src = currentCropObjectUrl;
+  clearCropStatusMsg();
+
+  // Show the modal
+  dom.avatarCropModal?.classList.remove('hidden');
+
+  // Initialize Cropper.js once image is loaded
+  cropImg.onload = () => {
+    if (avatarCropper) {
+      avatarCropper.destroy();
+    }
+
+    if (typeof Cropper === 'undefined') {
+      showCropStatusMsg('Cropper library is loading, please try again in a moment.', 'error');
+      return;
+    }
+
+    avatarCropper = new Cropper(cropImg, {
+      aspectRatio: 1,
+      viewMode: 1,
+      autoCropArea: 1,
+      responsive: true,
+      restore: false,
+      guides: true,
+      center: true,
+      highlight: false,
+      cropBoxMovable: true,
+      cropBoxResizable: true,
+      toggleDragModeOnDblclick: false,
+      minContainerWidth: 280,
+      minContainerHeight: 280
+    });
+  };
+}
+
+/**
+ * Closes the crop modal and cleans up active resources
+ */
+function closeAvatarCropModal() {
+  dom.avatarCropModal?.classList.add('hidden');
+
+  if (avatarCropper) {
+    avatarCropper.destroy();
+    avatarCropper = null;
+  }
+
+  if (currentCropObjectUrl) {
+    URL.revokeObjectURL(currentCropObjectUrl);
+    currentCropObjectUrl = null;
+  }
+
+  if (dom.profileAvatarFile) {
+    dom.profileAvatarFile.value = '';
+  }
+
+  clearCropStatusMsg();
+}
+
+/**
+ * Shows status message inside Crop Modal
+ */
+function showCropStatusMsg(msg, type = 'error') {
+  if (!dom.cropStatusMsg) return;
+  dom.cropStatusMsg.textContent = msg;
+  dom.cropStatusMsg.className = `config-status-msg ${type}`;
+  dom.cropStatusMsg.classList.remove('hidden');
+}
+
+function clearCropStatusMsg() {
+  if (!dom.cropStatusMsg) return;
+  dom.cropStatusMsg.textContent = '';
+  dom.cropStatusMsg.className = 'config-status-msg hidden';
+}
+
+/**
+ * Shows status badge next to upload button in Profile view
+ */
+function showProfileAvatarStatus(msg, type = 'info') {
+  if (!dom.profileAvatarStatus) return;
+  dom.profileAvatarStatus.textContent = msg;
+  dom.profileAvatarStatus.className = `cover-status-badge ${type}`;
+  dom.profileAvatarStatus.classList.remove('hidden');
+}
+
+/**
+ * Generates 400x400 square canvas, converts to WebP Blob,
+ * uploads to Supabase Storage ('avatars' bucket) at ${currentUser.id}/avatar.webp,
+ * and sets publicUrl with cache-busting timestamp into the AVATAR IMAGE URL input.
+ */
+async function handleCropAndUpload() {
+  if (!avatarCropper) {
+    showCropStatusMsg('No active image to crop.', 'error');
+    return;
+  }
+
+  if (!currentUser || !supabaseClient) {
+    showCropStatusMsg('You must be logged in to upload an avatar.', 'error');
+    return;
+  }
+
+  const uploadBtn = dom.cropUploadBtn;
+  const uploadText = dom.cropUploadText;
+
+  if (uploadBtn) uploadBtn.disabled = true;
+  if (uploadText) uploadText.textContent = 'Cropping...';
+  showCropStatusMsg('Generating 400×400 square crop...', 'loading');
+
+  // 1. Generate 400x400 square canvas with high smoothing quality
+  const canvas = avatarCropper.getCroppedCanvas({
+    width: 400,
+    height: 400,
+    imageSmoothingQuality: 'high'
+  });
+
+  if (!canvas) {
+    if (uploadBtn) uploadBtn.disabled = false;
+    if (uploadText) uploadText.textContent = 'Crop & Upload';
+    showCropStatusMsg('Failed to process image crop canvas.', 'error');
+    return;
+  }
+
+  if (uploadText) uploadText.textContent = 'Compressing...';
+  showCropStatusMsg('Compressing to WebP format...', 'loading');
+
+  // 2. Convert cropped canvas to WebP Blob (0.85 quality)
+  canvas.toBlob(async (webpBlob) => {
+    if (!webpBlob) {
+      if (uploadBtn) uploadBtn.disabled = false;
+      if (uploadText) uploadText.textContent = 'Crop & Upload';
+      showCropStatusMsg('Failed to create WebP image blob.', 'error');
+      return;
+    }
+
+    if (uploadText) uploadText.textContent = 'Uploading...';
+    showCropStatusMsg('Uploading to Supabase Storage (avatars bucket)...', 'loading');
+
+    try {
+      // 3. User personal folder path: ${currentUser.id}/avatar.webp
+      const filePath = `${currentUser.id}/avatar.webp`;
+
+      // 4. Upload with upsert: true so old avatars are cleanly overwritten
+      const { data: uploadData, error: uploadError } = await supabaseClient.storage
+        .from('avatars')
+        .upload(filePath, webpBlob, {
+          contentType: 'image/webp',
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // 5. Retrieve public URL
+      const { data } = supabaseClient.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      if (!data || !data.publicUrl) {
+        throw new Error('Failed to retrieve public URL from avatars storage.');
+      }
+
+      // 6. Append cache-busting timestamp so browser immediately displays the new picture
+      const publicUrlWithCacheBust = `${data.publicUrl}?t=${Date.now()}`;
+
+      // 7. Set the "AVATAR IMAGE URL" input value to this new URL
+      if (dom.profileEditAvatar) {
+        dom.profileEditAvatar.value = publicUrlWithCacheBust;
+      }
+
+      // 8. Update the profile avatar preview on the page
+      const currentName = dom.profileEditName?.value || currentUser.email;
+      renderProfileLargeAvatar(currentName, publicUrlWithCacheBust);
+
+      const sizeKb = Math.max(1, Math.round(webpBlob.size / 1024));
+      showProfileAvatarStatus(`✓ Avatar cropped & uploaded (${sizeKb} KB .webp)! Click "Save Changes" to save profile.`, 'success');
+
+      // 9. Close crop modal
+      closeAvatarCropModal();
+    } catch (err) {
+      console.error('Avatar upload error:', err);
+      showCropStatusMsg(`Upload failed: ${err.message || 'Please check storage bucket settings.'}`, 'error');
+    } finally {
+      if (uploadBtn) uploadBtn.disabled = false;
+      if (uploadText) uploadText.textContent = 'Crop & Upload';
+    }
+  }, 'image/webp', 0.85);
+}
+
+// ============================================================================
 // 13. EVENT LISTENERS
 // ============================================================================
 
@@ -2928,6 +3173,45 @@ function initEventListeners() {
 
   dom.profileEditAvatar?.addEventListener('input', (e) => {
     renderProfileLargeAvatar(dom.profileEditName?.value, e.target.value.trim());
+  });
+
+  // Profile Avatar Upload & 1:1 Square Cropper
+  dom.profileUploadBtn?.addEventListener('click', () => {
+    dom.profileAvatarFile?.click();
+  });
+
+  dom.profileAvatarFile?.addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      openAvatarCropModal(file);
+    }
+  });
+
+  dom.avatarCropCloseBtn?.addEventListener('click', closeAvatarCropModal);
+  dom.cropCancelBtn?.addEventListener('click', closeAvatarCropModal);
+
+  dom.cropZoomInBtn?.addEventListener('click', () => {
+    avatarCropper?.zoom(0.1);
+  });
+
+  dom.cropZoomOutBtn?.addEventListener('click', () => {
+    avatarCropper?.zoom(-0.1);
+  });
+
+  dom.cropRotateLeftBtn?.addEventListener('click', () => {
+    avatarCropper?.rotate(-90);
+  });
+
+  dom.cropResetBtn?.addEventListener('click', () => {
+    avatarCropper?.reset();
+  });
+
+  dom.cropUploadBtn?.addEventListener('click', handleCropAndUpload);
+
+  dom.avatarCropModal?.addEventListener('click', (e) => {
+    if (e.target === dom.avatarCropModal) {
+      closeAvatarCropModal();
+    }
   });
 
   // Browser hash change
@@ -3161,7 +3445,9 @@ function initEventListeners() {
   // Escape key closes open modals
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-      if (dom.authModal && !dom.authModal.classList.contains('hidden')) {
+      if (dom.avatarCropModal && !dom.avatarCropModal.classList.contains('hidden')) {
+        closeAvatarCropModal();
+      } else if (dom.authModal && !dom.authModal.classList.contains('hidden')) {
         closeAuthModal();
       }
     }

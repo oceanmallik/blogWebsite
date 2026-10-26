@@ -3119,6 +3119,34 @@ input[type="datetime-local"] {
   margin-top: 1.5rem;
 }
 
+.avatar-upload-action-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.profile-crop-upload-btn {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-xs);
+}
+
+.profile-crop-upload-btn:hover {
+  background: var(--accent-lime);
+  color: #0F141C;
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.profile-crop-upload-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: none;
+}
+
 .avatar-presets-bar {
   display: flex;
   align-items: center;
@@ -3377,6 +3405,157 @@ input[type="datetime-local"] {
 }
 
 .auth-switch-link a:hover { color: var(--accent-coral); }
+
+/* --------------------------------------------------------------------------
+   Avatar Crop Modal (1:1 Square Cropper)
+   -------------------------------------------------------------------------- */
+.crop-modal-card {
+  max-width: 520px;
+  background: var(--bg-surface);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.crop-modal-header {
+  padding: 1rem 1.25rem;
+  border-bottom: var(--border-width) solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-elevated);
+}
+
+.crop-modal-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.crop-modal-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.crop-modal-subtitle {
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.crop-modal-body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cropper-viewport-wrapper {
+  width: 100%;
+  height: 320px;
+  background: #000000;
+  border: var(--border-width) solid var(--border-color);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-xs);
+}
+
+.cropper-viewport-wrapper img {
+  display: block;
+  max-width: 100%;
+}
+
+.cropper-controls-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cropper-tools-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.cropper-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.75rem;
+  background: var(--bg-elevated);
+  border: var(--border-width) solid var(--border-color);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-xs);
+  flex: 1 1 auto;
+}
+
+.cropper-tool-btn:hover {
+  background: var(--accent-yellow);
+  color: #0F141C;
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.cropper-tool-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: none;
+}
+
+.crop-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--border-color);
+}
+
+/* Cropper.js Neo-Brutalist Theme Overrides */
+.cropper-view-box {
+  outline: 2.5px solid var(--accent-yellow) !important;
+  outline-color: var(--accent-yellow) !important;
+}
+
+.cropper-line {
+  background-color: var(--accent-yellow) !important;
+  opacity: 0.8 !important;
+}
+
+.cropper-point {
+  width: 9px !important;
+  height: 9px !important;
+  background-color: var(--accent-yellow) !important;
+  opacity: 0.95 !important;
+}
+
+.cropper-dashed {
+  border-color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.cropper-center::before,
+.cropper-center::after {
+  background-color: var(--accent-yellow) !important;
+}
 
 /* --------------------------------------------------------------------------
    Site Footer
