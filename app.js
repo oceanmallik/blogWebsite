@@ -83,6 +83,7 @@ function initDOM() {
   dom.articleView = document.getElementById('article-view');
   dom.adminView = document.getElementById('admin-view');
   dom.profileView = document.getElementById('profile-view');
+  dom.publicProfileView = document.getElementById('public-profile-view');
 
   // Home View elements
   dom.postsGrid = document.getElementById('posts-grid');
@@ -304,6 +305,34 @@ function initDOM() {
   dom.cropUploadBtn = document.getElementById('crop-upload-btn');
   dom.cropUploadText = document.getElementById('crop-upload-text');
   dom.cropStatusMsg = document.getElementById('crop-status-msg');
+
+  // Public Profile Elements
+  dom.publicProfileBackBtn = document.getElementById('public-profile-back-btn');
+  dom.publicProfileBackLabel = document.getElementById('public-profile-back-label');
+  dom.publicProfileEditBtn = document.getElementById('public-profile-edit-btn');
+  dom.publicProfileHeaderRole = document.getElementById('public-profile-header-role');
+  dom.publicProfileAvatar = document.getElementById('public-profile-avatar');
+  dom.publicProfileName = document.getElementById('public-profile-name');
+  dom.publicProfileUsername = document.getElementById('public-profile-username');
+  dom.publicProfileRoleBadge = document.getElementById('public-profile-role-badge');
+  dom.publicProfileJoined = document.getElementById('public-profile-joined');
+  dom.publicProfileStatusPill = document.getElementById('public-profile-status-pill');
+  dom.publicStatPosts = document.getElementById('public-stat-posts');
+  dom.publicStatComments = document.getElementById('public-stat-comments');
+  dom.publicTabPosts = document.getElementById('public-tab-posts');
+  dom.publicTabComments = document.getElementById('public-tab-comments');
+  dom.publicTabPostsCount = document.getElementById('public-tab-posts-count');
+  dom.publicTabCommentsCount = document.getElementById('public-tab-comments-count');
+  dom.publicPanePosts = document.getElementById('public-pane-posts');
+  dom.publicPaneComments = document.getElementById('public-pane-comments');
+  dom.publicPostsLoading = document.getElementById('public-posts-loading');
+  dom.publicPostsGrid = document.getElementById('public-posts-grid');
+  dom.publicPostsEmpty = document.getElementById('public-posts-empty');
+  dom.publicCommentsLoading = document.getElementById('public-comments-loading');
+  dom.publicCommentsList = document.getElementById('public-comments-list');
+  dom.publicCommentsEmpty = document.getElementById('public-comments-empty');
+  dom.articleAuthorProfileBtn = document.getElementById('article-author-profile-btn');
+  dom.profileViewPublicBtn = document.getElementById('profile-view-public-btn');
 }
 
 // ============================================================================
@@ -1204,7 +1233,7 @@ function createCardElement(post) {
   const handle = authorUsername || (authorName ? authorName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '') : 'author');
 
   footer.innerHTML = `
-    <span class="card-footer-author" title="${escapeHtml(authorName)}">by <span class="author-handle">@${escapeHtml(handle)}</span></span>
+    <span class="card-footer-author" role="button" tabindex="0" title="View ${escapeHtml(authorName)}'s public profile">by <span class="author-handle">@${escapeHtml(handle)}</span></span>
     <span class="read-more-link" aria-hidden="true">
       Read article
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1214,14 +1243,29 @@ function createCardElement(post) {
     </span>
   `;
 
+  const authorEl = footer.querySelector('.card-footer-author');
+  if (authorEl) {
+    const handleAuthorClick = (e) => {
+      e.stopPropagation();
+      openPublicProfileView(post.author_id || handle, handle, authorName);
+    };
+    authorEl.addEventListener('click', handleAuthorClick);
+    authorEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleAuthorClick(e);
+      }
+    });
+  }
+
   if (post.author_id && !authorUsername) {
     getPostAuthorProfile(post).then(resolvedAuthor => {
       if (resolvedAuthor) {
         const resolvedHandle = resolvedAuthor.username || (resolvedAuthor.display_name ? resolvedAuthor.display_name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '') : handle);
-        const authorEl = card.querySelector('.card-footer-author');
-        if (authorEl && resolvedHandle) {
-          authorEl.title = resolvedAuthor.display_name || authorName;
-          authorEl.innerHTML = `by <span class="author-handle">@${escapeHtml(resolvedHandle)}</span>`;
+        const resolvedAuthorEl = card.querySelector('.card-footer-author');
+        if (resolvedAuthorEl && resolvedHandle) {
+          resolvedAuthorEl.title = `View ${resolvedAuthor.display_name || authorName}'s public profile`;
+          resolvedAuthorEl.innerHTML = `by <span class="author-handle">@${escapeHtml(resolvedHandle)}</span>`;
         }
       }
     }).catch(() => {});
@@ -1270,29 +1314,33 @@ const authorProfilesCache = new Map();
 /**
  * Resolves the author profile for a given post
  * @param {object} post
- * @returns {Promise<{display_name: string, username: string, email: string, avatar_url: string|null}>}
+ * @returns {Promise<{id: string|null, display_name: string, username: string, email: string, avatar_url: string|null, role?: string}>}
  */
 async function getPostAuthorProfile(post) {
-  if (!post) return { display_name: 'Ocean Author', username: '', email: '', avatar_url: null };
+  if (!post) return { id: null, display_name: 'Ocean Author', username: '', email: '', avatar_url: null, role: 'admin' };
 
   // 1. Attached profiles object
   if (post.profiles && typeof post.profiles === 'object') {
     const p = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
     return {
+      id: p.id || post.author_id || null,
       display_name: p.display_name || post.author_name || 'Ocean Author',
       username: p.username || '',
       email: p.email || '',
-      avatar_url: p.avatar_url || null
+      avatar_url: p.avatar_url || null,
+      role: p.role || 'admin'
     };
   }
 
   // 2. Author is current user
   if (currentUser && post.author_id && post.author_id === currentUser.id) {
     return {
+      id: currentUser.id,
       display_name: currentProfile?.display_name || currentUser.user_metadata?.display_name || (currentUser.email ? currentUser.email.split('@')[0] : 'Ocean Author'),
       username: currentProfile?.username || currentUser.user_metadata?.username || '',
       email: currentUser.email || currentProfile?.email || '',
-      avatar_url: currentProfile?.avatar_url || currentUser.user_metadata?.avatar_url || null
+      avatar_url: currentProfile?.avatar_url || currentUser.user_metadata?.avatar_url || null,
+      role: currentProfile?.role || currentUserRole || 'admin'
     };
   }
 
@@ -1306,16 +1354,19 @@ async function getPostAuthorProfile(post) {
     try {
       const { data, error } = await supabaseClient
         .from('profiles')
-        .select('id, email, display_name, username, avatar_url')
+        .select('id, email, display_name, username, avatar_url, role, created_at')
         .eq('id', post.author_id)
         .maybeSingle();
 
       if (!error && data) {
         const result = {
+          id: data.id,
           display_name: data.display_name || post.author_name || (data.email ? data.email.split('@')[0] : 'Ocean Author'),
           username: data.username || '',
           email: data.email || '',
-          avatar_url: data.avatar_url || null
+          avatar_url: data.avatar_url || null,
+          role: data.role || 'admin',
+          created_at: data.created_at
         };
         authorProfilesCache.set(post.author_id, result);
         return result;
@@ -1327,10 +1378,12 @@ async function getPostAuthorProfile(post) {
 
   // 5. Fallback for demo or unspecified authors
   return {
+    id: post.author_id || 'demo-author',
     display_name: post.author_name || 'Ocean Author',
-    username: post.author_username || '',
+    username: post.author_username || 'ocean_author',
     email: post.author_email || '',
-    avatar_url: post.author_avatar || null
+    avatar_url: post.author_avatar || null,
+    role: 'admin'
   };
 }
 
@@ -1367,10 +1420,13 @@ function setAuthorAvatar(imgEl, fallbackEl, avatarUrl, name) {
   }
 }
 
+let currentArticleAuthor = null;
+
 /**
  * Renders the author card on the article view
  */
 function renderArticleAuthor(author) {
+  currentArticleAuthor = author;
   const name = author?.display_name || 'Ocean Author';
   const username = author?.username || '';
   const email = author?.email || '';
@@ -1418,6 +1474,7 @@ function openArticleView(post, updateHash = true) {
   }
 
   activePost = post;
+  currentPublicProfileUser = null;
 
   dom.articleTitle.textContent = post.title || 'Untitled';
   const formattedDate = formatDate(post.created_at);
@@ -1456,6 +1513,7 @@ function openArticleView(post, updateHash = true) {
   dom.homeView?.classList.add('hidden');
   dom.adminView?.classList.add('hidden');
   dom.profileView?.classList.add('hidden');
+  dom.publicProfileView?.classList.add('hidden');
   dom.articleView?.classList.remove('hidden');
 
   // Article admin action buttons
@@ -1487,10 +1545,12 @@ function openArticleView(post, updateHash = true) {
  */
 function returnToHomeView() {
   activePost = null;
+  currentPublicProfileUser = null;
 
   dom.articleView?.classList.add('hidden');
   dom.adminView?.classList.add('hidden');
   dom.profileView?.classList.add('hidden');
+  dom.publicProfileView?.classList.add('hidden');
   dom.homeView?.classList.remove('hidden');
 
   if (window.location.hash) {
@@ -1516,6 +1576,23 @@ function handleHashNavigation() {
     }
     return;
   }
+  if (hash.startsWith('#/user/') || hash.startsWith('#/profile/')) {
+    const rawParam = hash.startsWith('#/user/') ? hash.replace('#/user/', '') : hash.replace('#/profile/', '');
+    const userIdentifier = decodeURIComponent(rawParam).trim();
+    if (userIdentifier) {
+      const cleanIdent = userIdentifier.replace(/^@/, '');
+      if (
+        currentPublicProfileUser &&
+        (currentPublicProfileUser.id === cleanIdent || currentPublicProfileUser.username === cleanIdent) &&
+        dom.publicProfileView &&
+        !dom.publicProfileView.classList.contains('hidden')
+      ) {
+        return; // Already actively viewing this profile, skip duplicate processing
+      }
+      openPublicProfileView(userIdentifier, null, null, false);
+      return;
+    }
+  }
   if (hash === '#/admin') {
     if (currentUserRole === 'admin') {
       openAdminView();
@@ -1538,7 +1615,7 @@ function handleHashNavigation() {
       }
     }
   } else if (!hash || hash === '#' || hash === '#/') {
-    if (!dom.articleView?.classList.contains('hidden') || !dom.adminView?.classList.contains('hidden') || !dom.profileView?.classList.contains('hidden')) {
+    if (!dom.articleView?.classList.contains('hidden') || !dom.adminView?.classList.contains('hidden') || !dom.profileView?.classList.contains('hidden') || !dom.publicProfileView?.classList.contains('hidden')) {
       returnToHomeView();
     }
   }
@@ -1703,6 +1780,23 @@ function createCommentCardElement(comment) {
   meta.appendChild(time);
   authorWrap.appendChild(avatar);
   authorWrap.appendChild(meta);
+
+  // Interactive commenter profile link
+  authorWrap.setAttribute('role', 'button');
+  authorWrap.setAttribute('tabindex', '0');
+  authorWrap.title = `View ${displayName}'s public profile`;
+  const handleCommenterClick = (e) => {
+    e.stopPropagation();
+    openPublicProfileView(comment.user_id || username, username, displayName);
+  };
+  authorWrap.addEventListener('click', handleCommenterClick);
+  authorWrap.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleCommenterClick(e);
+    }
+  });
+
   header.appendChild(authorWrap);
 
   const canDelete = currentUserRole === 'admin' || (currentUser && currentUser.id === comment.user_id);
@@ -1817,9 +1911,12 @@ function openAdminView() {
     return;
   }
 
+  currentPublicProfileUser = null;
+
   dom.homeView?.classList.add('hidden');
   dom.articleView?.classList.add('hidden');
   dom.profileView?.classList.add('hidden');
+  dom.publicProfileView?.classList.add('hidden');
   dom.adminView?.classList.remove('hidden');
 
   window.location.hash = '#/admin';
@@ -2912,10 +3009,13 @@ async function openProfileView() {
     return;
   }
 
+  currentPublicProfileUser = null;
+
   // Hide other views and show profile
   dom.homeView?.classList.add('hidden');
   dom.articleView?.classList.add('hidden');
   dom.adminView?.classList.add('hidden');
+  dom.publicProfileView?.classList.add('hidden');
   dom.profileView?.classList.remove('hidden');
 
   if (window.location.hash !== '#/profile') {
@@ -3577,6 +3677,463 @@ async function handleCropAndUpload() {
 }
 
 // ============================================================================
+// 12D. PUBLIC PROFILE MANAGEMENT (Accessible to everyone, commenters & posters)
+// ============================================================================
+
+let currentPublicProfileUser = null;
+let lastNonProfileView = 'home';
+let publicProfileRequestId = 0;
+
+/**
+ * Opens and renders the public profile view for any user
+ * @param {string} userIdentifier - User ID (UUID) or username handle
+ * @param {string} [fallbackUsername] - Optional username fallback
+ * @param {string} [fallbackName] - Optional display name fallback
+ * @param {boolean} [updateHash=true] - Whether to update the hash URL
+ */
+async function openPublicProfileView(userIdentifier, fallbackUsername, fallbackName, updateHash = true) {
+  if (!userIdentifier && !fallbackUsername && !fallbackName) {
+    returnToHomeView();
+    return;
+  }
+
+  const cleanId = String(userIdentifier || '').trim().replace(/^@/, '');
+
+  // Prevent double rendering if already actively viewing this user's profile
+  if (
+    currentPublicProfileUser &&
+    (currentPublicProfileUser.id === cleanId || currentPublicProfileUser.username === cleanId) &&
+    dom.publicProfileView &&
+    !dom.publicProfileView.classList.contains('hidden')
+  ) {
+    return;
+  }
+
+  // Record where the user came from to support returning back cleanly
+  if (dom.publicProfileView?.classList.contains('hidden')) {
+    if (activePost && !dom.articleView?.classList.contains('hidden')) {
+      lastNonProfileView = 'article';
+    } else if (dom.adminView && !dom.adminView.classList.contains('hidden')) {
+      lastNonProfileView = 'admin';
+    } else if (dom.profileView && !dom.profileView.classList.contains('hidden')) {
+      lastNonProfileView = 'profile';
+    } else {
+      lastNonProfileView = 'home';
+    }
+  }
+
+  // Switch visible view
+  dom.homeView?.classList.add('hidden');
+  dom.articleView?.classList.add('hidden');
+  dom.adminView?.classList.add('hidden');
+  dom.profileView?.classList.add('hidden');
+  dom.publicProfileView?.classList.remove('hidden');
+
+  // Update back button label
+  if (dom.publicProfileBackLabel) {
+    if (lastNonProfileView === 'article' && activePost) {
+      dom.publicProfileBackLabel.textContent = 'Back to Article';
+    } else if (lastNonProfileView === 'admin') {
+      dom.publicProfileBackLabel.textContent = 'Back to Admin';
+    } else if (lastNonProfileView === 'profile') {
+      dom.publicProfileBackLabel.textContent = 'Back to Settings';
+    } else {
+      dom.publicProfileBackLabel.textContent = 'Back to Blog';
+    }
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // Default to Articles tab initially
+  setPublicProfileTab('posts');
+
+  // Fetch or resolve user profile
+  await loadAndRenderPublicProfile(userIdentifier, fallbackUsername, fallbackName, updateHash);
+}
+
+/**
+ * Resolves profile information from cache, database, or fallback
+ */
+async function loadAndRenderPublicProfile(userIdentifier, fallbackUsername, fallbackName, updateHash = true) {
+  const thisRequestId = ++publicProfileRequestId;
+  let cleanId = String(userIdentifier || '').trim().replace(/^@/, '');
+
+  let profile = null;
+
+  // 1. Is this currentUser?
+  if (currentUser && (currentUser.id === cleanId || currentProfile?.username === cleanId)) {
+    profile = { ...currentProfile };
+  }
+
+  // 2. Is it in authorProfilesCache?
+  if (!profile && cleanId && authorProfilesCache.has(cleanId)) {
+    profile = { ...authorProfilesCache.get(cleanId) };
+  }
+
+  // 3. Look in activeComments or cached posts
+  if (!profile && cleanId) {
+    const commentMatch = activeComments.find(c => c.user_id === cleanId || c.profiles?.username === cleanId);
+    if (commentMatch) {
+      const p = Array.isArray(commentMatch.profiles) ? commentMatch.profiles[0] : commentMatch.profiles;
+      if (p) {
+        profile = {
+          id: commentMatch.user_id || cleanId,
+          display_name: p.display_name || fallbackName,
+          username: p.username || fallbackUsername,
+          avatar_url: p.avatar_url || null,
+          role: p.role || 'visitor'
+        };
+      }
+    }
+  }
+
+  // 4. Query Supabase public.profiles table
+  if ((!profile || !profile.created_at) && supabaseClient && cleanId) {
+    try {
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanId);
+      let query = supabaseClient.from('profiles').select('*');
+      if (isUuid) {
+        query = query.eq('id', cleanId);
+      } else {
+        query = query.eq('username', cleanId);
+      }
+      const { data, error } = await query.maybeSingle();
+      if (!error && data) {
+        profile = {
+          id: data.id,
+          display_name: data.display_name || fallbackName || 'Member',
+          username: data.username || fallbackUsername || '',
+          avatar_url: data.avatar_url || null,
+          role: data.role || 'visitor',
+          created_at: data.created_at
+        };
+      }
+    } catch (err) {
+      console.warn('Could not fetch public profile from Supabase:', err);
+    }
+  }
+
+  // 5. Fallback for demo or offline contributors
+  if (!profile) {
+    const isDemo = cleanId === 'demo-author' || cleanId === 'ocean_author' || (fallbackName && fallbackName.toLowerCase().includes('ocean'));
+    profile = {
+      id: cleanId || 'demo-author',
+      display_name: fallbackName || (isDemo ? 'Ocean Author' : (cleanId || 'Community Member')),
+      username: fallbackUsername || (isDemo ? 'ocean_author' : (cleanId && !cleanId.includes('-') ? cleanId : 'member')),
+      avatar_url: null,
+      role: isDemo ? 'admin' : 'visitor',
+      created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString()
+    };
+  }
+
+  // Discard if a newer request was dispatched while this query was in flight
+  if (thisRequestId !== publicProfileRequestId) return;
+
+  currentPublicProfileUser = profile;
+
+  // Update hash route smoothly without page reload (preserves literal @ for clean handle URLs)
+  if (updateHash) {
+    const routeHandle = profile.username ? `@${profile.username}` : (profile.id || cleanId);
+    const targetParam = routeHandle.startsWith('@')
+      ? `@${encodeURIComponent(routeHandle.slice(1))}`
+      : encodeURIComponent(routeHandle);
+    const targetHash = `#/user/${targetParam}`;
+    if (window.location.hash !== targetHash && decodeURIComponent(window.location.hash) !== targetHash) {
+      // Use replaceState to update the URL cleanly without triggering duplicate hashchange events
+      history.replaceState(null, '', targetHash);
+    }
+  }
+
+  document.title = `${profile.display_name} (@${profile.username || 'user'}) — Ocean Verse`;
+
+  // Render hero section
+  renderPublicProfileHero(profile);
+
+  // Fetch & render articles and comments simultaneously
+  await Promise.all([
+    loadPublicUserPosts(profile, thisRequestId),
+    loadPublicUserComments(profile, thisRequestId)
+  ]);
+}
+
+/**
+ * Renders the hero card of the public profile
+ */
+function renderPublicProfileHero(profile) {
+  const name = profile.display_name || 'Member';
+  const username = profile.username ? `@${profile.username}` : '';
+  const role = (profile.role || 'visitor').toLowerCase();
+  const roleLabel = role === 'admin' ? '👑 Administrator' : 'Visitor';
+  const createdAt = profile.created_at ? formatDate(profile.created_at) : 'Recently';
+
+  if (dom.publicProfileName) dom.publicProfileName.textContent = name;
+  if (dom.publicProfileUsername) dom.publicProfileUsername.textContent = username;
+
+  if (dom.publicProfileRoleBadge) {
+    dom.publicProfileRoleBadge.className = `role-badge role-${role}`;
+    dom.publicProfileRoleBadge.textContent = roleLabel;
+  }
+  if (dom.publicProfileHeaderRole) {
+    dom.publicProfileHeaderRole.className = `role-badge role-${role}`;
+    dom.publicProfileHeaderRole.textContent = roleLabel;
+  }
+
+  if (dom.publicProfileJoined) {
+    dom.publicProfileJoined.textContent = `Member since ${createdAt}`;
+  }
+
+  // Edit My Profile button (strictly visible when viewing own profile)
+  if (dom.publicProfileEditBtn) {
+    if (currentUser && profile.id && currentUser.id === profile.id) {
+      dom.publicProfileEditBtn.classList.remove('hidden');
+    } else {
+      dom.publicProfileEditBtn.classList.add('hidden');
+    }
+  }
+
+  // Large Avatar
+  if (dom.publicProfileAvatar) {
+    dom.publicProfileAvatar.innerHTML = '';
+    if (profile.avatar_url && typeof profile.avatar_url === 'string' && profile.avatar_url.trim() !== '') {
+      const img = document.createElement('img');
+      img.src = profile.avatar_url.trim();
+      img.alt = name;
+      img.onerror = () => {
+        renderPublicProfileInitials(name);
+      };
+      dom.publicProfileAvatar.appendChild(img);
+    } else {
+      renderPublicProfileInitials(name);
+    }
+  }
+}
+
+function renderPublicProfileInitials(name) {
+  if (!dom.publicProfileAvatar) return;
+  const initials = (name || 'U')
+    .split(' ')
+    .filter(Boolean)
+    .map(w => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase() || 'U';
+  dom.publicProfileAvatar.textContent = initials;
+}
+
+/**
+ * Fetches and renders articles published by the user
+ */
+async function loadPublicUserPosts(profile, requestId) {
+  if (!dom.publicPostsGrid) return;
+  dom.publicPostsGrid.innerHTML = '';
+  dom.publicPostsLoading?.classList.remove('hidden');
+  dom.publicPostsEmpty?.classList.add('hidden');
+
+  let posts = [];
+  try {
+    if (supabaseClient && profile.id && profile.id !== 'demo-author') {
+      const { data, error } = await supabaseClient
+        .from('posts')
+        .select('*')
+        .eq('author_id', profile.id)
+        .eq('is_published', true)
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        posts = data;
+      }
+    }
+  } catch (err) {
+    console.warn('Error fetching user posts:', err);
+  }
+
+  // Fallback: check allPosts in memory (handles demo posts or cached posts)
+  if (posts.length === 0) {
+    const isDemo = profile.id === 'demo-author' || profile.username === 'ocean_author' || profile.role === 'admin';
+    posts = allPosts.filter(p => {
+      if (profile.id && p.author_id === profile.id) return true;
+      if (profile.username && (p.author_username === profile.username || p.profiles?.username === profile.username)) return true;
+      if (isDemo && (!p.author_id || p.id?.startsWith('demo-'))) return true;
+      return false;
+    });
+  }
+
+  // Deduplicate posts strictly by post.id to prevent duplicate cards
+  const seenPostIds = new Set();
+  const uniquePosts = posts.filter(p => {
+    const key = p.id || p.slug;
+    if (!key || seenPostIds.has(key)) return false;
+    seenPostIds.add(key);
+    return true;
+  });
+
+  // Guard against stale response
+  if (requestId && requestId !== publicProfileRequestId) return;
+
+  dom.publicPostsLoading?.classList.add('hidden');
+  dom.publicPostsGrid.innerHTML = '';
+
+  if (dom.publicTabPostsCount) dom.publicTabPostsCount.textContent = uniquePosts.length;
+  if (dom.publicStatPosts) dom.publicStatPosts.textContent = uniquePosts.length;
+
+  if (uniquePosts.length === 0) {
+    dom.publicPostsEmpty?.classList.remove('hidden');
+    return;
+  }
+
+  dom.publicPostsEmpty?.classList.add('hidden');
+
+  const fragment = document.createDocumentFragment();
+  uniquePosts.forEach(post => {
+    const card = createCardElement(post);
+    fragment.appendChild(card);
+  });
+  dom.publicPostsGrid.appendChild(fragment);
+}
+
+/**
+ * Fetches and renders comments contributed by the user
+ */
+async function loadPublicUserComments(profile, requestId) {
+  if (!dom.publicCommentsList) return;
+  dom.publicCommentsList.innerHTML = '';
+  dom.publicCommentsLoading?.classList.remove('hidden');
+  dom.publicCommentsEmpty?.classList.add('hidden');
+
+  let comments = [];
+  try {
+    if (supabaseClient && profile.id && profile.id !== 'demo-author') {
+      const { data, error } = await supabaseClient
+        .from('comments')
+        .select('id, post_id, content, created_at, posts(id, title, slug)')
+        .eq('user_id', profile.id)
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        comments = data;
+      } else {
+        const fallback = await supabaseClient
+          .from('comments')
+          .select('id, post_id, content, created_at')
+          .eq('user_id', profile.id)
+          .order('created_at', { ascending: false });
+        if (fallback.data) {
+          comments = fallback.data;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Error fetching user comments:', err);
+  }
+
+  // Deduplicate comments strictly by comment.id to prevent duplicate rows
+  const seenCommentIds = new Set();
+  const uniqueComments = comments.filter(c => {
+    if (!c.id || seenCommentIds.has(c.id)) return false;
+    seenCommentIds.add(c.id);
+    return true;
+  });
+
+  // Guard against stale response
+  if (requestId && requestId !== publicProfileRequestId) return;
+
+  dom.publicCommentsLoading?.classList.add('hidden');
+  dom.publicCommentsList.innerHTML = '';
+
+  if (dom.publicTabCommentsCount) dom.publicTabCommentsCount.textContent = uniqueComments.length;
+  if (dom.publicStatComments) dom.publicStatComments.textContent = uniqueComments.length;
+
+  if (uniqueComments.length === 0) {
+    dom.publicCommentsEmpty?.classList.remove('hidden');
+    return;
+  }
+
+  dom.publicCommentsEmpty?.classList.add('hidden');
+
+  const fragment = document.createDocumentFragment();
+  uniqueComments.forEach(comment => {
+    const post = (comment.posts && typeof comment.posts === 'object')
+      ? (Array.isArray(comment.posts) ? comment.posts[0] : comment.posts)
+      : allPosts.find(p => p.id === comment.post_id);
+
+    const postTitle = post?.title || 'an article';
+    const card = document.createElement('div');
+    card.className = 'public-comment-card';
+
+    const header = document.createElement('div');
+    header.className = 'public-comment-header';
+
+    const info = document.createElement('div');
+    info.className = 'public-comment-post-info';
+
+    const lbl = document.createElement('span');
+    lbl.className = 'public-comment-label';
+    lbl.textContent = 'Commented on:';
+
+    const link = document.createElement('a');
+    link.className = 'public-comment-post-title';
+    link.textContent = postTitle;
+    link.href = post ? `#/post/${encodeURIComponent(post.slug || post.id)}` : '#';
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (post) {
+        openArticleView(post);
+      }
+    });
+
+    info.appendChild(lbl);
+    info.appendChild(link);
+
+    const date = document.createElement('span');
+    date.className = 'public-comment-date';
+    date.textContent = formatDate(comment.created_at);
+
+    header.appendChild(info);
+    header.appendChild(date);
+
+    const body = document.createElement('p');
+    body.className = 'public-comment-body';
+    body.textContent = comment.content || '';
+
+    card.appendChild(header);
+    card.appendChild(body);
+    fragment.appendChild(card);
+  });
+
+  dom.publicCommentsList.appendChild(fragment);
+  // Always keeps Articles tab as default; no auto-switching to comments!
+}
+
+/**
+ * Switches between Articles and Comments tabs in public profile
+ */
+function setPublicProfileTab(tab) {
+  const isPosts = tab === 'posts';
+  dom.publicTabPosts?.classList.toggle('active', isPosts);
+  dom.publicTabPosts?.setAttribute('aria-selected', String(isPosts));
+  dom.publicTabComments?.classList.toggle('active', !isPosts);
+  dom.publicTabComments?.setAttribute('aria-selected', String(!isPosts));
+
+  dom.publicPanePosts?.classList.toggle('hidden', !isPosts);
+  dom.publicPaneComments?.classList.toggle('hidden', isPosts);
+}
+
+/**
+ * Handles back button from public profile view
+ */
+function handlePublicProfileBack() {
+  if (lastNonProfileView === 'article' && activePost) {
+    openArticleView(activePost);
+  } else if (lastNonProfileView === 'admin' && currentUserRole === 'admin') {
+    openAdminView();
+  } else if (lastNonProfileView === 'profile' && currentUser) {
+    openProfileView();
+  } else {
+    returnToHomeView();
+  }
+}
+
+// ============================================================================
 // 13. EVENT LISTENERS
 // ============================================================================
 
@@ -3586,8 +4143,30 @@ function initEventListeners() {
   dom.bottomBackBtn?.addEventListener('click', returnToHomeView);
   dom.brandLogo?.addEventListener('click', (e) => {
     e.preventDefault();
-    if (!dom.articleView?.classList.contains('hidden') || !dom.adminView?.classList.contains('hidden') || !dom.profileView?.classList.contains('hidden')) {
+    if (!dom.articleView?.classList.contains('hidden') || !dom.adminView?.classList.contains('hidden') || !dom.profileView?.classList.contains('hidden') || !dom.publicProfileView?.classList.contains('hidden')) {
       returnToHomeView();
+    }
+  });
+
+  // Public Profile Event Listeners
+  dom.publicProfileBackBtn?.addEventListener('click', handlePublicProfileBack);
+  dom.publicProfileEditBtn?.addEventListener('click', openProfileView);
+  dom.publicTabPosts?.addEventListener('click', () => setPublicProfileTab('posts'));
+  dom.publicTabComments?.addEventListener('click', () => setPublicProfileTab('comments'));
+  dom.articleAuthorProfileBtn?.addEventListener('click', () => {
+    if (currentArticleAuthor) {
+      openPublicProfileView(currentArticleAuthor.id || currentArticleAuthor.username, currentArticleAuthor.username, currentArticleAuthor.display_name);
+    }
+  });
+  dom.articleAuthorCard?.addEventListener('click', (e) => {
+    if (e.target.closest('a') || e.target.closest('#sidebar-share-btn') || e.target.closest('button')) return;
+    if (currentArticleAuthor) {
+      openPublicProfileView(currentArticleAuthor.id || currentArticleAuthor.username, currentArticleAuthor.username, currentArticleAuthor.display_name);
+    }
+  });
+  dom.profileViewPublicBtn?.addEventListener('click', () => {
+    if (currentUser) {
+      openPublicProfileView(currentUser.id, currentProfile?.username, currentProfile?.display_name);
     }
   });
 

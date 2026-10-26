@@ -271,6 +271,16 @@
               <a id="article-author-email" href="" class="sidebar-author-email">author@example.com</a>
             </div>
 
+            <div class="sidebar-section author-profile-link-section">
+              <button type="button" id="article-author-profile-btn" class="sidebar-profile-action-btn" title="View author's public profile">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span>View Author Profile</span>
+              </button>
+            </div>
+
             <div class="sidebar-section">
               <span class="sidebar-label">Published</span>
               <span id="article-date" class="sidebar-meta-val"></span>
@@ -687,6 +697,130 @@
     </section>
 
     <!-- ==============================================
+         PUBLIC PROFILE VIEW (Accessible to everyone: visitors, commenters, authors)
+         ============================================== -->
+    <section id="public-profile-view" class="view hidden">
+      <!-- Public Profile Top Bar -->
+      <div class="profile-top-bar public-profile-top-bar">
+        <button id="public-profile-back-btn" class="back-btn" aria-label="Back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span id="public-profile-back-label">Back</span>
+        </button>
+
+        <div class="profile-top-right">
+          <button type="button" id="public-profile-edit-btn" class="btn-sm btn-primary public-profile-edit-btn hidden" title="Edit your account profile">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+            <span>Edit My Profile</span>
+          </button>
+          <div class="profile-header-badge">
+            <span id="public-profile-header-role" class="role-badge role-visitor">Visitor</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Public Profile Hero Banner Card -->
+      <div class="public-profile-hero">
+        <div class="public-profile-card">
+          <div class="public-profile-avatar-wrap">
+            <div id="public-profile-avatar" class="profile-avatar-large public-avatar-large" title="Profile Avatar"></div>
+            <div class="profile-avatar-badge" title="Community Member">
+              <span class="status-indicator-dot online"></span>
+            </div>
+          </div>
+
+          <div class="public-profile-info">
+            <div class="public-profile-title-row">
+              <h1 id="public-profile-name" class="public-profile-name">Member</h1>
+              <span id="public-profile-role-badge" class="role-badge role-visitor">Visitor</span>
+            </div>
+            <span id="public-profile-username" class="public-profile-username">@username</span>
+            
+            <div class="public-profile-meta-row">
+              <span class="public-meta-pill">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span id="public-profile-joined">Member</span>
+              </span>
+              <span class="public-meta-pill" id="public-profile-status-pill">
+                <span class="status-indicator-dot online" style="width: 7px; height: 7px;"></span>
+                <span>Active Member</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Activity Summary Stats -->
+          <div class="public-profile-stats">
+            <div class="profile-stat-box">
+              <span id="public-stat-posts" class="profile-stat-num">0</span>
+              <span class="profile-stat-lbl">Articles</span>
+            </div>
+            <div class="profile-stat-box">
+              <span id="public-stat-comments" class="profile-stat-num">0</span>
+              <span class="profile-stat-lbl">Comments</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Public Profile Tabs & Content -->
+      <div class="public-profile-content-wrap">
+        <div class="public-profile-tabs" role="tablist">
+          <button type="button" id="public-tab-posts" class="public-tab-btn active" role="tab" aria-selected="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10l6 6v10a2 2 0 0 1-2 2z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            <span>Articles (<strong id="public-tab-posts-count">0</strong>)</span>
+          </button>
+          <button type="button" id="public-tab-comments" class="public-tab-btn" role="tab" aria-selected="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>Comments (<strong id="public-tab-comments-count">0</strong>)</span>
+          </button>
+        </div>
+
+        <!-- Posts Pane -->
+        <div id="public-pane-posts" class="public-tab-pane">
+          <div id="public-posts-loading" class="public-tab-loading hidden">
+            <div class="skeleton-line sm skeleton-anim" style="width: 140px; margin-bottom: 1rem;"></div>
+            <div class="skeleton-line lg skeleton-anim"></div>
+          </div>
+          <div id="public-posts-grid" class="posts-grid"></div>
+          <div id="public-posts-empty" class="state-container hidden">
+            <div class="state-icon">📝</div>
+            <h3 class="state-title">No published articles yet</h3>
+            <p class="state-desc">This author has not published any articles on Ocean Verse yet.</p>
+          </div>
+        </div>
+
+        <!-- Comments Pane -->
+        <div id="public-pane-comments" class="public-tab-pane hidden">
+          <div id="public-comments-loading" class="public-tab-loading hidden">
+            <div class="skeleton-line sm skeleton-anim" style="width: 140px; margin-bottom: 1rem;"></div>
+            <div class="skeleton-line lg skeleton-anim"></div>
+          </div>
+          <div id="public-comments-list" class="public-comments-list"></div>
+          <div id="public-comments-empty" class="state-container hidden">
+            <div class="state-icon">💬</div>
+            <h3 class="state-title">No comments yet</h3>
+            <p class="state-desc">This member has not posted any comments in discussions yet.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==============================================
          PROFILE VIEW (User Account & Settings)
          ============================================== -->
     <section id="profile-view" class="view hidden">
@@ -792,6 +926,13 @@
 
           <!-- Profile Actions -->
           <div class="profile-side-actions">
+            <button type="button" id="profile-view-public-btn" class="btn-sm btn-outline profile-action-btn" title="View your public profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <span>View Public Profile</span>
+            </button>
             <button type="button" id="profile-side-admin-btn" class="btn-sm btn-primary profile-action-btn hidden" title="Go to Admin Dashboard">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
                 <path d="M12 20h9"></path>
