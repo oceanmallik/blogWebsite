@@ -244,6 +244,7 @@ function initDOM() {
   // Profile View Elements
   dom.profileBackBtn = document.getElementById('profile-back-btn');
   dom.profileNavAdminBtn = document.getElementById('profile-nav-admin-btn');
+  dom.profileSideAdminBtn = document.getElementById('profile-side-admin-btn');
   dom.profileHeaderRole = document.getElementById('profile-header-role');
   dom.profileAvatarLarge = document.getElementById('profile-avatar-large');
   dom.profileAvatarBadge = document.getElementById('profile-avatar-badge');
@@ -2797,6 +2798,13 @@ async function populateProfileView() {
       dom.profileNavAdminBtn.classList.add('hidden');
     }
   }
+  if (dom.profileSideAdminBtn) {
+    if (role === 'admin') {
+      dom.profileSideAdminBtn.classList.remove('hidden');
+    } else {
+      dom.profileSideAdminBtn.classList.add('hidden');
+    }
+  }
 
   // Edit Form Fields
   if (dom.profileEditName) dom.profileEditName.value = displayName;
@@ -3331,6 +3339,7 @@ function initEventListeners() {
   dom.navUserChip?.addEventListener('click', openProfileView);
   dom.navProfileBtn?.addEventListener('click', openProfileView);
   dom.profileNavAdminBtn?.addEventListener('click', openAdminView);
+  dom.profileSideAdminBtn?.addEventListener('click', openAdminView);
   dom.profileSidePasswordBtn?.addEventListener('click', () => {
     const target = document.getElementById('profile-security-section') || dom.profileNewPassword;
     target?.scrollIntoView({ behavior: 'smooth', block: 'center' });

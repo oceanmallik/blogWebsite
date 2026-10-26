@@ -539,17 +539,20 @@ img {
 .nav-admin-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.45rem;
   background: var(--accent-yellow);
   border: var(--border-width) solid var(--border-color);
   color: #0A0A0A;
   font-size: 0.78rem;
   font-weight: 700;
-  padding: 0.35rem 0.75rem;
+  padding: 0.45rem 0.85rem;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
+  font-family: var(--font-mono);
   box-shadow: var(--shadow-xs);
+  cursor: pointer;
   transition: all var(--transition-fast);
+  flex-shrink: 0;
 }
 
 .nav-admin-btn:hover {
@@ -557,6 +560,16 @@ img {
   box-shadow: var(--shadow-sm);
   background: var(--accent-lime);
   color: #0A0A0A;
+}
+
+[data-theme="dark"] .nav-admin-btn {
+  background: var(--accent-yellow);
+  color: #0F141C;
+}
+
+[data-theme="dark"] .nav-admin-btn:hover {
+  background: var(--accent-lime);
+  color: #0F141C;
 }
 
 .nav-admin-btn svg {
