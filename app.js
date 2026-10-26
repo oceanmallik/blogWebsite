@@ -659,12 +659,17 @@ function updateAuthUI() {
     loadAdminPosts();
   }
 
-  // Toggle article view admin action bar visibility if viewing an article
+  // Toggle article view admin action bar visibility if viewing an article (strictly limited to author)
   if (dom.articleAdminActions) {
-    if (currentUserRole === 'admin' && activePost && dom.articleView && !dom.articleView.classList.contains('hidden')) {
+    const isAuthor = Boolean(currentUser && activePost && activePost.author_id && activePost.author_id === currentUser.id);
+    if (currentUserRole === 'admin' && isAuthor && dom.articleView && !dom.articleView.classList.contains('hidden')) {
       dom.articleAdminActions.classList.remove('hidden');
+      dom.articleAdminEditBtn?.classList.remove('hidden');
+      dom.articleAdminDeleteBtn?.classList.remove('hidden');
     } else {
       dom.articleAdminActions.classList.add('hidden');
+      dom.articleAdminEditBtn?.classList.add('hidden');
+      dom.articleAdminDeleteBtn?.classList.add('hidden');
     }
   }
 
@@ -1516,12 +1521,17 @@ function openArticleView(post, updateHash = true) {
   dom.publicProfileView?.classList.add('hidden');
   dom.articleView?.classList.remove('hidden');
 
-  // Article admin action buttons
+  // Article admin action buttons (strictly limited to post author)
   if (dom.articleAdminActions) {
-    if (currentUserRole === 'admin') {
+    const isAuthor = Boolean(currentUser && post && post.author_id && post.author_id === currentUser.id);
+    if (currentUserRole === 'admin' && isAuthor) {
       dom.articleAdminActions.classList.remove('hidden');
+      dom.articleAdminEditBtn?.classList.remove('hidden');
+      dom.articleAdminDeleteBtn?.classList.remove('hidden');
     } else {
       dom.articleAdminActions.classList.add('hidden');
+      dom.articleAdminEditBtn?.classList.add('hidden');
+      dom.articleAdminDeleteBtn?.classList.add('hidden');
     }
   }
 
@@ -2080,6 +2090,7 @@ function renderAdminPostsList(posts) {
 
     const readingTime = calculateReadingTime(post.content || post.summary || '');
     const dateFormatted = formatDate(post.created_at);
+    const isAuthor = Boolean(currentUser && post.author_id && post.author_id === currentUser.id);
 
     body.innerHTML = `
       <div class="card-meta">
@@ -2093,20 +2104,24 @@ function renderAdminPostsList(posts) {
       <p class="card-summary admin-card-summary">${escapeHtml(post.summary || 'No summary excerpt provided.')}</p>
       <div class="card-footer admin-card-footer admin-card-actions-row">
         <div class="admin-card-actions-group admin-post-actions">
-          <button type="button" class="admin-card-btn admin-action-btn admin-card-btn-edit edit-btn" data-id="${post.id}" title="Edit this post in Editor">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13">
-              <path d="M12 20h9"></path>
-              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-            </svg>
-            <span>Edit</span>
-          </button>
-          <button type="button" class="admin-card-btn admin-action-btn admin-card-btn-delete delete-btn" data-id="${post.id}" title="Permanently delete post">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13">
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            </svg>
-            <span>Delete</span>
-          </button>
+          ${isAuthor ? `
+            <button type="button" class="admin-card-btn admin-action-btn admin-card-btn-edit edit-btn" data-id="${post.id}" title="Edit this post in Editor">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+              </svg>
+              <span>Edit</span>
+            </button>
+            <button type="button" class="admin-card-btn admin-action-btn admin-card-btn-delete delete-btn" data-id="${post.id}" title="Permanently delete post">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              <span>Delete</span>
+            </button>
+          ` : `
+            <span class="role-badge role-visitor" title="Only the author can edit or delete this post" style="font-size:0.68rem;opacity:0.85;">Author Only</span>
+          `}
         </div>
         <button type="button" class="admin-card-btn admin-action-btn admin-card-btn-view view-btn" data-id="${post.id}" title="Preview article in viewer">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13">
@@ -2124,17 +2139,19 @@ function renderAdminPostsList(posts) {
       e.stopPropagation();
     });
 
-    body.querySelector('.edit-btn')?.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      editPost(post.id);
-    });
+    if (isAuthor) {
+      body.querySelector('.edit-btn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        editPost(post.id);
+      });
 
-    body.querySelector('.delete-btn')?.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      deletePost(post.id);
-    });
+      body.querySelector('.delete-btn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        deletePost(post.id);
+      });
+    }
 
     body.querySelector('.view-btn')?.addEventListener('click', (e) => {
       e.preventDefault();
@@ -2193,6 +2210,10 @@ async function handleAdminPostSubmit(e) {
 
   try {
     if (editingPostId) {
+      if (!currentUser || !currentUser.id) {
+        throw new Error('You must be signed in to edit a post.');
+      }
+
       const updatePayload = {
         title,
         slug,
@@ -2209,13 +2230,22 @@ async function handleAdminPostSubmit(e) {
         .from('posts')
         .update(updatePayload)
         .eq('id', editingPostId)
+        .eq('author_id', currentUser.id)
         .select();
 
       if (error) throw error;
 
+      if (!data || data.length === 0) {
+        throw new Error('Update failed: 0 rows affected. You can only edit posts you created.');
+      }
+
       showAdminMsg('Post updated successfully!', 'success');
       resetAdminEditor();
     } else {
+      if (!currentUser || !currentUser.id) {
+        throw new Error('You must be signed in to create a post.');
+      }
+
       const insertPayload = {
         title,
         slug,
@@ -2223,7 +2253,7 @@ async function handleAdminPostSubmit(e) {
         cover_image,
         content,
         is_published,
-        author_id: currentUser ? currentUser.id : null
+        author_id: currentUser.id
       };
       if (customCreatedAt) {
         insertPayload.created_at = customCreatedAt;
@@ -2258,6 +2288,11 @@ async function handleAdminPostSubmit(e) {
 function editPost(postId) {
   const post = adminPosts.find(p => p.id === postId) || allPosts.find(p => p.id === postId) || (activePost?.id === postId ? activePost : null);
   if (!post) return;
+
+  if (!currentUser || post.author_id !== currentUser.id) {
+    alert('Unauthorized: You can only edit posts that you created.');
+    return;
+  }
 
   editingPostId = post.id;
   dom.adminPostId.value = post.id;
@@ -2318,7 +2353,17 @@ async function deletePost(postId) {
     return;
   }
 
+  if (!currentUser || !currentUser.id) {
+    alert('Unauthorized: You must be logged in to delete a post.');
+    return;
+  }
+
   const post = adminPosts.find(p => p.id === postId) || allPosts.find(p => p.id === postId) || (activePost?.id === postId ? activePost : null);
+  if (post && post.author_id && post.author_id !== currentUser.id) {
+    alert('Unauthorized: You can only delete posts that you created.');
+    return;
+  }
+
   const title = post ? post.title : 'this post';
 
   if (!confirm(`Are you sure you want to permanently delete "${title}"?`)) {
@@ -2326,12 +2371,18 @@ async function deletePost(postId) {
   }
 
   try {
-    const { error } = await supabaseClient
+    const { data, error } = await supabaseClient
       .from('posts')
       .delete()
-      .eq('id', postId);
+      .eq('id', postId)
+      .eq('author_id', currentUser.id)
+      .select();
 
     if (error) throw error;
+
+    if (!data || data.length === 0) {
+      throw new Error('Deletion failed: 0 rows affected. You can only delete posts you created.');
+    }
 
     showAdminMsg('Post deleted successfully.', 'success');
     if (editingPostId === postId) {
@@ -4344,6 +4395,10 @@ function initEventListeners() {
   // Article Admin Action Buttons
   dom.articleAdminEditBtn?.addEventListener('click', () => {
     if (activePost) {
+      if (!currentUser || activePost.author_id !== currentUser.id) {
+        alert('Unauthorized: You can only edit posts that you created.');
+        return;
+      }
       const postId = activePost.id;
       openAdminView();
       editPost(postId);
@@ -4352,6 +4407,10 @@ function initEventListeners() {
 
   dom.articleAdminDeleteBtn?.addEventListener('click', async () => {
     if (activePost) {
+      if (!currentUser || activePost.author_id !== currentUser.id) {
+        alert('Unauthorized: You can only delete posts that you created.');
+        return;
+      }
       const postId = activePost.id;
       await deletePost(postId);
     }
