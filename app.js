@@ -4569,12 +4569,6 @@ function initEventListeners() {
       openPublicProfileView(currentArticleAuthor.id || currentArticleAuthor.username, currentArticleAuthor.username, currentArticleAuthor.display_name);
     }
   });
-  dom.articleAuthorCard?.addEventListener('click', (e) => {
-    if (e.target.closest('a') || e.target.closest('#sidebar-share-btn') || e.target.closest('button')) return;
-    if (currentArticleAuthor) {
-      openPublicProfileView(currentArticleAuthor.id || currentArticleAuthor.username, currentArticleAuthor.username, currentArticleAuthor.display_name);
-    }
-  });
   dom.profileViewPublicBtn?.addEventListener('click', () => {
     if (currentUser) {
       openPublicProfileView(currentUser.id, currentProfile?.username, currentProfile?.display_name);

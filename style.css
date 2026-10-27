@@ -128,7 +128,7 @@ html {
 
 html, body {
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
@@ -1820,11 +1820,16 @@ img {
 /* Left Sidebar Rail */
 .article-sidebar-left {
   position: sticky;
-  top: 90px;
+  top: calc(75px + 1.25rem);
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
   min-width: 0;
+  align-self: start;
+  z-index: 20;
+  max-height: calc(100vh - (75px + 2rem));
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 /* Author Card in Sidebar */
@@ -5993,16 +5998,6 @@ input[type="datetime-local"] {
   box-shadow: var(--shadow-sm);
 }
 
-.article-author-sidebar-card .author-avatar-large-wrap,
-.article-author-sidebar-card .sidebar-author-name {
-  cursor: pointer;
-  transition: opacity var(--transition-fast);
-}
-
-.article-author-sidebar-card .author-avatar-large-wrap:hover,
-.article-author-sidebar-card .sidebar-author-name:hover {
-  opacity: 0.85;
-}
 
 /* Comment author interactive hover */
 .comment-author-wrap {
