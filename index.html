@@ -23,7 +23,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=3.7">
+  <link rel="stylesheet" href="style.css?v=4.2">
 </head>
 <body>
   <!-- Header / Navigation -->
@@ -42,13 +42,13 @@
       </a>
 
       <div class="header-right">
-        <!-- Admin Panel Button (Standalone tool, shown strictly for currentUserRole === 'admin') -->
-        <button id="nav-admin-btn" class="nav-admin-btn hidden" title="Admin Dashboard" aria-label="Admin Dashboard">
+        <!-- Create a post Button (Shown strictly for currentUserRole === 'admin') -->
+        <button id="nav-admin-btn" class="nav-admin-btn hidden" title="Create a post" aria-label="Create a post">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
             <path d="M12 20h9"></path>
             <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
           </svg>
-          <span class="admin-btn-label">Admin Panel</span>
+          <span class="admin-btn-label">Create a post</span>
         </button>
 
         <!-- Supabase Auth Actions -->
@@ -65,14 +65,14 @@
 
           <!-- Logged in user profile & logout -->
           <div id="nav-user-profile" class="nav-user-profile hidden">
-            <button type="button" id="nav-user-chip" class="nav-user-chip" title="View Profile" aria-label="View Profile">
+            <button type="button" id="nav-user-chip" class="nav-user-chip" title="View Public Profile" aria-label="View Public Profile">
               <div id="nav-user-avatar" class="nav-user-avatar" title="Your Account"></div>
               <div class="nav-user-details">
                 <span id="nav-user-name" class="nav-user-name"></span>
                 <span id="nav-user-role" class="role-badge role-visitor">Visitor</span>
               </div>
             </button>
-            <button id="nav-profile-btn" class="nav-profile-btn hidden" title="View Profile" aria-label="View Profile">
+            <button id="nav-profile-btn" class="nav-profile-btn hidden" title="View Public Profile" aria-label="View Public Profile">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
@@ -472,10 +472,10 @@
         </div>
       </div>
 
-      <!-- Admin Overview Header -->
+      <!-- Create a post Overview Header -->
       <div class="admin-intro">
-        <h1 class="admin-title">Admin Dashboard</h1>
-        <p class="admin-subtitle">Create, edit, delete, and publish articles.</p>
+        <h1 class="admin-title">Create a post</h1>
+        <p class="admin-subtitle">Write, edit, and publish articles to OceanVerse.</p>
       </div>
 
       <form id="admin-post-form">
@@ -881,12 +881,12 @@
         </button>
 
         <div class="profile-top-right">
-          <button type="button" id="profile-nav-admin-btn" class="btn-sm btn-primary profile-admin-quick-btn hidden" title="Go to Admin Panel">
+          <button type="button" id="profile-nav-admin-btn" class="btn-sm btn-primary profile-admin-quick-btn hidden" title="Create a post">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
               <path d="M12 20h9"></path>
               <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
             </svg>
-            <span>Admin Dashboard</span>
+            <span>Create a post</span>
           </button>
           <div class="profile-header-badge">
             <span id="profile-header-role" class="role-badge role-visitor">Visitor</span>
@@ -979,12 +979,12 @@
               </svg>
               <span>View Public Profile</span>
             </button>
-            <button type="button" id="profile-side-admin-btn" class="btn-sm btn-primary profile-action-btn hidden" title="Go to Admin Dashboard">
+            <button type="button" id="profile-side-admin-btn" class="btn-sm btn-primary profile-action-btn hidden" title="Create a post">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
                 <path d="M12 20h9"></path>
                 <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
               </svg>
-              <span>Admin Dashboard</span>
+              <span>Create a post</span>
             </button>
             <button type="button" id="profile-side-password-btn" class="btn-sm btn-secondary profile-action-btn">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
@@ -1473,7 +1473,7 @@
   </footer>
 
   <!-- Application Logic -->
-  <script src="app.js?v=3.7"></script>
+  <script src="app.js?v=4.1"></script>
 </body>
 </html>
 

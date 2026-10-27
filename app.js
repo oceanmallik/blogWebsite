@@ -710,7 +710,7 @@ function updateAuthUI() {
       dom.heroSignupBtnText.textContent = 'My Profile';
     }
     if (dom.heroSignupBtn) {
-      dom.heroSignupBtn.title = 'Open your profile settings';
+      dom.heroSignupBtn.title = 'View your public profile';
     }
   } else {
     // Logged out
@@ -1102,12 +1102,15 @@ function renderTopWritersList() {
           <div class="writer-name-row">
             <span class="writer-display-name">${escapeHtml(writer.name)}</span>
           </div>
-          <span class="writer-handle">@${escapeHtml(writer.username)}</span>
+          <div class="writer-meta-row">
+            <span class="writer-handle">@${escapeHtml(writer.username)}</span>
+            <span class="writer-meta-sep">•</span>
+            <span class="writer-meta-stats">${articleText}, ${commentText}</span>
+          </div>
         </div>
       </div>
       <div class="writer-right-group">
         <div class="writer-score-badge" title="${writer.score} pts: ${articleText} (${writer.postCount * ARTICLE_GRADE_POINTS} pts) + ${commentText} (${writer.commentCount * COMMENT_GRADE_POINTS} pts)">${writer.score} pts</div>
-        <span class="writer-articles-count">${articleText} • ${commentText}</span>
         <button type="button" class="btn-sm btn-outline writer-profile-btn" title="View ${escapeHtml(writer.name)}'s public profile">
           <span>View Profile</span>
         </button>
@@ -2003,7 +2006,7 @@ function handleHashNavigation() {
       return;
     }
   }
-  if (hash === '#/admin') {
+  if (hash === '#/create' || hash === '#/admin') {
     if (currentUserRole === 'admin') {
       openAdminView();
     } else {
@@ -2341,8 +2344,8 @@ function openAdminView() {
   dom.publicProfileView?.classList.add('hidden');
   dom.adminView?.classList.remove('hidden');
 
-  window.location.hash = '#/admin';
-  document.title = 'Admin Panel — OceanVerse';
+  window.location.hash = '#/create';
+  document.title = 'Create a post — OceanVerse';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
   loadAdminPosts();
@@ -4222,7 +4225,7 @@ async function openPublicProfileView(userIdentifier, fallbackUsername, fallbackN
     if (lastNonProfileView === 'article' && activePost) {
       dom.publicProfileBackLabel.textContent = 'Back to Article';
     } else if (lastNonProfileView === 'admin') {
-      dom.publicProfileBackLabel.textContent = 'Back to Admin';
+      dom.publicProfileBackLabel.textContent = 'Back to Create';
     } else if (lastNonProfileView === 'profile') {
       dom.publicProfileBackLabel.textContent = 'Back to Settings';
     } else {
@@ -4493,7 +4496,7 @@ async function loadPublicUserComments(profile, requestId) {
     if (supabaseClient && profile.id && profile.id !== 'demo-author') {
       const { data, error } = await supabaseClient
         .from('comments')
-        .select('id, post_id, content, created_at, posts(id, title, slug)')
+        .select('id, post_id, content, created_at, posts(id, title, slug, cover_image)')
         .eq('user_id', profile.id)
         .order('created_at', { ascending: false });
 
@@ -4512,6 +4515,34 @@ async function loadPublicUserComments(profile, requestId) {
     }
   } catch (err) {
     console.warn('Error fetching user comments:', err);
+  }
+
+  // Fallback: check cachedComments in memory or demo comments if empty
+  if (comments.length === 0) {
+    const isDemo = profile.id === 'demo-author' || profile.username === 'ocean_author';
+    const localMatches = cachedComments.filter(c => c.user_id === profile.id);
+    if (localMatches.length > 0) {
+      comments = localMatches;
+    } else if (isDemo && (allPosts.length > 0 || (typeof DEMO_PREVIEW_POSTS !== 'undefined' && DEMO_PREVIEW_POSTS.length > 0))) {
+      const p1 = allPosts[0] || DEMO_PREVIEW_POSTS[0];
+      const p2 = allPosts[1] || (typeof DEMO_PREVIEW_POSTS !== 'undefined' ? DEMO_PREVIEW_POSTS[1] : null) || p1;
+      comments = [
+        {
+          id: 'demo-comment-1',
+          post_id: p1.id,
+          content: 'Building resilient architectures with loose coupling and clear contracts is essential for modern web systems.',
+          created_at: new Date(Date.now() - 1000 * 60 * 60 * 18).toISOString(),
+          posts: p1
+        },
+        {
+          id: 'demo-comment-2',
+          post_id: p2.id,
+          content: 'Performance optimization in vanilla JavaScript is unmatched when DOM manipulation is minimized and state is kept predictable.',
+          created_at: new Date(Date.now() - 1000 * 60 * 60 * 42).toISOString(),
+          posts: p2
+        }
+      ];
+    }
   }
 
   // Deduplicate comments strictly by comment.id to prevent duplicate rows
@@ -4542,49 +4573,115 @@ async function loadPublicUserComments(profile, requestId) {
   uniqueComments.forEach(comment => {
     const post = (comment.posts && typeof comment.posts === 'object')
       ? (Array.isArray(comment.posts) ? comment.posts[0] : comment.posts)
-      : allPosts.find(p => p.id === comment.post_id);
+      : (allPosts.find(p => p.id === comment.post_id) || (typeof DEMO_PREVIEW_POSTS !== 'undefined' ? DEMO_PREVIEW_POSTS.find(p => p.id === comment.post_id) : null));
 
     const postTitle = post?.title || 'an article';
     const card = document.createElement('div');
     card.className = 'public-comment-card';
 
-    const header = document.createElement('div');
-    header.className = 'public-comment-header';
+    // 1. Embedded Horizontal Article Reference Bar (distinct from standard post card)
+    const articleBar = document.createElement('div');
+    articleBar.className = 'public-comment-article-bar';
+    articleBar.setAttribute('role', 'button');
+    articleBar.setAttribute('tabindex', '0');
+    articleBar.title = post ? `Read article: ${postTitle}` : postTitle;
 
-    const info = document.createElement('div');
-    info.className = 'public-comment-post-info';
+    // Thumbnail Box
+    const thumbBox = document.createElement('div');
+    thumbBox.className = 'public-comment-thumb-box';
 
-    const lbl = document.createElement('span');
-    lbl.className = 'public-comment-label';
-    lbl.textContent = 'Commented on:';
+    const coverUrl = post?.cover_image;
+    if (coverUrl && typeof coverUrl === 'string' && coverUrl.trim() !== '') {
+      const img = document.createElement('img');
+      img.className = 'public-comment-thumb-img';
+      img.alt = postTitle;
+      img.loading = 'lazy';
+      img.onerror = () => {
+        thumbBox.innerHTML = `
+          <div class="public-comment-thumb-placeholder" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20">
+              <path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10l6 6v10a2 2 0 0 1-2 2z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+          </div>
+        `;
+      };
+      img.src = coverUrl.trim();
+      thumbBox.appendChild(img);
+    } else {
+      thumbBox.innerHTML = `
+        <div class="public-comment-thumb-placeholder" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20">
+            <path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10l6 6v10a2 2 0 0 1-2 2z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+        </div>
+      `;
+    }
 
-    const link = document.createElement('a');
-    link.className = 'public-comment-post-title';
-    link.textContent = postTitle;
-    link.href = post ? `#/post/${encodeURIComponent(post.slug || post.id)}` : '#';
-    link.addEventListener('click', (e) => {
+    // Article Details (Tag, Date, Title, Arrow)
+    const details = document.createElement('div');
+    details.className = 'public-comment-article-details';
+
+    const timeAgo = formatTimeAgo(comment.created_at) || 'recently';
+    const dateFormatted = formatDate(comment.created_at);
+
+    details.innerHTML = `
+      <div class="public-comment-meta-row">
+        <span class="public-comment-tag">ARTICLE</span>
+        <span class="public-comment-date">${escapeHtml(dateFormatted)}</span>
+        <span class="public-comment-dot">•</span>
+        <span class="public-comment-timeago">${escapeHtml(timeAgo)}</span>
+      </div>
+      <h4 class="public-comment-article-title">
+        <span>${escapeHtml(postTitle)}</span>
+        <svg class="public-comment-link-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <line x1="7" y1="17" x2="17" y2="7"></line>
+          <polyline points="7 7 17 7 17 17"></polyline>
+        </svg>
+      </h4>
+    `;
+
+    articleBar.appendChild(thumbBox);
+    articleBar.appendChild(details);
+
+    const handleArticleNavigation = (e) => {
       e.preventDefault();
       if (post) {
         openArticleView(post);
       }
+    };
+
+    articleBar.addEventListener('click', handleArticleNavigation);
+    articleBar.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleArticleNavigation(e);
+      }
     });
 
-    info.appendChild(lbl);
-    info.appendChild(link);
+    // 2. Comment Content Speech Bubble
+    const bubble = document.createElement('div');
+    bubble.className = 'public-comment-bubble';
 
-    const date = document.createElement('span');
-    date.className = 'public-comment-date';
-    date.textContent = formatDate(comment.created_at);
+    const icon = document.createElement('div');
+    icon.className = 'public-comment-bubble-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+    `;
 
-    header.appendChild(info);
-    header.appendChild(date);
+    const text = document.createElement('p');
+    text.className = 'public-comment-content';
+    text.textContent = comment.content || '';
 
-    const body = document.createElement('p');
-    body.className = 'public-comment-body';
-    body.textContent = comment.content || '';
+    bubble.appendChild(icon);
+    bubble.appendChild(text);
 
-    card.appendChild(header);
-    card.appendChild(body);
+    card.appendChild(articleBar);
+    card.appendChild(bubble);
     fragment.appendChild(card);
   });
 
@@ -4654,8 +4751,20 @@ function initEventListeners() {
 
   // Profile View Event Listeners
   dom.profileBackBtn?.addEventListener('click', returnToHomeView);
-  dom.navUserChip?.addEventListener('click', openProfileView);
-  dom.navProfileBtn?.addEventListener('click', openProfileView);
+  dom.navUserChip?.addEventListener('click', () => {
+    if (currentUser) {
+      openPublicProfileView(currentUser.id, currentProfile?.username, currentProfile?.display_name);
+    } else {
+      openAuthModal('signin');
+    }
+  });
+  dom.navProfileBtn?.addEventListener('click', () => {
+    if (currentUser) {
+      openPublicProfileView(currentUser.id, currentProfile?.username, currentProfile?.display_name);
+    } else {
+      openAuthModal('signin');
+    }
+  });
   dom.profileNavAdminBtn?.addEventListener('click', openAdminView);
   dom.profileSideAdminBtn?.addEventListener('click', openAdminView);
   dom.profileSidePasswordBtn?.addEventListener('click', () => {
@@ -4837,7 +4946,7 @@ function initEventListeners() {
   dom.heroBecomeWriterBtn?.addEventListener('click', openWriterModal);
   dom.heroSignupBtn?.addEventListener('click', () => {
     if (currentUser) {
-      openProfileView();
+      openPublicProfileView(currentUser.id, currentProfile?.username, currentProfile?.display_name);
     } else {
       openAuthModal('signup');
     }
@@ -5125,6 +5234,11 @@ function initEventListeners() {
     }
   });
 }
+
+// Expose methods on window for testing & debugging
+window.handleUserSession = handleUserSession;
+window.openPublicProfileView = openPublicProfileView;
+window.openProfileView = openProfileView;
 
 // ============================================================================
 // 15. DOM READY EXECUTION
