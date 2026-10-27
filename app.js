@@ -1277,8 +1277,8 @@ function createCardElement(post) {
     }).catch(() => {});
   }
 
-  body.appendChild(meta);
   body.appendChild(title);
+  body.appendChild(meta);
   body.appendChild(summary);
   body.appendChild(footer);
 
@@ -1507,6 +1507,9 @@ function openArticleView(post, updateHash = true) {
   if (post.cover_image && typeof post.cover_image === 'string' && post.cover_image.trim() !== '') {
     dom.articleCover.src = post.cover_image;
     dom.articleCover.alt = post.title || 'Article cover';
+    dom.articleCover.onerror = () => {
+      dom.articleCoverWrap?.classList.add('hidden');
+    };
     dom.articleCoverWrap.classList.remove('hidden');
   } else {
     dom.articleCoverWrap.classList.add('hidden');
@@ -2094,6 +2097,7 @@ function renderAdminPostsList(posts) {
     const isAuthor = Boolean(currentUser && post.author_id && post.author_id === currentUser.id);
 
     body.innerHTML = `
+      <h3 class="card-title admin-card-title">${escapeHtml(post.title || 'Untitled Post')}</h3>
       <div class="card-meta">
         <span class="card-date">${dateFormatted}</span>
         <span class="card-dot">•</span>
@@ -2101,7 +2105,6 @@ function renderAdminPostsList(posts) {
         <span class="card-dot">•</span>
         <code class="admin-slug-chip" title="/${escapeHtml(post.slug || 'no-slug')}">/${escapeHtml(post.slug || 'no-slug')}</code>
       </div>
-      <h3 class="card-title admin-card-title">${escapeHtml(post.title || 'Untitled Post')}</h3>
       <p class="card-summary admin-card-summary">${escapeHtml(post.summary || 'No summary excerpt provided.')}</p>
       <div class="card-footer admin-card-footer admin-card-actions-row">
         <div class="admin-card-actions-group admin-post-actions">

@@ -180,8 +180,8 @@
         <div class="post-card skeleton-card">
           <div class="skeleton-image skeleton-anim"></div>
           <div class="card-body">
-            <div class="skeleton-line sm skeleton-anim"></div>
             <div class="skeleton-line lg skeleton-anim"></div>
+            <div class="skeleton-line sm skeleton-anim"></div>
             <div class="skeleton-line md skeleton-anim"></div>
             <div class="skeleton-line md skeleton-anim"></div>
           </div>
@@ -189,8 +189,8 @@
         <div class="post-card skeleton-card">
           <div class="skeleton-image skeleton-anim"></div>
           <div class="card-body">
-            <div class="skeleton-line sm skeleton-anim"></div>
             <div class="skeleton-line lg skeleton-anim"></div>
+            <div class="skeleton-line sm skeleton-anim"></div>
             <div class="skeleton-line md skeleton-anim"></div>
             <div class="skeleton-line md skeleton-anim"></div>
           </div>
@@ -198,8 +198,8 @@
         <div class="post-card skeleton-card">
           <div class="skeleton-image skeleton-anim"></div>
           <div class="card-body">
-            <div class="skeleton-line sm skeleton-anim"></div>
             <div class="skeleton-line lg skeleton-anim"></div>
+            <div class="skeleton-line sm skeleton-anim"></div>
             <div class="skeleton-line md skeleton-anim"></div>
             <div class="skeleton-line md skeleton-anim"></div>
           </div>
@@ -306,6 +306,11 @@
 
         <!-- Right Main Column: Content, Media & Comments -->
         <div class="article-main-col">
+          <!-- Article Cover Image Banner (Post photo appears first) -->
+          <div id="article-cover-wrap" class="article-cover-wrapper hidden">
+            <img id="article-cover" class="article-cover-image" src="" alt="Post cover image">
+          </div>
+
           <!-- Article Header -->
           <header class="article-header">
             <div id="article-admin-actions" class="article-admin-actions-bar hidden">
@@ -327,11 +332,6 @@
             <h1 id="article-title" class="article-title"></h1>
             <p id="article-summary" class="article-summary-lead"></p>
           </header>
-
-          <!-- Article Cover Image Banner -->
-          <div id="article-cover-wrap" class="article-cover-wrapper hidden">
-            <img id="article-cover" class="article-cover-image" src="" alt="Post cover image">
-          </div>
 
           <!-- Full Article Content Body -->
           <div id="article-content" class="article-body"></div>
