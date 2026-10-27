@@ -1485,7 +1485,7 @@ function createCardElement(post) {
   const body = document.createElement('div');
   body.className = 'card-body';
 
-  // Meta (Date & Reading Time)
+  // Meta (Date & Time Ago)
   const meta = document.createElement('div');
   meta.className = 'card-meta';
 
@@ -1498,8 +1498,8 @@ function createCardElement(post) {
   dotSpan.textContent = '•';
 
   const timeSpan = document.createElement('span');
-  timeSpan.className = 'card-reading-time';
-  timeSpan.textContent = calculateReadingTime(post.content || post.summary || '');
+  timeSpan.className = 'card-reading-time card-time-ago';
+  timeSpan.textContent = formatTimeAgo(post.created_at) || '0 days ago';
 
   // FIX 2: Optional chaining on author / profile
   const authorSpan = document.createElement('span');
@@ -1520,19 +1520,45 @@ function createCardElement(post) {
   summary.className = 'card-summary';
   summary.textContent = post.summary || 'Click to read full article.';
 
-  // Footer / Read More
+  // Footer / Author Profile & Read More
   const footer = document.createElement('div');
   footer.className = 'card-footer';
   const prof = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
   const cachedAuthor = post.author_id ? authorProfilesCache.get(post.author_id) : null;
-  const authorName = prof?.display_name || cachedAuthor?.display_name || post.author_name || 'Ocean Author';
-  const authorUsername = prof?.username || cachedAuthor?.username || post.author_username || '';
+  const isSelf = currentUser && post.author_id && post.author_id === currentUser.id;
+
+  let authorName = (isSelf && currentProfile?.display_name) 
+    ? currentProfile.display_name 
+    : (prof?.display_name || cachedAuthor?.display_name || post.author_name || '');
+  let authorUsername = (isSelf && currentProfile?.username)
+    ? currentProfile.username
+    : (prof?.username || cachedAuthor?.username || post.author_username || '');
+  let avatarUrl = (isSelf && currentProfile?.avatar_url)
+    ? currentProfile.avatar_url
+    : (prof?.avatar_url || cachedAuthor?.avatar_url || post.author_avatar || '');
+
+  if (!authorName) {
+    authorName = authorUsername || 'Ocean Author';
+  }
   const handle = authorUsername || (authorName ? authorName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '') : 'author');
 
+  const initials = (authorName || handle || 'W')
+    .trim()[0]
+    ?.toUpperCase() || 'W';
+
+  const avatarHtml = avatarUrl && avatarUrl.trim() !== ''
+    ? `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(authorName)}" class="card-author-avatar-img" onerror="this.onerror=null;this.parentElement.innerHTML='<span class=\\\'card-author-avatar-fallback\\\'>${escapeHtml(initials)}</span>';">`
+    : `<span class="card-author-avatar-fallback">${initials}</span>`;
+
   footer.innerHTML = `
-    <span class="card-footer-author" role="button" tabindex="0" title="View ${escapeHtml(authorName)}'s public profile">by <span class="author-handle">@${escapeHtml(handle)}</span></span>
+    <span class="card-footer-author card-author-pill" role="button" tabindex="0" title="View ${escapeHtml(authorName)}'s public profile">
+      <span class="card-author-avatar">
+        ${avatarHtml}
+      </span>
+      <span class="card-author-text">by <span class="author-handle">@${escapeHtml(handle)}</span></span>
+    </span>
     <span class="read-more-link" aria-hidden="true">
-      Read article
+      <span>Read article</span>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="5" y1="12" x2="19" y2="12"></line>
         <polyline points="12 5 19 12 12 19"></polyline>
@@ -1555,14 +1581,25 @@ function createCardElement(post) {
     });
   }
 
-  if (post.author_id && !authorUsername) {
+  if (post.author_id && (!authorUsername || !avatarUrl)) {
     getPostAuthorProfile(post).then(resolvedAuthor => {
       if (resolvedAuthor) {
         const resolvedHandle = resolvedAuthor.username || (resolvedAuthor.display_name ? resolvedAuthor.display_name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '') : handle);
-        const resolvedAuthorEl = card.querySelector('.card-footer-author');
-        if (resolvedAuthorEl && resolvedHandle) {
-          resolvedAuthorEl.title = `View ${resolvedAuthor.display_name || authorName}'s public profile`;
-          resolvedAuthorEl.innerHTML = `by <span class="author-handle">@${escapeHtml(resolvedHandle)}</span>`;
+        const resolvedName = resolvedAuthor.display_name || authorName;
+        const resolvedAvatar = resolvedAuthor.avatar_url;
+
+        const authorBtn = card.querySelector('.card-footer-author');
+        if (authorBtn) {
+          authorBtn.title = `View ${resolvedName}'s public profile`;
+        }
+
+        const handleEl = card.querySelector('.author-handle');
+        if (handleEl) handleEl.textContent = `@${resolvedHandle}`;
+
+        const avatarWrap = card.querySelector('.card-author-avatar');
+        if (avatarWrap && resolvedAvatar && resolvedAvatar.trim() !== '') {
+          const resolvedInitial = (resolvedName || resolvedHandle || 'W').trim()[0]?.toUpperCase() || 'W';
+          avatarWrap.innerHTML = `<img src="${escapeHtml(resolvedAvatar)}" alt="${escapeHtml(resolvedName)}" class="card-author-avatar-img" onerror="this.onerror=null;this.parentElement.innerHTML='<span class=\\\'card-author-avatar-fallback\\\'>${escapeHtml(resolvedInitial)}</span>';">`;
         }
       }
     }).catch(() => {});
@@ -1581,7 +1618,7 @@ function createCardElement(post) {
   });
 
   card.addEventListener('keydown', (e) => {
-    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+    if (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.closest('.card-author-pill') || e.target.closest('.card-footer-author')) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       openArticleView(post);
@@ -1776,9 +1813,11 @@ function openArticleView(post, updateHash = true) {
 
   dom.articleTitle.textContent = post.title || 'Untitled';
   const formattedDate = formatDate(post.created_at);
-  const daysAgo = formatDaysAgo(post.created_at);
-  dom.articleDate.textContent = formattedDate ? `${formattedDate}${daysAgo ? ` (${daysAgo})` : ''}` : '';
-  dom.articleReadingTime.textContent = calculateReadingTime(post.content || post.summary || '');
+  const timeAgo = formatTimeAgo(post.created_at);
+  dom.articleDate.textContent = formattedDate || '';
+  if (dom.articleReadingTime) {
+    dom.articleReadingTime.textContent = timeAgo || '0 days ago';
+  }
 
   // Populate author card (photo, name, email on left)
   getPostAuthorProfile(post).then(author => {
@@ -2384,7 +2423,7 @@ function renderAdminPostsList(posts) {
     const body = document.createElement('div');
     body.className = 'card-body admin-card-body';
 
-    const readingTime = calculateReadingTime(post.content || post.summary || '');
+    const timeAgo = formatTimeAgo(post.created_at);
     const dateFormatted = formatDate(post.created_at);
     const isAuthor = Boolean(currentUser && post.author_id && post.author_id === currentUser.id);
 
@@ -2393,7 +2432,7 @@ function renderAdminPostsList(posts) {
       <div class="card-meta">
         <span class="card-date">${dateFormatted}</span>
         <span class="card-dot">•</span>
-        <span class="card-reading-time">${readingTime}</span>
+        <span class="card-reading-time card-time-ago">${timeAgo || '0 days ago'}</span>
         <span class="card-dot">•</span>
         <code class="admin-slug-chip" title="/${escapeHtml(post.slug || 'no-slug')}">/${escapeHtml(post.slug || 'no-slug')}</code>
       </div>
@@ -3236,12 +3275,12 @@ function formatDate(isoString) {
 }
 
 /**
- * Calculates how many days ago a post was published
- * e.g. "0 days ago", "1 day ago", "260 days ago"
- * @param {string} isoString
+ * Calculates how many days, months, or years ago a post was published
+ * e.g. "0 days ago", "1 day ago", "15 days ago", "1 month ago", "4 months ago", "1 year ago", "2 years ago"
+ * @param {string|Date} isoString
  * @returns {string}
  */
-function formatDaysAgo(isoString) {
+function formatTimeAgo(isoString) {
   if (!isoString) return '';
   try {
     const pubDate = new Date(isoString);
@@ -3251,18 +3290,43 @@ function formatDaysAgo(isoString) {
     const pubMidnight = new Date(pubDate.getFullYear(), pubDate.getMonth(), pubDate.getDate());
     const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const diffTime = nowMidnight.getTime() - pubMidnight.getTime();
-    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+    const diffDays = Math.max(0, Math.round(diffTime / (1000 * 60 * 60 * 24)));
 
-    if (diffDays <= 0) {
-      return '0 days ago';
-    } else if (diffDays === 1) {
-      return '1 day ago';
+    if (diffDays < 30) {
+      if (diffDays <= 0) {
+        return '0 days ago';
+      } else if (diffDays === 1) {
+        return '1 day ago';
+      } else {
+        return `${diffDays} days ago`;
+      }
+    } else if (diffDays < 365) {
+      const months = Math.floor(diffDays / 30);
+      if (months <= 1) {
+        return '1 month ago';
+      } else if (months < 12) {
+        return `${months} months ago`;
+      } else {
+        return '1 year ago';
+      }
     } else {
-      return `${diffDays} days ago`;
+      const years = Math.floor(diffDays / 365);
+      if (years <= 1) {
+        return '1 year ago';
+      } else {
+        return `${years} years ago`;
+      }
     }
   } catch {
     return '';
   }
+}
+
+/**
+ * Backwards compatibility alias for formatTimeAgo
+ */
+function formatDaysAgo(isoString) {
+  return formatTimeAgo(isoString);
 }
 
 /**

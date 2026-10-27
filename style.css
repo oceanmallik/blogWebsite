@@ -1320,7 +1320,11 @@ img {
   gap: 0.75rem;
 }
 
-.card-footer-author {
+.card-footer-author,
+.card-author-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
   font-size: 0.76rem;
   font-family: var(--font-mono);
   color: var(--text-secondary);
@@ -1328,6 +1332,80 @@ img {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
+  min-width: 0;
+  flex: 1;
+  user-select: none;
+  transition: color var(--transition-fast);
+}
+
+.card-footer-author:hover,
+.card-footer-author:focus-visible,
+.card-author-pill:hover,
+.card-author-pill:focus-visible {
+  color: var(--ocean-primary);
+  outline: none;
+}
+
+.card-footer-author:hover .card-author-avatar,
+.card-footer-author:focus-visible .card-author-avatar,
+.card-author-pill:hover .card-author-avatar,
+.card-author-pill:focus-visible .card-author-avatar {
+  transform: scale(1.15);
+  border-color: var(--ocean-primary);
+}
+
+.card-footer-author:hover .author-handle,
+.card-footer-author:focus-visible .author-handle,
+.card-author-pill:hover .author-handle,
+.card-author-pill:focus-visible .author-handle {
+  color: var(--accent-coral);
+  text-decoration: underline;
+}
+
+/* Small rounded icon - similar size to the fonts (18px) */
+.card-author-avatar {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-color);
+  background: var(--accent-yellow);
+  color: #0A0A0A;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  vertical-align: middle;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.card-author-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.card-author-avatar-fallback {
+  font-size: 0.54rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: #0A0A0A;
+  text-transform: uppercase;
+  line-height: 1;
+  text-align: center;
+}
+
+.card-author-text {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .read-more-link {
@@ -5885,20 +5963,6 @@ input[type="datetime-local"] {
   white-space: pre-wrap;
 }
 
-/* Author pill & link interactivity */
-.card-footer-author {
-  cursor: pointer;
-  transition: color var(--transition-fast);
-}
-
-.card-footer-author:hover {
-  color: var(--ocean-primary);
-}
-
-.card-footer-author:hover .author-handle {
-  color: var(--accent-coral);
-  text-decoration: underline;
-}
 
 /* Sidebar profile button in Article view */
 .sidebar-profile-action-btn {
