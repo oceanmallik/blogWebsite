@@ -28,6 +28,12 @@ let activeComments = [];
 let adminPosts = [];
 let editingPostId = null;
 
+// Contributor Grading & Scoring System: 1 Article = 10 pts, 1 Comment = 1 pt
+const ARTICLE_GRADE_POINTS = 10;
+const COMMENT_GRADE_POINTS = 1;
+let cachedComments = [];
+const authorProfilesCache = new Map();
+
 // Expose state globally on window for convenient debugging
 window.supabaseClient = null;
 window.currentUser = null;
@@ -405,30 +411,47 @@ async function loadPosts() {
 
     allPosts = data || [];
 
-    // Batch preload author profiles into authorProfilesCache BEFORE rendering top writers and grid
-    if (supabaseClient && allPosts.length > 0) {
-      const authorIds = [...new Set(allPosts.map(p => p.author_id).filter(Boolean))];
-      if (authorIds.length > 0) {
+    // Batch preload comments for Top Contributors scoring
+    if (supabaseClient) {
+      try {
+        const { data: commentsData, error: commentsErr } = await supabaseClient
+          .from('comments')
+          .select('id, user_id, created_at');
+        if (!commentsErr && Array.isArray(commentsData)) {
+          cachedComments = commentsData;
+        }
+      } catch (cErr) {
+        console.warn('Could not fetch comments for leaderboard:', cErr);
+      }
+    }
+
+    // Batch preload contributor profiles into authorProfilesCache BEFORE rendering top contributors and grid
+    if (supabaseClient) {
+      const authorIds = allPosts.map(p => p.author_id);
+      const commenterIds = cachedComments.map(c => c.user_id);
+      const contributorIds = [...new Set([...authorIds, ...commenterIds].filter(Boolean))];
+
+      if (contributorIds.length > 0) {
         try {
           const { data: profs, error: profsErr } = await supabaseClient
             .from('profiles')
             .select('id, email, display_name, username, avatar_url, role, created_at')
-            .in('id', authorIds);
+            .in('id', contributorIds);
           if (!profsErr && profs) {
             profs.forEach(p => {
               authorProfilesCache.set(p.id, {
                 id: p.id,
-                display_name: p.display_name || (p.email ? p.email.split('@')[0] : 'Ocean Author'),
+                display_name: p.display_name || (p.email ? p.email.split('@')[0] : 'Contributor'),
                 username: p.username || '',
                 email: p.email || '',
                 avatar_url: p.avatar_url || null,
-                role: p.role || 'admin',
+                role: p.role || 'reader',
                 created_at: p.created_at
               });
             });
           }
         } catch (profErr) {
-          console.warn('Batch author profile fetch warning:', profErr);
+          console.warn('Batch contributor profile fetch warning:', profErr);
         }
       }
     }
@@ -859,87 +882,124 @@ function closeTopWritersModal() {
   }
 }
 
-function getTopWriters(limit = 3) {
-  const authorMap = new Map();
+function getTopContributors(limit = 3) {
+  const contributorMap = new Map();
 
+  const getOrCreateContributor = (userId, initialProfile = null) => {
+    const key = userId || 'demo-author';
+    if (!contributorMap.has(key)) {
+      const cached = authorProfilesCache.get(key);
+      const isSelf = currentUser && currentUser.id === key;
+
+      let name = (isSelf && currentProfile?.display_name) 
+        ? currentProfile.display_name 
+        : (initialProfile?.display_name || cached?.display_name || '');
+      let username = (isSelf && currentProfile?.username)
+        ? currentProfile.username
+        : (initialProfile?.username || cached?.username || '');
+      let avatarUrl = (isSelf && currentProfile?.avatar_url)
+        ? currentProfile.avatar_url
+        : (initialProfile?.avatar_url || cached?.avatar_url || '');
+      let role = (isSelf && currentProfile?.role)
+        ? currentProfile.role
+        : (initialProfile?.role || cached?.role || 'reader');
+
+      if (!name) {
+        name = username || 'Contributor';
+      }
+      if (!username) {
+        username = name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '') || 'contributor';
+      }
+
+      contributorMap.set(key, {
+        id: key,
+        name,
+        username,
+        avatarUrl,
+        role,
+        postCount: 0,
+        commentCount: 0,
+        score: 0
+      });
+    }
+    return contributorMap.get(key);
+  };
+
+  // 1. Process posts (10 points per article)
   allPosts.forEach(post => {
     const prof = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
-    const cachedAuthor = post.author_id ? authorProfilesCache.get(post.author_id) : null;
-    const authorId = post.author_id || prof?.id || cachedAuthor?.id || 'demo-author';
-    let authorName = prof?.display_name || cachedAuthor?.display_name || post.author_name || '';
-    let authorUsername = prof?.username || cachedAuthor?.username || post.author_username || '';
-    let avatarUrl = prof?.avatar_url || cachedAuthor?.avatar_url || post.author_avatar || '';
-    let role = prof?.role || cachedAuthor?.role || 'admin';
+    const authorId = post.author_id || prof?.id || 'demo-author';
+    const initialProf = {
+      display_name: prof?.display_name || post.author_name,
+      username: prof?.username || post.author_username,
+      avatar_url: prof?.avatar_url || post.author_avatar,
+      role: prof?.role || 'admin'
+    };
 
-    // If author is the currently logged in user, use their latest profile
-    if (currentUser && authorId === currentUser.id && currentProfile) {
-      if (currentProfile.display_name) authorName = currentProfile.display_name;
-      if (currentProfile.username) authorUsername = currentProfile.username;
-      if (currentProfile.avatar_url) avatarUrl = currentProfile.avatar_url;
-      if (currentProfile.role) role = currentProfile.role;
+    const entry = getOrCreateContributor(authorId, initialProf);
+    entry.postCount += 1;
+    entry.score += ARTICLE_GRADE_POINTS;
+
+    if ((entry.name === 'Contributor' || entry.name === 'Ocean Author') && initialProf.display_name) {
+      entry.name = initialProf.display_name;
     }
-
-    if (!authorName) {
-      authorName = authorUsername || 'Ocean Author';
+    if ((!entry.username || entry.username === 'contributor' || entry.username === 'ocean_author') && initialProf.username) {
+      entry.username = initialProf.username;
     }
-    if (!authorUsername) {
-      authorUsername = authorName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '') || 'ocean_author';
+    if (!entry.avatarUrl && initialProf.avatar_url) {
+      entry.avatarUrl = initialProf.avatar_url;
     }
-
-    const key = authorId !== 'demo-author' ? authorId : authorUsername;
-
-    if (!authorMap.has(key)) {
-      authorMap.set(key, {
-        id: authorId,
-        name: authorName,
-        username: authorUsername,
-        avatarUrl: avatarUrl,
-        role: role,
-        postCount: 0
-      });
-    } else {
-      const entry = authorMap.get(key);
-      if ((!entry.name || entry.name === 'Ocean Author') && authorName && authorName !== 'Ocean Author') {
-        entry.name = authorName;
-      }
-      if ((!entry.username || entry.username === 'ocean_author') && authorUsername && authorUsername !== 'ocean_author') {
-        entry.username = authorUsername;
-      }
-      if (!entry.avatarUrl && avatarUrl) {
-        entry.avatarUrl = avatarUrl;
-      }
-      if (role && entry.role !== 'admin') {
-        entry.role = role;
-      }
+    if (initialProf.role && initialProf.role === 'admin') {
+      entry.role = 'admin';
     }
-
-    authorMap.get(key).postCount += 1;
   });
 
-  if (authorMap.size === 0) {
-    authorMap.set('demo-author', {
+  // 2. Process comments (1 point per comment)
+  cachedComments.forEach(comment => {
+    const userId = comment.user_id;
+    if (!userId) return;
+    const entry = getOrCreateContributor(userId);
+    entry.commentCount += 1;
+    entry.score += COMMENT_GRADE_POINTS;
+  });
+
+  if (contributorMap.size === 0) {
+    contributorMap.set('demo-author', {
       id: 'demo-author',
       name: 'Ocean Author',
       username: 'ocean_author',
       avatarUrl: '',
       role: 'admin',
-      postCount: 1
+      postCount: 1,
+      commentCount: 0,
+      score: 10
     });
   }
 
-  const sortedWriters = Array.from(authorMap.values()).sort((a, b) => b.postCount - a.postCount);
-  return limit && limit > 0 ? sortedWriters.slice(0, limit) : sortedWriters;
+  // Sort by score desc, then postCount desc, then commentCount desc
+  const sorted = Array.from(contributorMap.values()).sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    if (b.postCount !== a.postCount) return b.postCount - a.postCount;
+    return b.commentCount - a.commentCount;
+  });
+
+  return limit && limit > 0 ? sorted.slice(0, limit) : sorted;
+}
+
+// Backwards compatibility alias
+function getTopWriters(limit = 3) {
+  return getTopContributors(limit);
 }
 
 function renderHeroTopWriters() {
   if (!dom.heroTopWritersList) return;
 
-  const top3 = getTopWriters(3);
+  const top3 = getTopContributors(3);
 
   if (top3.length === 0) {
     dom.heroTopWritersList.innerHTML = `
       <div style="padding:0.75rem; text-align:center; font-family:var(--font-mono); font-size:0.78rem; color:var(--text-muted);">
-        No writers yet. Be the first!
+        No contributors yet. Be the first!
       </div>
     `;
     return;
@@ -953,7 +1013,10 @@ function renderHeroTopWriters() {
     item.className = 'hero-writer-item';
     item.setAttribute('role', 'button');
     item.setAttribute('tabindex', '0');
-    item.title = `View ${writer.name}'s profile (${writer.postCount} ${writer.postCount === 1 ? 'article' : 'articles'})`;
+
+    const articleText = `${writer.postCount} ${writer.postCount === 1 ? 'article' : 'articles'}`;
+    const commentText = `${writer.commentCount} ${writer.commentCount === 1 ? 'comment' : 'comments'}`;
+    item.title = `View ${writer.name}'s profile (${writer.score} pts: ${articleText}, ${commentText})`;
 
     const initials = (writer.name || 'W')
       .split(' ')
@@ -981,7 +1044,7 @@ function renderHeroTopWriters() {
           <span class="hero-writer-meta">@${escapeHtml(writer.username)}</span>
         </div>
       </div>
-      <span class="hero-writer-count-pill">${writer.postCount} ${writer.postCount === 1 ? 'article' : 'articles'}</span>
+      <span class="hero-writer-count-pill" title="${writer.score} pts: ${articleText} (${writer.postCount * ARTICLE_GRADE_POINTS} pts) + ${commentText} (${writer.commentCount * COMMENT_GRADE_POINTS} pts)">${writer.score} pts</span>
     `;
 
     const handleProfileClick = (e) => {
@@ -1004,7 +1067,7 @@ function renderHeroTopWriters() {
 function renderTopWritersList() {
   if (!dom.topWritersList) return;
 
-  const sortedWriters = getTopWriters(0); // full list
+  const sortedWriters = getTopContributors(0); // full list
 
   dom.topWritersList.innerHTML = '';
 
@@ -1028,6 +1091,9 @@ function renderTopWritersList() {
     const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
     const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
 
+    const articleText = `${writer.postCount} ${writer.postCount === 1 ? 'article' : 'articles'}`;
+    const commentText = `${writer.commentCount} ${writer.commentCount === 1 ? 'comment' : 'comments'}`;
+
     card.innerHTML = `
       <div class="writer-left-group">
         <span class="writer-rank-pill ${rankClass}" title="Rank #${rank}">${rankIcon}</span>
@@ -1040,7 +1106,8 @@ function renderTopWritersList() {
         </div>
       </div>
       <div class="writer-right-group">
-        <span class="writer-articles-count">${writer.postCount} ${writer.postCount === 1 ? 'article' : 'articles'}</span>
+        <div class="writer-score-badge" title="${writer.score} pts: ${articleText} (${writer.postCount * ARTICLE_GRADE_POINTS} pts) + ${commentText} (${writer.commentCount * COMMENT_GRADE_POINTS} pts)">${writer.score} pts</div>
+        <span class="writer-articles-count">${articleText} • ${commentText}</span>
         <button type="button" class="btn-sm btn-outline writer-profile-btn" title="View ${escapeHtml(writer.name)}'s public profile">
           <span>View Profile</span>
         </button>
@@ -1643,8 +1710,6 @@ function getPlaceholderIconSvg() {
 // 7. ARTICLE VIEW TOGGLING & CONTENT RENDERING
 // ============================================================================
 
-const authorProfilesCache = new Map();
-
 /**
  * Resolves the author profile for a given post
  * @param {object} post
@@ -2212,6 +2277,15 @@ async function handleAddComment(e) {
     dom.commentFormMsg.className = 'comment-msg success';
     setTimeout(() => { if (dom.commentFormMsg) dom.commentFormMsg.className = 'comment-msg hidden'; }, 2500);
 
+    if (data && data[0]) {
+      cachedComments.push({
+        id: data[0].id,
+        user_id: currentUser.id,
+        created_at: new Date().toISOString()
+      });
+      renderHeroTopWriters();
+    }
+
     await loadCommentsForPost(activePost.id);
   } catch (err) {
     console.error('Error posting comment:', err);
@@ -2235,6 +2309,9 @@ async function deleteComment(commentId) {
       alert('Failed to delete comment: ' + error.message);
       return;
     }
+
+    cachedComments = cachedComments.filter(c => c.id !== commentId);
+    renderHeroTopWriters();
 
     if (activePost) {
       await loadCommentsForPost(activePost.id);

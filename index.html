@@ -23,7 +23,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=3.6">
+  <link rel="stylesheet" href="style.css?v=3.7">
 </head>
 <body>
   <!-- Header / Navigation -->
@@ -153,15 +153,15 @@
             </div>
           </div>
 
-          <!-- Right: Top Writers (Only Top 3) -->
-          <aside class="hero-top-writers" aria-label="Top Writers">
+          <!-- Right: Top Contributors (Only Top 3) -->
+          <aside class="hero-top-writers" aria-label="Top Contributors">
             <div class="hero-writers-card">
               <div class="hero-writers-header">
                 <div class="hero-writers-title-group">
-                  <span class="hero-writers-badge">🏆 Top Writers</span>
+                  <span class="hero-writers-badge">🏆 Top Contributors</span>
                   <span class="hero-writers-rank-tag">Top 3</span>
                 </div>
-                <button type="button" id="hero-view-all-writers-btn" class="hero-writers-view-all-btn" title="View all authors">
+                <button type="button" id="hero-view-all-writers-btn" class="hero-writers-view-all-btn" title="View all contributors">
                   <span>View All</span>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="11" height="11" aria-hidden="true">
                     <polyline points="9 18 15 12 9 6"></polyline>
@@ -170,7 +170,7 @@
               </div>
 
               <div id="hero-top-writers-list" class="hero-writers-list">
-                <!-- Top 3 Writers populated dynamically by renderHeroTopWriters() -->
+                <!-- Top 3 Contributors populated dynamically by renderHeroTopWriters() -->
                 <div class="hero-writer-skeleton">
                   <div class="hero-writer-skeleton-avatar"></div>
                   <div class="hero-writer-skeleton-info">
@@ -181,10 +181,13 @@
               </div>
 
               <div class="hero-writers-footer">
-                <span class="hero-writers-footer-label">Want to share your ideas?</span>
-                <button type="button" id="hero-writers-apply-btn" class="hero-writers-apply-link">
-                  <span>Be a Publisher &rarr;</span>
-                </button>
+                <div class="hero-grade-rule">⭐ 1 Article = 10 pts • 1 Comment = 1 pt</div>
+                <div class="hero-writers-footer-row">
+                  <span class="hero-writers-footer-label">Want to share your ideas?</span>
+                  <button type="button" id="hero-writers-apply-btn" class="hero-writers-apply-link" title="Apply for writer access">
+                    <span>Be a Publisher &rarr;</span>
+                  </button>
+                </div>
               </div>
             </div>
           </aside>
@@ -1413,31 +1416,36 @@
   </div>
 
   <!-- ==============================================
-       TOP WRITERS MODAL
+       TOP CONTRIBUTORS MODAL
        ============================================== -->
   <div id="top-writers-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="top-writers-modal-title">
     <div class="modal-card top-writers-modal-card">
       <div class="modal-header top-writers-modal-header">
         <div class="top-writers-title-wrap">
           <div class="top-writers-badge-pill">
-            <span>🏆 Featured Authors</span>
+            <span>🏆 Community Leaderboard</span>
           </div>
-          <h3 id="top-writers-modal-title" class="top-writers-modal-title">Top Writers</h3>
-          <p class="top-writers-modal-subtitle">Meet the voices and developers sharing their craft on OceanVerse.</p>
+          <h3 id="top-writers-modal-title" class="top-writers-modal-title">Top Contributors</h3>
+          <p class="top-writers-modal-subtitle">Ranked by community impact: 1 Article = 10 pts • 1 Comment = 1 pt.</p>
         </div>
         <button id="top-writers-close-btn" class="modal-close" aria-label="Close dialog">&times;</button>
       </div>
 
       <div class="modal-body top-writers-modal-body">
         <div id="top-writers-list" class="top-writers-list">
-          <!-- Populated dynamically with ranked author cards -->
+          <!-- Populated dynamically with ranked contributor cards -->
         </div>
 
         <div class="top-writers-footer-cta">
-          <span>Want to share your engineering ideas?</span>
-          <button type="button" id="top-writers-apply-btn" class="btn-sm btn-primary">
-            <span>Apply for Writer Access</span>
-          </button>
+          <div class="top-writers-grade-rule">
+            <span>⭐ <strong>Grade System:</strong> 1 Article = 10 pts • 1 Comment = 1 pt</span>
+          </div>
+          <div class="top-writers-cta-row">
+            <span>Want to share your ideas?</span>
+            <button type="button" id="top-writers-apply-btn" class="btn-sm btn-primary">
+              <span>Be a Publisher</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1465,7 +1473,7 @@
   </footer>
 
   <!-- Application Logic -->
-  <script src="app.js?v=3.6"></script>
+  <script src="app.js?v=3.7"></script>
 </body>
 </html>
 
