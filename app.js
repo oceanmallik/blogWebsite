@@ -1,5 +1,5 @@
 /**
- * Ocean Verse — Application Logic
+ * OceanVerse — Application Logic
  * Pure Vanilla JavaScript connecting to Supabase v2.
  */
 
@@ -1243,7 +1243,7 @@ async function handleSignUp(e) {
     }
 
     if (data.session) {
-      showAuthSuccess(dom.signupStatusMsg, 'Account created! Welcome to Ocean Verse.');
+      showAuthSuccess(dom.signupStatusMsg, 'Account created! Welcome to OceanVerse.');
       await handleUserSession(data.user, displayName);
 
       setTimeout(() => {
@@ -1842,7 +1842,7 @@ function openArticleView(post, updateHash = true) {
     }
   }
 
-  document.title = `${post.title || 'Article'} — Ocean Verse`;
+  document.title = `${post.title || 'Article'} — OceanVerse`;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -1862,7 +1862,7 @@ function returnToHomeView() {
   if (window.location.hash) {
     history.pushState(null, '', window.location.pathname);
   }
-  document.title = 'OceanVerse - A Blog site';
+  document.title = 'OceanVerse - A Blog Site';
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -2226,7 +2226,7 @@ function openAdminView() {
   dom.adminView?.classList.remove('hidden');
 
   window.location.hash = '#/admin';
-  document.title = 'Admin Panel — Ocean Verse';
+  document.title = 'Admin Panel — OceanVerse';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
   loadAdminPosts();
@@ -3368,7 +3368,7 @@ async function openProfileView() {
   if (window.location.hash !== '#/profile') {
     window.location.hash = '#/profile';
   }
-  document.title = 'Account Profile — Ocean Verse';
+  document.title = 'Account Profile — OceanVerse';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
   await populateProfileView();
@@ -4191,7 +4191,7 @@ async function loadAndRenderPublicProfile(userIdentifier, fallbackUsername, fall
     }
   }
 
-  document.title = `${profile.display_name} (@${profile.username || 'user'}) — Ocean Verse`;
+  document.title = `${profile.display_name} (@${profile.username || 'user'}) — OceanVerse`;
 
   // Render hero section
   renderPublicProfileHero(profile);

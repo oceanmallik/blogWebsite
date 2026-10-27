@@ -1,4 +1,4 @@
-# 🌊 Ocean Verse
+# 🌊 OceanVerse
 
 A modern, responsive blog frontend built with pure HTML (`index.html`), CSS (`style.css`), and Vanilla JavaScript (`app.js`), powered by **Supabase**.
 

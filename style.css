@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Ocean Verse — Neo-Brutalism Redesign
+   OceanVerse — Neo-Brutalism Redesign
    Design: Raw, Bold, Typographic — Black borders, offset shadows, flat color
    ========================================================================== */
 
@@ -270,6 +270,11 @@ img {
   align-items: baseline;
   gap: 0.45rem;
   flex-wrap: wrap;
+}
+
+.brand-title {
+  display: inline;
+  white-space: nowrap;
 }
 
 .brand-highlight {
