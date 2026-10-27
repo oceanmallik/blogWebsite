@@ -98,8 +98,22 @@ function initDOM() {
   dom.searchClearBtn = document.getElementById('search-clear-btn');
   dom.emptyResetBtn = document.getElementById('empty-reset-btn');
   dom.errorRetryBtn = document.getElementById('error-retry-btn');
-  dom.heroBrowseBtn = document.getElementById('hero-browse-btn');
-  dom.heroSearchBtn = document.getElementById('hero-search-btn');
+  dom.heroBecomeWriterBtn = document.getElementById('hero-become-writer-btn');
+  dom.heroSignupBtn = document.getElementById('hero-signup-btn');
+  dom.heroSignupBtnText = document.getElementById('hero-signup-btn-text');
+  dom.heroTopWritersList = document.getElementById('hero-top-writers-list');
+  dom.heroViewAllWritersBtn = document.getElementById('hero-view-all-writers-btn');
+  dom.heroWritersApplyBtn = document.getElementById('hero-writers-apply-btn');
+
+  // Writer & Top Writers Modals
+  dom.writerModal = document.getElementById('writer-modal');
+  dom.writerModalCloseBtn = document.getElementById('writer-modal-close-btn');
+  dom.writerCopyEmailBtn = document.getElementById('writer-copy-email-btn');
+  dom.writerCopyFeedback = document.getElementById('writer-copy-feedback');
+  dom.topWritersModal = document.getElementById('top-writers-modal');
+  dom.topWritersCloseBtn = document.getElementById('top-writers-close-btn');
+  dom.topWritersList = document.getElementById('top-writers-list');
+  dom.topWritersApplyBtn = document.getElementById('top-writers-apply-btn');
 
   // Article View elements
   dom.backBtn = document.getElementById('back-btn');
@@ -390,7 +404,37 @@ async function loadPosts() {
     }
 
     allPosts = data || [];
+
+    // Batch preload author profiles into authorProfilesCache BEFORE rendering top writers and grid
+    if (supabaseClient && allPosts.length > 0) {
+      const authorIds = [...new Set(allPosts.map(p => p.author_id).filter(Boolean))];
+      if (authorIds.length > 0) {
+        try {
+          const { data: profs, error: profsErr } = await supabaseClient
+            .from('profiles')
+            .select('id, email, display_name, username, avatar_url, role, created_at')
+            .in('id', authorIds);
+          if (!profsErr && profs) {
+            profs.forEach(p => {
+              authorProfilesCache.set(p.id, {
+                id: p.id,
+                display_name: p.display_name || (p.email ? p.email.split('@')[0] : 'Ocean Author'),
+                username: p.username || '',
+                email: p.email || '',
+                avatar_url: p.avatar_url || null,
+                role: p.role || 'admin',
+                created_at: p.created_at
+              });
+            });
+          }
+        } catch (profErr) {
+          console.warn('Batch author profile fetch warning:', profErr);
+        }
+      }
+    }
+
     renderPostsGrid(allPosts);
+    renderHeroTopWriters();
     handleHashNavigation();
   } catch (err) {
     console.error('Failed to load posts:', err);
@@ -637,6 +681,14 @@ function updateAuthUI() {
         }
       }
     }
+
+    // Hero secondary button updates for logged-in user
+    if (dom.heroSignupBtnText) {
+      dom.heroSignupBtnText.textContent = 'My Profile';
+    }
+    if (dom.heroSignupBtn) {
+      dom.heroSignupBtn.title = 'Open your profile settings';
+    }
   } else {
     // Logged out
     if (dom.navUserProfile) dom.navUserProfile.classList.add('hidden');
@@ -648,11 +700,20 @@ function updateAuthUI() {
     if (dom.profileView && !dom.profileView.classList.contains('hidden')) {
       returnToHomeView();
     }
+
+    // Hero secondary button updates for logged-out visitor
+    if (dom.heroSignupBtnText) {
+      dom.heroSignupBtnText.textContent = 'Sign Up';
+    }
+    if (dom.heroSignupBtn) {
+      dom.heroSignupBtn.title = 'Create an account or sign in';
+    }
   }
 
-  // Re-render home posts grid if posts exist
+  // Re-render home posts grid and hero top writers if posts exist
   if (allPosts && allPosts.length > 0) {
     renderPostsGrid(allPosts);
+    renderHeroTopWriters();
   }
 
   // Ensure admin posts list is loaded if currently on admin view
@@ -768,6 +829,236 @@ function closeAuthModal() {
     dom.authModal.classList.add('hidden');
     clearAuthMessages();
   }
+}
+
+// ----------------------------------------------------------------------------
+// Become a Writer & Top Writers Handlers
+// ----------------------------------------------------------------------------
+
+function openWriterModal() {
+  if (!dom.writerModal) return;
+  dom.writerModal.classList.remove('hidden');
+}
+
+function closeWriterModal() {
+  if (dom.writerModal) {
+    dom.writerModal.classList.add('hidden');
+  }
+}
+
+function openTopWritersModal() {
+  if (!dom.topWritersModal) return;
+  renderTopWritersList();
+  renderHeroTopWriters();
+  dom.topWritersModal.classList.remove('hidden');
+}
+
+function closeTopWritersModal() {
+  if (dom.topWritersModal) {
+    dom.topWritersModal.classList.add('hidden');
+  }
+}
+
+function getTopWriters(limit = 3) {
+  const authorMap = new Map();
+
+  allPosts.forEach(post => {
+    const prof = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
+    const cachedAuthor = post.author_id ? authorProfilesCache.get(post.author_id) : null;
+    const authorId = post.author_id || prof?.id || cachedAuthor?.id || 'demo-author';
+    let authorName = prof?.display_name || cachedAuthor?.display_name || post.author_name || '';
+    let authorUsername = prof?.username || cachedAuthor?.username || post.author_username || '';
+    let avatarUrl = prof?.avatar_url || cachedAuthor?.avatar_url || post.author_avatar || '';
+    let role = prof?.role || cachedAuthor?.role || 'admin';
+
+    // If author is the currently logged in user, use their latest profile
+    if (currentUser && authorId === currentUser.id && currentProfile) {
+      if (currentProfile.display_name) authorName = currentProfile.display_name;
+      if (currentProfile.username) authorUsername = currentProfile.username;
+      if (currentProfile.avatar_url) avatarUrl = currentProfile.avatar_url;
+      if (currentProfile.role) role = currentProfile.role;
+    }
+
+    if (!authorName) {
+      authorName = authorUsername || 'Ocean Author';
+    }
+    if (!authorUsername) {
+      authorUsername = authorName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '') || 'ocean_author';
+    }
+
+    const key = authorId !== 'demo-author' ? authorId : authorUsername;
+
+    if (!authorMap.has(key)) {
+      authorMap.set(key, {
+        id: authorId,
+        name: authorName,
+        username: authorUsername,
+        avatarUrl: avatarUrl,
+        role: role,
+        postCount: 0
+      });
+    } else {
+      const entry = authorMap.get(key);
+      if ((!entry.name || entry.name === 'Ocean Author') && authorName && authorName !== 'Ocean Author') {
+        entry.name = authorName;
+      }
+      if ((!entry.username || entry.username === 'ocean_author') && authorUsername && authorUsername !== 'ocean_author') {
+        entry.username = authorUsername;
+      }
+      if (!entry.avatarUrl && avatarUrl) {
+        entry.avatarUrl = avatarUrl;
+      }
+      if (role && entry.role !== 'admin') {
+        entry.role = role;
+      }
+    }
+
+    authorMap.get(key).postCount += 1;
+  });
+
+  if (authorMap.size === 0) {
+    authorMap.set('demo-author', {
+      id: 'demo-author',
+      name: 'Ocean Author',
+      username: 'ocean_author',
+      avatarUrl: '',
+      role: 'admin',
+      postCount: 1
+    });
+  }
+
+  const sortedWriters = Array.from(authorMap.values()).sort((a, b) => b.postCount - a.postCount);
+  return limit && limit > 0 ? sortedWriters.slice(0, limit) : sortedWriters;
+}
+
+function renderHeroTopWriters() {
+  if (!dom.heroTopWritersList) return;
+
+  const top3 = getTopWriters(3);
+
+  if (top3.length === 0) {
+    dom.heroTopWritersList.innerHTML = `
+      <div style="padding:0.75rem; text-align:center; font-family:var(--font-mono); font-size:0.78rem; color:var(--text-muted);">
+        No writers yet. Be the first!
+      </div>
+    `;
+    return;
+  }
+
+  dom.heroTopWritersList.innerHTML = '';
+
+  top3.forEach((writer, idx) => {
+    const rank = idx + 1;
+    const item = document.createElement('div');
+    item.className = 'hero-writer-item';
+    item.setAttribute('role', 'button');
+    item.setAttribute('tabindex', '0');
+    item.title = `View ${writer.name}'s profile (${writer.postCount} ${writer.postCount === 1 ? 'article' : 'articles'})`;
+
+    const initials = (writer.name || 'W')
+      .split(' ')
+      .filter(Boolean)
+      .map(w => w[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase() || 'W';
+
+    const avatarHtml = writer.avatarUrl && writer.avatarUrl.trim() !== ''
+      ? `<img src="${escapeHtml(writer.avatarUrl)}" alt="${escapeHtml(writer.name)}">`
+      : initials;
+
+    const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
+    const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+
+    item.innerHTML = `
+      <div class="hero-writer-left">
+        <span class="hero-writer-rank ${rankClass}">${rankIcon}</span>
+        <div class="hero-writer-avatar">${avatarHtml}</div>
+        <div class="hero-writer-details">
+          <div class="hero-writer-name-row">
+            <span class="hero-writer-name">${escapeHtml(writer.name)}</span>
+          </div>
+          <span class="hero-writer-meta">@${escapeHtml(writer.username)}</span>
+        </div>
+      </div>
+      <span class="hero-writer-count-pill">${writer.postCount} ${writer.postCount === 1 ? 'article' : 'articles'}</span>
+    `;
+
+    const handleProfileClick = (e) => {
+      e.stopPropagation();
+      openPublicProfileView(writer.id, writer.username, writer.name);
+    };
+
+    item.addEventListener('click', handleProfileClick);
+    item.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleProfileClick(e);
+      }
+    });
+
+    dom.heroTopWritersList.appendChild(item);
+  });
+}
+
+function renderTopWritersList() {
+  if (!dom.topWritersList) return;
+
+  const sortedWriters = getTopWriters(0); // full list
+
+  dom.topWritersList.innerHTML = '';
+
+  sortedWriters.forEach((writer, idx) => {
+    const rank = idx + 1;
+    const card = document.createElement('div');
+    card.className = 'writer-row-card';
+
+    const initials = (writer.name || 'W')
+      .split(' ')
+      .filter(Boolean)
+      .map(w => w[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase() || 'W';
+
+    const avatarHtml = writer.avatarUrl && writer.avatarUrl.trim() !== ''
+      ? `<img src="${escapeHtml(writer.avatarUrl)}" alt="${escapeHtml(writer.name)}">`
+      : initials;
+
+    const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
+    const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+
+    card.innerHTML = `
+      <div class="writer-left-group">
+        <span class="writer-rank-pill ${rankClass}" title="Rank #${rank}">${rankIcon}</span>
+        <div class="writer-avatar-mini">${avatarHtml}</div>
+        <div class="writer-details">
+          <div class="writer-name-row">
+            <span class="writer-display-name">${escapeHtml(writer.name)}</span>
+          </div>
+          <span class="writer-handle">@${escapeHtml(writer.username)}</span>
+        </div>
+      </div>
+      <div class="writer-right-group">
+        <span class="writer-articles-count">${writer.postCount} ${writer.postCount === 1 ? 'article' : 'articles'}</span>
+        <button type="button" class="btn-sm btn-outline writer-profile-btn" title="View ${escapeHtml(writer.name)}'s public profile">
+          <span>View Profile</span>
+        </button>
+      </div>
+    `;
+
+    const viewBtn = card.querySelector('.writer-profile-btn');
+    const handleViewClick = (e) => {
+      e.stopPropagation();
+      closeTopWritersModal();
+      openPublicProfileView(writer.id, writer.username, writer.name);
+    };
+
+    viewBtn?.addEventListener('click', handleViewClick);
+    card.addEventListener('click', handleViewClick);
+
+    dom.topWritersList.appendChild(card);
+  });
 }
 
 function setAuthTab(tab) {
@@ -1375,6 +1666,7 @@ async function getPostAuthorProfile(post) {
           created_at: data.created_at
         };
         authorProfilesCache.set(post.author_id, result);
+        renderHeroTopWriters();
         return result;
       }
     } catch (err) {
@@ -4406,13 +4698,61 @@ function initEventListeners() {
     }
   }
 
-  // Hero Action Buttons
-  dom.heroBrowseBtn?.addEventListener('click', () => {
-    scrollToPostsToolbar(false);
+  // Hero Action Buttons (Apply for Writer Access & Sign Up)
+  dom.heroBecomeWriterBtn?.addEventListener('click', openWriterModal);
+  dom.heroSignupBtn?.addEventListener('click', () => {
+    if (currentUser) {
+      openProfileView();
+    } else {
+      openAuthModal('signup');
+    }
   });
 
-  dom.heroSearchBtn?.addEventListener('click', () => {
-    scrollToPostsToolbar(true);
+  // Hero Top Writers Card Actions
+  dom.heroViewAllWritersBtn?.addEventListener('click', openTopWritersModal);
+  dom.heroWritersApplyBtn?.addEventListener('click', openWriterModal);
+
+  // Writer & Top Writers Modals Handlers
+  dom.writerModalCloseBtn?.addEventListener('click', closeWriterModal);
+  dom.topWritersCloseBtn?.addEventListener('click', closeTopWritersModal);
+  dom.topWritersApplyBtn?.addEventListener('click', () => {
+    closeTopWritersModal();
+    openWriterModal();
+  });
+
+  // Writer Email Copy Action
+  dom.writerCopyEmailBtn?.addEventListener('click', async () => {
+    const emailToCopy = 'oceanmallik@oceanmallik.com';
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(emailToCopy);
+      } else {
+        const tempInput = document.createElement('input');
+        tempInput.value = emailToCopy;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+      }
+      if (dom.writerCopyFeedback) {
+        dom.writerCopyFeedback.textContent = 'Copied!';
+        setTimeout(() => {
+          if (dom.writerCopyFeedback) dom.writerCopyFeedback.textContent = 'Copy';
+        }, 2000);
+      }
+      showToast('Email address copied to clipboard!', 'info');
+    } catch (err) {
+      console.warn('Clipboard write error:', err);
+      showToast('Failed to copy email address', 'error');
+    }
+  });
+
+  // Modal backdrop click handlers
+  dom.writerModal?.addEventListener('click', (e) => {
+    if (e.target === dom.writerModal) closeWriterModal();
+  });
+  dom.topWritersModal?.addEventListener('click', (e) => {
+    if (e.target === dom.topWritersModal) closeTopWritersModal();
   });
 
   // Theme toggle
@@ -4642,6 +4982,10 @@ function initEventListeners() {
         closeAvatarCropModal();
       } else if (dom.authModal && !dom.authModal.classList.contains('hidden')) {
         closeAuthModal();
+      } else if (dom.writerModal && !dom.writerModal.classList.contains('hidden')) {
+        closeWriterModal();
+      } else if (dom.topWritersModal && !dom.topWritersModal.classList.contains('hidden')) {
+        closeTopWritersModal();
       }
     }
   });

@@ -655,33 +655,29 @@ img {
 }
 
 /* --------------------------------------------------------------------------
-   Hero Section — Neo-Brutalism Style (Compact & Punchy)
+   Hero Section — Neo-Brutalism Style (Split Layout with Top Writers)
    -------------------------------------------------------------------------- */
 .hero-section {
-  padding: 2.25rem 0 1.75rem;
-  max-width: 820px;
+  padding: 2.25rem 0 2rem;
+  max-width: var(--container-max);
   margin: 0 auto 1.75rem;
   text-align: left;
   position: relative;
   border-bottom: var(--border-width) solid var(--border-color);
 }
 
-/* Decorative neo-brut accent block behind hero */
-.hero-section::before {
-  content: '';
-  position: absolute;
-  top: 0.75rem;
-  right: 0;
-  width: 140px;
-  height: 140px;
-  background: var(--accent-yellow);
-  border: var(--border-width) solid var(--border-color);
-  z-index: -1;
-  opacity: 0.2;
+.hero-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(310px, 370px);
+  gap: 2.25rem;
+  align-items: center;
 }
 
-[data-theme="dark"] .hero-section::before {
-  opacity: 0.08;
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
 }
 
 .hero-badge {
@@ -807,6 +803,294 @@ img {
 .hero-btn.btn-outline:active {
   transform: translate(0, 0);
   box-shadow: none;
+}
+
+/* --------------------------------------------------------------------------
+   Hero Top Writers Widget (Only Top 3)
+   -------------------------------------------------------------------------- */
+.hero-top-writers {
+  width: 100%;
+  min-width: 0;
+}
+
+.hero-writers-card {
+  background: var(--bg-surface);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  padding: 1.1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  position: relative;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.hero-writers-card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.hero-writers-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1.5px dashed var(--border-color);
+}
+
+.hero-writers-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.hero-writers-badge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #0A0A0A;
+  background: var(--accent-yellow);
+  border: 1.5px solid var(--border-color);
+  box-shadow: 1.5px 1.5px 0 var(--border-color);
+  padding: 0.18rem 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.hero-writers-rank-tag {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.hero-writers-view-all-btn {
+  background: transparent;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.35rem;
+  transition: color var(--transition-fast);
+}
+
+.hero-writers-view-all-btn:hover {
+  color: var(--ocean-primary);
+  text-decoration: underline;
+}
+
+.hero-writers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Individual Top Writer Card (Only Top 3) */
+.hero-writer-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding: 0.55rem 0.75rem;
+  background: var(--bg-elevated);
+  border: 1.5px solid var(--border-color);
+  box-shadow: 1.5px 1.5px 0 var(--border-color);
+  cursor: pointer;
+  user-select: none;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+  text-decoration: none;
+}
+
+.hero-writer-item:hover {
+  transform: translate(-1.5px, -1.5px);
+  box-shadow: 3px 3px 0 var(--border-color);
+  background: var(--bg-surface);
+}
+
+.hero-writer-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.hero-writer-rank {
+  width: 24px;
+  height: 24px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-color);
+  box-shadow: 1px 1px 0 var(--border-color);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #0A0A0A;
+}
+
+.hero-writer-rank.rank-1 {
+  background: var(--accent-yellow);
+}
+
+.hero-writer-rank.rank-2 {
+  background: var(--accent-lime);
+}
+
+.hero-writer-rank.rank-3 {
+  background: #E0E7FF;
+}
+
+.hero-writer-avatar {
+  width: 34px;
+  height: 34px;
+  background: var(--ocean-primary);
+  color: #FFFFFF;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--border-color);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.hero-writer-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-writer-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.hero-writer-name-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  width: 100%;
+}
+
+.hero-writer-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.hero-writer-meta {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hero-writer-count-pill {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  padding: 0.15rem 0.45rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.hero-writers-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1.5px dashed var(--border-color);
+  font-size: 0.76rem;
+}
+
+.hero-writers-footer-label {
+  color: var(--text-muted);
+}
+
+.hero-writers-apply-link {
+  background: transparent;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--ocean-primary);
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  transition: color var(--transition-fast);
+}
+
+.hero-writers-apply-link:hover {
+  text-decoration: underline;
+}
+
+/* Skeleton for Hero Writers */
+.hero-writer-skeleton {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  background: var(--bg-elevated);
+  border: 1.5px solid var(--border-color);
+}
+
+.hero-writer-skeleton-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 0;
+  background: var(--border-color);
+  animation: pulseSkeleton 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.hero-writer-skeleton-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+}
+
+.hero-skeleton-bar {
+  height: 10px;
+  background: var(--border-color);
+  animation: pulseSkeleton 1.5s ease-in-out infinite;
+}
+
+.hero-skeleton-bar.bar-long {
+  width: 65%;
+}
+
+.hero-skeleton-bar.bar-short {
+  width: 40%;
 }
 
 /* --------------------------------------------------------------------------
@@ -3951,6 +4235,329 @@ input[type="datetime-local"] {
 }
 
 /* --------------------------------------------------------------------------
+   Become a Writer & Top Writers Modals (Neo-Brutalism)
+   -------------------------------------------------------------------------- */
+.writer-modal-card,
+.top-writers-modal-card {
+  max-width: 580px;
+  background: var(--bg-surface);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.writer-modal-header,
+.top-writers-modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: var(--border-width) solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-elevated);
+}
+
+.writer-modal-title-wrap,
+.top-writers-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.writer-badge-pill,
+.top-writers-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: var(--font-mono);
+  background: var(--accent-yellow);
+  color: #0A0A0A;
+  padding: 0.15rem 0.55rem;
+  border: 1.5px solid var(--border-color);
+  box-shadow: 1.5px 1.5px 0 var(--border-color);
+  align-self: flex-start;
+}
+
+.writer-modal-title,
+.top-writers-modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.03em;
+}
+
+.top-writers-modal-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.writer-modal-body,
+.top-writers-modal-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-height: 82vh;
+  overflow-y: auto;
+}
+
+/* Become a Writer - Email Contact Layout */
+.writer-contact-lead {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.writer-email-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1.1rem;
+  background: var(--bg-elevated);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.writer-email-box:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-md);
+}
+
+.writer-email-icon {
+  width: 36px;
+  height: 36px;
+  background: var(--accent-yellow);
+  color: #0A0A0A;
+  border: 1.5px solid var(--border-color);
+  box-shadow: 1.5px 1.5px 0 var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.writer-email-address {
+  font-family: var(--font-mono);
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-decoration: none;
+  word-break: break-all;
+  flex: 1;
+  transition: color var(--transition-fast);
+}
+
+.writer-email-address:hover {
+  color: var(--ocean-primary);
+  text-decoration: underline;
+}
+
+.writer-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-color);
+  box-shadow: 2px 2px 0 var(--border-color);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.writer-copy-btn:hover {
+  background: var(--accent-lime);
+  color: #0A0A0A;
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--border-color);
+}
+
+.writer-copy-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--border-color);
+}
+
+.writer-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.25rem;
+}
+
+.writer-mail-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+/* Top Writers Modal */
+.top-writers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.writer-row-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  background: var(--bg-elevated);
+  border: var(--border-width) solid var(--border-color);
+  padding: 0.75rem 1rem;
+  box-shadow: var(--shadow-xs);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.writer-row-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-sm);
+  background: var(--bg-surface);
+}
+
+.writer-left-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.writer-rank-pill {
+  width: 28px;
+  height: 28px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-color);
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0A0A0A;
+  box-shadow: 1.5px 1.5px 0 var(--border-color);
+  flex-shrink: 0;
+}
+
+.writer-rank-pill.rank-1 {
+  background: var(--accent-yellow);
+}
+
+.writer-rank-pill.rank-2 {
+  background: var(--accent-lime);
+}
+
+.writer-rank-pill.rank-3 {
+  background: #E0E7FF;
+}
+
+.writer-avatar-mini {
+  width: 40px;
+  height: 40px;
+  background: var(--ocean-primary);
+  color: #FFFFFF;
+  font-size: 0.88rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--border-color);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.writer-avatar-mini img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.writer-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.writer-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.writer-display-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.writer-handle {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.writer-right-group {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-shrink: 0;
+}
+
+.writer-articles-count {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  padding: 0.2rem 0.5rem;
+  white-space: nowrap;
+}
+
+.writer-profile-btn {
+  padding: 0.4rem 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-family: var(--font-mono);
+}
+
+.top-writers-footer-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--border-color);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+/* --------------------------------------------------------------------------
    Site Footer
    -------------------------------------------------------------------------- */
 .site-footer {
@@ -4019,6 +4626,18 @@ input[type="datetime-local"] {
 /* --------------------------------------------------------------------------
    Responsive
    -------------------------------------------------------------------------- */
+@media (max-width: 960px) {
+  .hero-layout {
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+
+  .hero-top-writers {
+    max-width: 520px;
+    width: 100%;
+  }
+}
+
 @media (max-width: 900px) {
   .admin-grid-layout,
   .profile-grid-layout {
@@ -4114,13 +4733,25 @@ input[type="datetime-local"] {
   }
   .hero-section::before { display: none; }
 
+  .hero-layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .hero-top-writers {
+    max-width: 100%;
+    width: 100%;
+  }
+
   .hero-actions {
     flex-direction: column;
     align-items: stretch;
+    width: 100%;
   }
 
   .hero-btn {
     justify-content: center;
+    width: 100%;
   }
 
   /* Posts Controls & Grid */
@@ -4463,6 +5094,70 @@ input[type="datetime-local"] {
 
   .crop-modal-body {
     padding: 1rem 0.75rem;
+  }
+
+  .writer-modal-body,
+  .top-writers-modal-body {
+    padding: 1.15rem 1rem;
+    gap: 1rem;
+  }
+
+  .writer-modal-header,
+  .top-writers-modal-header {
+    padding: 1rem 1.15rem;
+  }
+
+  .writer-email-box {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+    gap: 0.75rem;
+    padding: 1rem 0.85rem;
+  }
+
+  .writer-email-icon {
+    margin: 0 auto;
+  }
+
+  .writer-email-address {
+    text-align: center;
+    font-size: 0.88rem;
+  }
+
+  .writer-copy-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .writer-modal-actions {
+    justify-content: stretch;
+  }
+
+  .writer-mail-action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .writer-row-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.65rem;
+  }
+
+  .writer-right-group {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .top-writers-footer-cta {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .top-writers-footer-cta button {
+    width: 100%;
+    justify-content: center;
   }
 
   .cropper-viewport-wrapper {

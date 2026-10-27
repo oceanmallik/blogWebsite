@@ -23,7 +23,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=2.4">
+  <link rel="stylesheet" href="style.css?v=2.9">
 </head>
 <body>
   <!-- Header / Navigation -->
@@ -122,29 +122,72 @@
     <section id="home-view" class="view">
       <!-- Hero Section -->
       <section class="hero-section">
-        <div class="hero-badge">
-          <span class="pulse-dot"></span>
-          <span>Ocean Verse Journal</span>
-        </div>
-        <h1 class="hero-title">Navigating ideas, technology & creative currents.</h1>
-        <p class="hero-subtitle">
-          Curated writings on software engineering, web design, and digital explorations.
-        </p>
-        <div class="hero-actions">
-          <button type="button" id="hero-browse-btn" class="btn-primary hero-btn">
-            <span>Explore Articles</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <polyline points="19 12 12 19 5 12"></polyline>
-            </svg>
-          </button>
-          <button type="button" id="hero-search-btn" class="btn-outline hero-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <span>Search Articles</span>
-          </button>
+        <div class="hero-layout">
+          <!-- Left: Title & Actions -->
+          <div class="hero-content">
+            <div class="hero-badge">
+              <span class="pulse-dot"></span>
+              <span>Ocean Verse Journal</span>
+            </div>
+            <h1 class="hero-title">Navigating ideas, technology &amp; creative currents.</h1>
+            <p class="hero-subtitle">
+              Curated writings on software engineering, web design, and digital explorations.
+            </p>
+            <div class="hero-actions">
+              <button type="button" id="hero-become-writer-btn" class="btn-primary hero-btn" title="Apply for Writer Access • Be a Publisher">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16" aria-hidden="true">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+                <span>Apply for Writer Access</span>
+              </button>
+              <button type="button" id="hero-signup-btn" class="btn-outline hero-btn" title="Create an account or open your profile">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16" aria-hidden="true">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="8.5" cy="7" r="4"></circle>
+                  <line x1="20" y1="8" x2="20" y2="14"></line>
+                  <line x1="23" y1="11" x2="17" y2="11"></line>
+                </svg>
+                <span id="hero-signup-btn-text">Sign Up</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Right: Top Writers (Only Top 3) -->
+          <aside class="hero-top-writers" aria-label="Top Writers">
+            <div class="hero-writers-card">
+              <div class="hero-writers-header">
+                <div class="hero-writers-title-group">
+                  <span class="hero-writers-badge">🏆 Top Writers</span>
+                  <span class="hero-writers-rank-tag">Top 3</span>
+                </div>
+                <button type="button" id="hero-view-all-writers-btn" class="hero-writers-view-all-btn" title="View all authors">
+                  <span>View All</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="11" height="11" aria-hidden="true">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+              </div>
+
+              <div id="hero-top-writers-list" class="hero-writers-list">
+                <!-- Top 3 Writers populated dynamically by renderHeroTopWriters() -->
+                <div class="hero-writer-skeleton">
+                  <div class="hero-writer-skeleton-avatar"></div>
+                  <div class="hero-writer-skeleton-info">
+                    <div class="hero-skeleton-bar bar-long"></div>
+                    <div class="hero-skeleton-bar bar-short"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="hero-writers-footer">
+                <span class="hero-writers-footer-label">Want to share your ideas?</span>
+                <button type="button" id="hero-writers-apply-btn" class="hero-writers-apply-link">
+                  <span>Be a Publisher &rarr;</span>
+                </button>
+              </div>
+            </div>
+          </aside>
         </div>
       </section>
 
@@ -1316,6 +1359,90 @@
     </div>
   </div>
 
+  <!-- ==============================================
+       BECOME A WRITER MODAL
+       ============================================== -->
+  <div id="writer-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="writer-modal-title">
+    <div class="modal-card writer-modal-card">
+      <div class="modal-header writer-modal-header">
+        <div class="writer-modal-title-wrap">
+          <div class="writer-badge-pill">
+            <span class="writer-star">✦</span>
+            <span>Be a Publisher</span>
+          </div>
+          <h3 id="writer-modal-title" class="writer-modal-title">Apply for Writer Access</h3>
+        </div>
+        <button id="writer-modal-close-btn" class="modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <div class="modal-body writer-modal-body">
+        <p class="writer-contact-lead">
+          Interested in writing or becoming a publisher on OceanVerse? Apply for writer access by sending a pitch, draft, or portfolio directly to:
+        </p>
+
+        <div class="writer-email-box">
+          <div class="writer-email-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20" aria-hidden="true">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+          </div>
+          <a href="mailto:oceanmallik@oceanmallik.com?subject=Apply%20for%20Writer%20Access%20-%20OceanVerse" id="writer-email-link" class="writer-email-address" title="Send email to oceanmallik@oceanmallik.com">
+            oceanmallik@oceanmallik.com
+          </a>
+          <button type="button" id="writer-copy-email-btn" class="writer-copy-btn" title="Copy email address">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span id="writer-copy-feedback">Copy</span>
+          </button>
+        </div>
+
+        <div class="writer-modal-actions">
+          <a href="mailto:oceanmallik@oceanmallik.com?subject=Apply%20for%20Writer%20Access%20-%20OceanVerse" class="btn-primary writer-mail-action-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="15" height="15" aria-hidden="true">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+            <span>Send Email</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================================
+       TOP WRITERS MODAL
+       ============================================== -->
+  <div id="top-writers-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="top-writers-modal-title">
+    <div class="modal-card top-writers-modal-card">
+      <div class="modal-header top-writers-modal-header">
+        <div class="top-writers-title-wrap">
+          <div class="top-writers-badge-pill">
+            <span>🏆 Featured Authors</span>
+          </div>
+          <h3 id="top-writers-modal-title" class="top-writers-modal-title">Top Writers</h3>
+          <p class="top-writers-modal-subtitle">Meet the voices and developers sharing their craft on OceanVerse.</p>
+        </div>
+        <button id="top-writers-close-btn" class="modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <div class="modal-body top-writers-modal-body">
+        <div id="top-writers-list" class="top-writers-list">
+          <!-- Populated dynamically with ranked author cards -->
+        </div>
+
+        <div class="top-writers-footer-cta">
+          <span>Want to share your engineering ideas?</span>
+          <button type="button" id="top-writers-apply-btn" class="btn-sm btn-primary">
+            <span>Apply for Writer Access</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Global Floating Scroll-To-Top Button -->
   <button id="scroll-top-btn" class="scroll-top-btn floating-top-btn" title="Back to top" aria-label="Scroll to top">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1338,7 +1465,7 @@
   </footer>
 
   <!-- Application Logic -->
-  <script src="app.js?v=2.2"></script>
+  <script src="app.js?v=2.9"></script>
 </body>
 </html>
 
