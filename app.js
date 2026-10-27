@@ -15,6 +15,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_z9Hk9GwzczIGsJWZpHoh0w_grcfZbAX';
 // FIX 1: Use supabaseClient to prevent collision with global window.supabase CDN object
 let supabaseClient = null;
 let allPosts = [];
+window.allPosts = allPosts;
 let currentFilter = '';
 let activePost = null;
 
@@ -410,6 +411,7 @@ async function loadPosts() {
     }
 
     allPosts = data || [];
+    window.allPosts = allPosts;
 
     // Batch preload comments for Top Contributors scoring
     if (supabaseClient) {
@@ -1779,7 +1781,19 @@ async function getPostAuthorProfile(post) {
     }
   }
 
-  // 5. Fallback for demo or unspecified authors
+  // 5. If post has explicit author_name or author_username
+  if (post.author_name || post.author_username) {
+    return {
+      id: post.author_id || null,
+      display_name: post.author_name || (post.author_username ? `@${post.author_username}` : 'Author'),
+      username: post.author_username || '',
+      email: post.author_email || '',
+      avatar_url: post.author_avatar || null,
+      role: post.role || 'admin'
+    };
+  }
+
+  // 6. Fallback for demo or unspecified authors
   return {
     id: post.author_id || 'demo-author',
     display_name: post.author_name || 'Ocean Author',
@@ -1868,8 +1882,36 @@ function renderArticleAuthor(author) {
  * @param {object} post - Post object to display
  * @param {boolean} updateHash - Whether to update window.location.hash
  */
-function openArticleView(post, updateHash = true) {
+async function openArticleView(post, updateHash = true) {
   if (!post) return;
+
+  // 1. Resolve full post object if missing essential fields (content, author_id, created_at)
+  if (!post.content || !post.author_id) {
+    const postsPool = (allPosts && allPosts.length > 0) ? allPosts : (window.allPosts || []);
+    const inMemory = postsPool.find(p => (post.id && String(p.id) === String(post.id)) || (post.slug && p.slug === post.slug));
+    if (inMemory && inMemory.content && inMemory.author_id) {
+      post = { ...post, ...inMemory };
+    } else if (supabaseClient && (post.id || post.slug)) {
+      try {
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(post.id || post.slug));
+        let query = supabaseClient.from('posts').select('*');
+        if (isUuid) {
+          query = query.eq('id', post.id || post.slug);
+        } else {
+          query = query.eq('slug', post.slug || post.id);
+        }
+        const { data, error } = await query.maybeSingle();
+        if (!error && data) {
+          post = { ...post, ...data };
+          const idx = allPosts.findIndex(p => p.id === data.id);
+          if (idx >= 0) allPosts[idx] = { ...allPosts[idx], ...data };
+          else allPosts.push(data);
+        }
+      } catch (err) {
+        console.warn('Could not fetch complete post from Supabase in openArticleView:', err);
+      }
+    }
+  }
 
   // Prevent double rendering if this article view is already actively open for this post
   if (activePost && activePost.id === post.id && !dom.articleView?.classList.contains('hidden')) {
@@ -1954,6 +1996,61 @@ function openArticleView(post, updateHash = true) {
 }
 
 /**
+ * Resolves a post by ID or Slug from memory or Supabase, then opens the article view.
+ * @param {string} id - Post UUID or identifier
+ * @param {string} slug - Post slug or identifier
+ * @param {object} [fallbackPost] - Optional partial post object
+ * @param {boolean} [updateHash=true] - Whether to update URL hash
+ */
+async function openPostByIdOrSlug(id, slug, fallbackPost = null, updateHash = true) {
+  let targetPost = null;
+
+  // 1. Look in allPosts in memory
+  const postsPool = (allPosts && allPosts.length > 0) ? allPosts : (window.allPosts || []);
+  if (postsPool && postsPool.length > 0) {
+    targetPost = postsPool.find(p => (id && String(p.id) === String(id)) || (slug && p.slug === slug));
+  }
+
+  // 2. If fallbackPost has full content and author, use it
+  if ((!targetPost || !targetPost.content) && fallbackPost && fallbackPost.content && fallbackPost.author_id) {
+    targetPost = fallbackPost;
+  }
+
+  // 3. Query Supabase if not found or missing content
+  if ((!targetPost || !targetPost.content || !targetPost.author_id) && supabaseClient && (id || slug)) {
+    try {
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id || slug));
+      let query = supabaseClient.from('posts').select('*');
+      if (isUuid) {
+        query = query.eq('id', id || slug);
+      } else {
+        query = query.eq('slug', slug || id);
+      }
+      const { data, error } = await query.maybeSingle();
+      if (!error && data) {
+        targetPost = fallbackPost ? { ...fallbackPost, ...data } : data;
+        const idx = allPosts.findIndex(p => p.id === data.id);
+        if (idx >= 0) allPosts[idx] = { ...allPosts[idx], ...data };
+        else allPosts.push(data);
+      }
+    } catch (err) {
+      console.warn('Failed to load post by ID/slug from Supabase:', err);
+    }
+  }
+
+  // 4. Fallback to fallbackPost or DEMO_PREVIEW_POSTS
+  if (!targetPost) {
+    targetPost = fallbackPost || (typeof DEMO_PREVIEW_POSTS !== 'undefined' ? DEMO_PREVIEW_POSTS.find(p => (id && String(p.id) === String(id)) || (slug && p.slug === slug)) : null);
+  }
+
+  if (targetPost) {
+    await openArticleView(targetPost, updateHash);
+  } else {
+    console.warn('Unable to resolve post for navigation:', { id, slug });
+  }
+}
+
+/**
  * Restores home view and hides article & admin views
  */
 function returnToHomeView() {
@@ -2016,16 +2113,13 @@ function handleHashNavigation() {
   }
   if (hash.startsWith('#/post/')) {
     const identifier = decodeURIComponent(hash.replace('#/post/', '')).trim();
-    if (identifier && allPosts.length > 0) {
-      const match = allPosts.find(p => p.slug === identifier || String(p.id) === identifier);
-      if (match) {
-        // If already actively viewing this post, do not duplicate view open or comments fetch
-        if (activePost && (activePost.id === match.id || activePost.slug === match.slug) && !dom.articleView?.classList.contains('hidden')) {
-          return;
-        }
-        openArticleView(match, false);
+    if (identifier) {
+      // If already actively viewing this post, do not duplicate view open or comments fetch
+      if (activePost && (String(activePost.id) === identifier || activePost.slug === identifier) && !dom.articleView?.classList.contains('hidden')) {
         return;
       }
+      openPostByIdOrSlug(identifier, identifier, null, false);
+      return;
     }
   } else if (!hash || hash === '#' || hash === '#/') {
     if (!dom.articleView?.classList.contains('hidden') || !dom.adminView?.classList.contains('hidden') || !dom.profileView?.classList.contains('hidden') || !dom.publicProfileView?.classList.contains('hidden')) {
@@ -4496,7 +4590,7 @@ async function loadPublicUserComments(profile, requestId) {
     if (supabaseClient && profile.id && profile.id !== 'demo-author') {
       const { data, error } = await supabaseClient
         .from('comments')
-        .select('id, post_id, content, created_at, posts(id, title, slug, cover_image)')
+        .select('id, post_id, content, created_at, posts(id, title, slug, cover_image, author_id, content, summary, created_at, reading_time)')
         .eq('user_id', profile.id)
         .order('created_at', { ascending: false });
 
@@ -4571,9 +4665,31 @@ async function loadPublicUserComments(profile, requestId) {
 
   const fragment = document.createDocumentFragment();
   uniqueComments.forEach(comment => {
-    const post = (comment.posts && typeof comment.posts === 'object')
+    const commentPost = (comment.posts && typeof comment.posts === 'object')
       ? (Array.isArray(comment.posts) ? comment.posts[0] : comment.posts)
-      : (allPosts.find(p => p.id === comment.post_id) || (typeof DEMO_PREVIEW_POSTS !== 'undefined' ? DEMO_PREVIEW_POSTS.find(p => p.id === comment.post_id) : null));
+      : null;
+
+    const postId = comment.post_id || commentPost?.id;
+    const postSlug = commentPost?.slug;
+
+    // Prioritize complete post from allPosts in memory (contains full content, author_id, etc.)
+    const postsPool = (allPosts && allPosts.length > 0) ? allPosts : (window.allPosts || []);
+    let post = postsPool.find(p => (postId && String(p.id) === String(postId)) || (postSlug && p.slug === postSlug));
+
+    // If not found in memory, use commentPost from Supabase join
+    if (!post && commentPost) {
+      post = commentPost;
+    }
+
+    // Fallback to DEMO_PREVIEW_POSTS
+    if (!post && typeof DEMO_PREVIEW_POSTS !== 'undefined') {
+      post = DEMO_PREVIEW_POSTS.find(p => (postId && String(p.id) === String(postId)) || (postSlug && p.slug === postSlug));
+    }
+
+    // Merge freshest fields if available
+    if (post && commentPost) {
+      post = { ...commentPost, ...post };
+    }
 
     const postTitle = post?.title || 'an article';
     const card = document.createElement('div');
@@ -4647,15 +4763,15 @@ async function loadPublicUserComments(profile, requestId) {
 
     const handleArticleNavigation = (e) => {
       e.preventDefault();
-      if (post) {
-        openArticleView(post);
-      }
+      e.stopPropagation();
+      openPostByIdOrSlug(postId, postSlug, post);
     };
 
     articleBar.addEventListener('click', handleArticleNavigation);
     articleBar.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
+        e.stopPropagation();
         handleArticleNavigation(e);
       }
     });
@@ -5239,6 +5355,8 @@ function initEventListeners() {
 window.handleUserSession = handleUserSession;
 window.openPublicProfileView = openPublicProfileView;
 window.openProfileView = openProfileView;
+window.openArticleView = openArticleView;
+window.openPostByIdOrSlug = openPostByIdOrSlug;
 
 // ============================================================================
 // 15. DOM READY EXECUTION
