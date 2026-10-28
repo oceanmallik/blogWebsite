@@ -170,6 +170,8 @@ function initDOM() {
   dom.articleAdminActions = document.getElementById('article-admin-actions');
   dom.articleAdminEditBtn = document.getElementById('article-admin-edit-btn');
   dom.articleAdminDeleteBtn = document.getElementById('article-admin-delete-btn');
+  dom.articlePinBtn = document.getElementById('article-pin-btn');
+  dom.articlePinBtnText = document.getElementById('article-pin-btn-text');
   dom.scrollTopBtn = document.getElementById('scroll-top-btn');
   dom.copyLinkBtn = document.getElementById('copy-link-btn');
   dom.sidebarShareBtn = document.getElementById('sidebar-share-btn');
@@ -345,10 +347,12 @@ function initDOM() {
   dom.profilePasswordMsg = document.getElementById('profile-password-msg');
   dom.profilePasswordSubmitBtn = document.getElementById('profile-password-submit-btn');
 
-  // Avatar Crop Modal Elements
+  // Avatar & Cover Crop Modal Elements
   dom.avatarCropModal = document.getElementById('avatar-crop-modal');
   dom.avatarCropCloseBtn = document.getElementById('avatar-crop-close-btn');
   dom.avatarCropImage = document.getElementById('avatar-crop-image');
+  dom.cropModalTitle = document.getElementById('crop-modal-title');
+  dom.cropModalSubtitle = document.getElementById('crop-modal-subtitle');
   dom.cropZoomInBtn = document.getElementById('crop-zoom-in-btn');
   dom.cropZoomOutBtn = document.getElementById('crop-zoom-out-btn');
   dom.cropRotateLeftBtn = document.getElementById('crop-rotate-left-btn');
@@ -358,6 +362,30 @@ function initDOM() {
   dom.cropUploadText = document.getElementById('crop-upload-text');
   dom.cropStatusMsg = document.getElementById('crop-status-msg');
 
+  // Extended Profile Form Elements
+  dom.profileEditBio = document.getElementById('profile-edit-bio');
+  dom.profileEditLocation = document.getElementById('profile-edit-location');
+  dom.profileEditInstitution = document.getElementById('profile-edit-institution');
+  dom.profileEditWebsite = document.getElementById('profile-edit-website');
+  dom.profileEditCover = document.getElementById('profile-edit-cover');
+  dom.profileCoverFile = document.getElementById('profile-cover-file');
+  dom.profileUploadCoverBtn = document.getElementById('profile-upload-cover-btn');
+  dom.profileClearCoverBtn = document.getElementById('profile-clear-cover-btn');
+  dom.profilePreviewCoverBtn = document.getElementById('profile-preview-cover-btn');
+  dom.profileCoverStatus = document.getElementById('profile-cover-status');
+  dom.profileEditCoverPreview = document.getElementById('profile-edit-cover-preview');
+  dom.profileAddSkillBtn = document.getElementById('profile-add-skill-btn');
+  dom.profileSkillsEditorList = document.getElementById('profile-skills-editor-list');
+  dom.profileSocialGithub = document.getElementById('profile-social-github');
+  dom.profileSocialLinkedin = document.getElementById('profile-social-linkedin');
+  dom.profileSocialX = document.getElementById('profile-social-x');
+  dom.profileSocialYoutube = document.getElementById('profile-social-youtube');
+  dom.profileSocialFacebook = document.getElementById('profile-social-facebook');
+  dom.profileSocialBluesky = document.getElementById('profile-social-bluesky');
+  dom.profileSocialInstagram = document.getElementById('profile-social-instagram');
+  dom.profileEditPinnedPost = document.getElementById('profile-edit-pinned-post');
+  dom.profileIdentityVerifiedBadge = document.getElementById('profile-identity-verified-badge');
+
   // Public Profile Elements
   dom.publicProfileBackBtn = document.getElementById('public-profile-back-btn');
   dom.publicProfileBackLabel = document.getElementById('public-profile-back-label');
@@ -366,9 +394,24 @@ function initDOM() {
   dom.publicProfileAvatar = document.getElementById('public-profile-avatar');
   dom.publicProfileName = document.getElementById('public-profile-name');
   dom.publicProfileUsername = document.getElementById('public-profile-username');
+  dom.publicProfileVerifiedBadge = document.getElementById('public-profile-verified-badge');
   dom.publicProfileRoleBadge = document.getElementById('public-profile-role-badge');
   dom.publicProfileJoined = document.getElementById('public-profile-joined');
   dom.publicProfileStatusPill = document.getElementById('public-profile-status-pill');
+  dom.publicProfileBio = document.getElementById('public-profile-bio');
+  dom.publicProfileLocationWrap = document.getElementById('public-profile-location-wrap');
+  dom.publicProfileLocation = document.getElementById('public-profile-location');
+  dom.publicProfileInstitutionWrap = document.getElementById('public-profile-institution-wrap');
+  dom.publicProfileInstitution = document.getElementById('public-profile-institution');
+  dom.publicProfileWebsiteWrap = document.getElementById('public-profile-website-wrap');
+  dom.publicProfileWebsite = document.getElementById('public-profile-website');
+  dom.publicProfileCoverBanner = document.getElementById('public-profile-cover-banner');
+  dom.publicProfileAboutCard = document.getElementById('public-profile-about-card');
+  dom.publicProfileSocialRow = document.getElementById('public-profile-social-row');
+  dom.publicProfileSocialList = document.getElementById('public-profile-social-list');
+  dom.publicProfileSkillsCard = document.getElementById('public-profile-skills-card');
+  dom.publicProfileSkillsList = document.getElementById('public-profile-skills-list');
+  dom.publicPinnedPostWrap = document.getElementById('public-pinned-post-wrap');
   dom.publicStatPosts = document.getElementById('public-stat-posts');
   dom.publicStatComments = document.getElementById('public-stat-comments');
   dom.publicTabPosts = document.getElementById('public-tab-posts');
@@ -385,6 +428,38 @@ function initDOM() {
   dom.publicCommentsEmpty = document.getElementById('public-comments-empty');
   dom.articleAuthorProfileBtn = document.getElementById('article-author-profile-btn');
   dom.profileViewPublicBtn = document.getElementById('profile-view-public-btn');
+
+  // Direct Profile Photo & Cover Edit Buttons
+  dom.publicProfileEditCoverBtn = document.getElementById('public-profile-edit-cover-btn');
+  dom.publicProfileEditAvatarBtn = document.getElementById('public-profile-edit-avatar-btn');
+  dom.profileIdentityEditAvatarBtn = document.getElementById('profile-identity-edit-avatar-btn');
+
+  // Photo Upload Modal Elements
+  dom.photoUploadModal = document.getElementById('photo-upload-modal');
+  dom.photoModalBadge = document.getElementById('photo-modal-badge');
+  dom.photoModalBadgeText = document.getElementById('photo-modal-badge-text');
+  dom.photoModalTitle = document.getElementById('photo-modal-title');
+  dom.photoModalSubtitle = document.getElementById('photo-modal-subtitle');
+  dom.photoModalCloseBtn = document.getElementById('photo-modal-close-btn');
+  dom.photoModalDropzone = document.getElementById('photo-modal-dropzone');
+  dom.photoModalChooseBtn = document.getElementById('photo-modal-choose-btn');
+  dom.photoModalFileInput = document.getElementById('photo-modal-file-input');
+  dom.photoModalHint = document.getElementById('photo-modal-hint');
+  dom.photoModalUrlInput = document.getElementById('photo-modal-url-input');
+  dom.photoModalApplyUrlBtn = document.getElementById('photo-modal-apply-url-btn');
+  dom.photoModalRemoveBtn = document.getElementById('photo-modal-remove-btn');
+  dom.photoModalRemoveText = document.getElementById('photo-modal-remove-text');
+  dom.photoModalStatus = document.getElementById('photo-modal-status');
+
+  // Verified Creator Info Modal Elements
+  dom.verifiedInfoModal = document.getElementById('verified-info-modal');
+  dom.verifiedModalTitle = document.getElementById('verified-modal-title');
+  dom.verifiedModalUsername = document.getElementById('verified-modal-username');
+  dom.verifiedModalCloseBtn = document.getElementById('verified-modal-close-btn');
+  dom.verifiedModalDoneBtn = document.getElementById('verified-modal-done-btn');
+  dom.verifiedCopyEmailBtn = document.getElementById('verified-copy-email-btn');
+  dom.verifiedCopyFeedback = document.getElementById('verified-copy-feedback');
+  dom.verifiedEmailLink = document.getElementById('verified-email-link');
 }
 
 // ============================================================================
@@ -467,18 +542,28 @@ async function loadPosts() {
         try {
           const { data: profs, error: profsErr } = await supabaseClient
             .from('profiles')
-            .select('id, email, display_name, username, avatar_url, role, created_at')
+            .select('*')
             .in('id', contributorIds);
           if (!profsErr && profs) {
             profs.forEach(p => {
               authorProfilesCache.set(p.id, {
+                ...p,
                 id: p.id,
                 display_name: p.display_name || (p.email ? p.email.split('@')[0] : 'Contributor'),
                 username: p.username || '',
                 email: p.email || '',
                 avatar_url: p.avatar_url || null,
-                role: p.role || 'reader',
-                created_at: p.created_at
+                role: p.role || 'visitor',
+                created_at: p.created_at,
+                is_verified: !!p.is_verified,
+                pinned_post_id: p.pinned_post_id || null,
+                bio: p.bio || '',
+                location: p.location || '',
+                institution: p.institution || '',
+                website_url: p.website_url || '',
+                cover_url: p.cover_url || '',
+                skills: Array.isArray(p.skills) ? p.skills : [],
+                social_links: p.social_links && typeof p.social_links === 'object' ? p.social_links : {}
               });
             });
           }
@@ -626,14 +711,23 @@ async function handleUserSession(user, fallbackDisplayName) {
   const effectiveCreatedAt = profile?.created_at || user.created_at || new Date().toISOString();
 
   profile = {
-    ...(profile || {}),
     id: user.id,
     email: user.email,
     display_name: effectiveDisplayName,
     username: effectiveUsername,
     avatar_url: effectiveAvatarUrl,
     role: effectiveRole,
-    created_at: effectiveCreatedAt
+    created_at: effectiveCreatedAt,
+    bio: profile?.bio || '',
+    location: profile?.location || '',
+    institution: profile?.institution || '',
+    website_url: profile?.website_url || '',
+    cover_url: profile?.cover_url || '',
+    skills: Array.isArray(profile?.skills) ? profile.skills : [],
+    social_links: profile?.social_links && typeof profile.social_links === 'object' ? profile.social_links : {},
+    is_verified: !!profile?.is_verified,
+    pinned_post_id: profile?.pinned_post_id || null,
+    ...(profile || {})
   };
 
   currentProfile = profile;
@@ -643,6 +737,7 @@ async function handleUserSession(user, fallbackDisplayName) {
   window.currentUser = currentUser;
   window.currentUserRole = currentUserRole;
   window.currentProfile = currentProfile;
+  authorProfilesCache.set(user.id, profile);
 
   // Auto-sync: If the database public.profiles table has no row or missing username/display_name
   const emailPrefix = user.email ? user.email.split('@')[0] : '';
@@ -656,7 +751,16 @@ async function handleUserSession(user, fallbackDisplayName) {
         display_name: effectiveDisplayName,
         username: effectiveUsername,
         avatar_url: effectiveAvatarUrl,
-        role: effectiveRole
+        role: effectiveRole,
+        bio: profile.bio || '',
+        location: profile.location || '',
+        institution: profile.institution || '',
+        website_url: profile.website_url || '',
+        cover_url: profile.cover_url || '',
+        skills: profile.skills || [],
+        social_links: profile.social_links || {},
+        is_verified: profile.is_verified || false,
+        pinned_post_id: profile.pinned_post_id || null
       })
       .then(({ error }) => {
         if (error) console.warn('Could not auto-sync profile to DB:', error.message);
@@ -718,8 +822,8 @@ function updateAuthUI() {
     if (dom.navUserRole) {
       dom.navUserRole.className = `role-badge role-${role}`;
       if (role === 'admin') {
-        dom.navUserRole.innerHTML = `👑 Admin`;
-        dom.navUserRole.title = 'Role: Administrator';
+        dom.navUserRole.innerHTML = `👑 Publisher`;
+        dom.navUserRole.title = 'Role: Publisher';
       } else {
         dom.navUserRole.innerHTML = `Visitor`;
         dom.navUserRole.title = 'Role: Visitor';
@@ -2050,7 +2154,7 @@ function renderPostsGrid(posts) {
 /**
  * FIX 2: Safely handles null author_id / null profile fields
  */
-function createCardElement(post) {
+function createCardElement(post, options = {}) {
   const card = document.createElement('article');
   card.className = 'post-card';
   card.tabIndex = 0;
@@ -2126,6 +2230,40 @@ function createCardElement(post) {
   meta.appendChild(dotSpan);
   meta.appendChild(timeSpan);
 
+  // Author Pinned Post badge
+  const prof = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
+  const cachedAuthor = post.author_id ? authorProfilesCache.get(post.author_id) : null;
+  const isPostPinned = (currentProfile?.pinned_post_id && String(currentProfile.pinned_post_id) === String(post.id) && post.author_id === currentUser?.id) ||
+    (cachedAuthor?.pinned_post_id && String(cachedAuthor.pinned_post_id) === String(post.id)) ||
+    (prof?.pinned_post_id && String(prof.pinned_post_id) === String(post.id));
+
+  if (isPostPinned) {
+    card.classList.add('is-pinned-card');
+    const pinBadge = document.createElement('span');
+    pinBadge.className = 'card-pinned-tag';
+    pinBadge.textContent = '📌 Pinned';
+    pinBadge.title = 'Pinned article by author';
+    meta.insertBefore(pinBadge, meta.firstChild);
+  }
+
+  // If viewing own profile page, show direct Pin / Unpin button on every card
+  if (options && options.isProfileOwnerView) {
+    const pinActionBtn = document.createElement('button');
+    pinActionBtn.type = 'button';
+    pinActionBtn.className = `card-pin-action-btn ${isPostPinned ? 'is-pinned' : ''}`;
+    pinActionBtn.title = isPostPinned ? 'Unpin article from your profile' : 'Pin article to the top of your profile';
+    pinActionBtn.innerHTML = `<span>📌 ${isPostPinned ? 'Pinned' : 'Pin'}</span>`;
+    pinActionBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      pinActionBtn.disabled = true;
+      await togglePinPost(post.id);
+      if (typeof options.onPinToggle === 'function') {
+        options.onPinToggle();
+      }
+    });
+    meta.appendChild(pinActionBtn);
+  }
+
   // Title
   const title = document.createElement('h2');
   title.className = 'card-title';
@@ -2139,8 +2277,6 @@ function createCardElement(post) {
   // Footer / Author Profile & Read More
   const footer = document.createElement('div');
   footer.className = 'card-footer';
-  const prof = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
-  const cachedAuthor = post.author_id ? authorProfilesCache.get(post.author_id) : null;
   const isSelf = currentUser && post.author_id && post.author_id === currentUser.id;
 
   let authorName = (isSelf && currentProfile?.display_name) 
@@ -2276,7 +2412,9 @@ async function getPostAuthorProfile(post) {
       username: p.username || '',
       email: p.email || '',
       avatar_url: p.avatar_url || null,
-      role: p.role || 'admin'
+      role: p.role || 'admin',
+      is_verified: !!p.is_verified,
+      pinned_post_id: p.pinned_post_id || null
     };
   }
 
@@ -2288,7 +2426,9 @@ async function getPostAuthorProfile(post) {
       username: currentProfile?.username || currentUser.user_metadata?.username || '',
       email: currentUser.email || currentProfile?.email || '',
       avatar_url: currentProfile?.avatar_url || currentUser.user_metadata?.avatar_url || null,
-      role: currentProfile?.role || currentUserRole || 'admin'
+      role: currentProfile?.role || currentUserRole || 'admin',
+      is_verified: !!currentProfile?.is_verified,
+      pinned_post_id: currentProfile?.pinned_post_id || null
     };
   }
 
@@ -2302,19 +2442,22 @@ async function getPostAuthorProfile(post) {
     try {
       const { data, error } = await supabaseClient
         .from('profiles')
-        .select('id, email, display_name, username, avatar_url, role, created_at')
+        .select('*')
         .eq('id', post.author_id)
         .maybeSingle();
 
       if (!error && data) {
         const result = {
+          ...data,
           id: data.id,
           display_name: data.display_name || post.author_name || (data.email ? data.email.split('@')[0] : 'Ocean Author'),
           username: data.username || '',
           email: data.email || '',
           avatar_url: data.avatar_url || null,
           role: data.role || 'admin',
-          created_at: data.created_at
+          created_at: data.created_at,
+          is_verified: !!data.is_verified,
+          pinned_post_id: data.pinned_post_id || null
         };
         authorProfilesCache.set(post.author_id, result);
         renderHeroTopWriters();
@@ -2394,7 +2537,26 @@ function renderArticleAuthor(author) {
   const avatarUrl = author?.avatar_url || null;
 
   if (dom.articleAuthorName) {
-    dom.articleAuthorName.textContent = name;
+    dom.articleAuthorName.innerHTML = escapeHtml(name);
+    if (author?.is_verified) {
+      const vBtn = document.createElement('button');
+      vBtn.type = 'button';
+      vBtn.className = 'verified-badge verified-check-btn';
+      vBtn.title = 'Verified Creator • Click to learn more';
+      vBtn.setAttribute('aria-label', 'Verified Creator');
+      vBtn.style.marginLeft = '0.35rem';
+      vBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="verified-badge-svg">
+          <path fill="#0284c7" stroke="#000000" stroke-width="0.8" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"></path>
+          <path fill="#FFFFFF" d="M10.54 16.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"></path>
+        </svg>
+      `;
+      vBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openVerifiedInfoModal(name, username);
+      });
+      dom.articleAuthorName.appendChild(vBtn);
+    }
   }
 
   if (dom.articleAuthorUsername) {
@@ -2523,15 +2685,18 @@ async function openArticleView(post, updateHash = true) {
 
   // Article admin action buttons (strictly limited to post author)
   if (dom.articleAdminActions) {
-    const isAuthor = Boolean(currentUser && post && post.author_id && post.author_id === currentUser.id);
-    if (currentUserRole === 'admin' && isAuthor) {
+    const isAuthor = Boolean(currentUser && post && ((post.author_id && post.author_id === currentUser.id) || (currentUserRole === 'admin' && !post.author_id)));
+    if (isAuthor) {
       dom.articleAdminActions.classList.remove('hidden');
       dom.articleAdminEditBtn?.classList.remove('hidden');
       dom.articleAdminDeleteBtn?.classList.remove('hidden');
+      dom.articlePinBtn?.classList.remove('hidden');
+      updateArticlePinButton();
     } else {
       dom.articleAdminActions.classList.add('hidden');
       dom.articleAdminEditBtn?.classList.add('hidden');
       dom.articleAdminDeleteBtn?.classList.add('hidden');
+      dom.articlePinBtn?.classList.add('hidden');
     }
   }
 
@@ -2851,6 +3016,37 @@ function createCommentCardElement(comment) {
     authorNameRow.appendChild(authorHandle);
   }
 
+  // Look up profile / author cache for verified & publisher role badges
+  const cachedProf = comment.user_id ? authorProfilesCache.get(comment.user_id) : null;
+  const isVerified = Boolean((profile && profile.is_verified) || (cachedProf && cachedProf.is_verified) || (currentUser && currentUser.id === comment.user_id && currentProfile?.is_verified));
+  const commentRole = (profile?.role || cachedProf?.role || (currentUser && currentUser.id === comment.user_id ? currentUserRole : 'visitor')).toLowerCase();
+
+  if (isVerified) {
+    const verifiedBadge = document.createElement('button');
+    verifiedBadge.type = 'button';
+    verifiedBadge.className = 'verified-badge comment-verified-badge';
+    verifiedBadge.title = 'Verified Creator • Click to learn more';
+    verifiedBadge.setAttribute('aria-label', 'Verified Creator');
+    verifiedBadge.innerHTML = `
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" class="verified-badge-svg">
+        <path fill="#0284c7" stroke="#000000" stroke-width="0.8" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"></path>
+        <path fill="#FFFFFF" d="M10.54 16.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"></path>
+      </svg>
+    `;
+    verifiedBadge.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openVerifiedInfoModal(displayName, username);
+    });
+    authorNameRow.appendChild(verifiedBadge);
+  }
+
+  if (commentRole === 'admin') {
+    const roleBadge = document.createElement('span');
+    roleBadge.className = 'role-badge role-admin comment-role-badge';
+    roleBadge.textContent = '👑 Publisher';
+    authorNameRow.appendChild(roleBadge);
+  }
+
   const time = document.createElement('span');
   time.className = 'comment-time';
   time.textContent = formatDate(comment.created_at);
@@ -2885,7 +3081,7 @@ function createCommentCardElement(comment) {
 
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'comment-delete-btn';
-    deleteBtn.title = currentUserRole === 'admin' ? 'Delete comment (Admin)' : 'Delete your comment';
+    deleteBtn.title = currentUserRole === 'admin' ? 'Delete comment (Publisher)' : 'Delete your comment';
     deleteBtn.innerHTML = `
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="3 6 5 6 21 6"></polyline>
@@ -2997,7 +3193,7 @@ async function deleteComment(commentId) {
 
 function openAdminView() {
   if (currentUserRole !== 'admin') {
-    alert('Access denied: Administrator privileges required.');
+    alert('Access denied: Publisher privileges required.');
     returnToHomeView();
     return;
   }
@@ -3172,6 +3368,7 @@ function renderAdminPostsList(posts) {
     const timeAgo = formatTimeAgo(post.created_at);
     const dateFormatted = formatDate(post.created_at);
     const isAuthor = Boolean(currentUser && post.author_id && post.author_id === currentUser.id);
+    const isPinned = Boolean(currentProfile?.pinned_post_id && String(currentProfile.pinned_post_id) === String(post.id));
 
     body.innerHTML = `
       <h3 class="card-title admin-card-title">${escapeHtml(post.title || 'Untitled Post')}</h3>
@@ -3187,6 +3384,9 @@ function renderAdminPostsList(posts) {
       <div class="card-footer admin-card-footer admin-card-actions-row">
         <div class="admin-card-actions-group admin-post-actions">
           ${isAuthor ? `
+            <button type="button" class="admin-card-btn admin-action-btn admin-card-btn-pin pin-btn ${isPinned ? 'is-pinned' : ''}" data-id="${post.id}" title="${isPinned ? 'Unpin this post from profile' : 'Pin this post to profile'}">
+              <span>${isPinned ? '📌 Pinned' : '📌 Pin'}</span>
+            </button>
             <button type="button" class="admin-card-btn admin-action-btn admin-card-btn-edit edit-btn" data-id="${post.id}" title="Edit this post in Editor">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13">
                 <path d="M12 20h9"></path>
@@ -3222,6 +3422,12 @@ function renderAdminPostsList(posts) {
     });
 
     if (isAuthor) {
+      body.querySelector('.pin-btn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePinPost(post.id);
+      });
+
       body.querySelector('.edit-btn')?.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -3252,7 +3458,7 @@ function renderAdminPostsList(posts) {
 async function handleAdminPostSubmit(e) {
   e.preventDefault();
   if (currentUserRole !== 'admin' || !supabaseClient) {
-    alert('Unauthorized: Admin role required.');
+    alert('Unauthorized: Publisher role required.');
     return;
   }
 
@@ -3471,7 +3677,7 @@ function resetAdminEditor() {
 
 async function deletePost(postId) {
   if (currentUserRole !== 'admin' || !supabaseClient) {
-    alert('Unauthorized: Admin role required.');
+    alert('Unauthorized: Publisher role required.');
     return;
   }
 
@@ -3531,6 +3737,36 @@ function showAdminMsg(message, type) {
     if (dom.adminFormMsg) dom.adminFormMsg.className = 'config-status-msg hidden';
   }, 4000);
 }
+
+/**
+ * Displays a global toast notification in the bottom right corner
+ * @param {string} message
+ * @param {'success'|'error'|'info'} type
+ */
+function showToast(message, type = 'info') {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+  const toast = document.createElement('div');
+  toast.className = `toast-item toast-${type}`;
+  toast.innerHTML = `
+    <span class="toast-text">${escapeHtml(message)}</span>
+    <button type="button" class="toast-close" aria-label="Close notification">&times;</button>
+  `;
+  container.appendChild(toast);
+  toast.querySelector('.toast-close')?.addEventListener('click', () => {
+    toast.remove();
+  });
+  setTimeout(() => {
+    toast.classList.add('fade-out');
+    setTimeout(() => toast.remove(), 350);
+  }, 3500);
+}
+window.showToast = showToast;
 
 function generateSlugFromText(text) {
   return text
@@ -3690,9 +3926,9 @@ function initSplitViewScrollSync() {
  */
 function updateAdminPreview() {
   // Update author card in the editor's live preview pane (photo, name, username, email on left)
-  const authorName = currentProfile?.display_name || currentUser?.user_metadata?.display_name || (currentUser?.email ? currentUser.email.split('@')[0] : 'Admin Author');
-  const authorUsername = currentProfile?.username || currentUser?.user_metadata?.username || (currentUser?.email ? currentUser.email.split('@')[0] : 'admin');
-  const authorEmail = currentUser?.email || currentProfile?.email || 'admin@oceanverse.dev';
+  const authorName = currentProfile?.display_name || currentUser?.user_metadata?.display_name || (currentUser?.email ? currentUser.email.split('@')[0] : 'Publisher');
+  const authorUsername = currentProfile?.username || currentUser?.user_metadata?.username || (currentUser?.email ? currentUser.email.split('@')[0] : 'publisher');
+  const authorEmail = currentUser?.email || currentProfile?.email || 'publisher@oceanverse.dev';
   const authorAvatarUrl = currentProfile?.avatar_url || currentUser?.user_metadata?.avatar_url || '';
 
   if (dom.adminPreviewAuthorName) {
@@ -3873,7 +4109,7 @@ async function handleCoverImageUpload(file) {
   if (!file) return;
 
   if (currentUserRole !== 'admin' || !supabaseClient) {
-    showCoverStatus('Unauthorized: Admin role required to upload images.', 'error');
+    showCoverStatus('Unauthorized: Publisher role required to upload images.', 'error');
     return;
   }
 
@@ -4299,7 +4535,7 @@ async function populateProfileView() {
   }
 
   // Role badges
-  const roleLabel = role === 'admin' ? '👑 Administrator' : 'Visitor';
+  const roleLabel = role === 'admin' ? '👑 Publisher' : 'Visitor';
   if (dom.profileIdentityRole) {
     dom.profileIdentityRole.className = `role-badge role-${role}`;
     dom.profileIdentityRole.textContent = roleLabel;
@@ -4307,6 +4543,15 @@ async function populateProfileView() {
   if (dom.profileHeaderRole) {
     dom.profileHeaderRole.className = `role-badge role-${role}`;
     dom.profileHeaderRole.textContent = roleLabel;
+  }
+
+  // Verified badge on identity card
+  if (dom.profileIdentityVerifiedBadge) {
+    if (profile.is_verified) {
+      dom.profileIdentityVerifiedBadge.classList.remove('hidden');
+    } else {
+      dom.profileIdentityVerifiedBadge.classList.add('hidden');
+    }
   }
 
   // Admin button visibility
@@ -4328,10 +4573,33 @@ async function populateProfileView() {
   // Edit Form Fields
   if (dom.profileEditName) dom.profileEditName.value = displayName;
   if (dom.profileEditUsername) dom.profileEditUsername.value = username;
+  if (dom.profileEditBio) dom.profileEditBio.value = profile.bio || '';
+  if (dom.profileEditLocation) dom.profileEditLocation.value = profile.location || '';
+  if (dom.profileEditInstitution) dom.profileEditInstitution.value = profile.institution || '';
+  if (dom.profileEditWebsite) dom.profileEditWebsite.value = profile.website_url || '';
+  if (dom.profileEditCover) dom.profileEditCover.value = profile.cover_url || '';
+  updateProfileCoverPreview(profile.cover_url || '');
+
   if (dom.profileEditAvatar) dom.profileEditAvatar.value = avatarUrl;
   if (dom.profileEditEmail) dom.profileEditEmail.value = email;
-  if (dom.profileEditRole) dom.profileEditRole.value = role === 'admin' ? 'Administrator' : 'Visitor';
+  if (dom.profileEditRole) dom.profileEditRole.value = role === 'admin' ? 'Publisher' : 'Visitor';
   if (dom.profileEditJoined) dom.profileEditJoined.value = createdAt ? new Date(createdAt).toLocaleString() : 'N/A';
+
+  // Dynamic Skills Editor
+  renderSkillsEditor(profile.skills || []);
+
+  // Social Links
+  const socials = profile.social_links && typeof profile.social_links === 'object' ? profile.social_links : {};
+  if (dom.profileSocialGithub) dom.profileSocialGithub.value = socials.github || '';
+  if (dom.profileSocialLinkedin) dom.profileSocialLinkedin.value = socials.linkedin || '';
+  if (dom.profileSocialX) dom.profileSocialX.value = socials.x || '';
+  if (dom.profileSocialYoutube) dom.profileSocialYoutube.value = socials.youtube || '';
+  if (dom.profileSocialFacebook) dom.profileSocialFacebook.value = socials.facebook || '';
+  if (dom.profileSocialBluesky) dom.profileSocialBluesky.value = socials.bluesky || '';
+  if (dom.profileSocialInstagram) dom.profileSocialInstagram.value = socials.instagram || '';
+
+  // Pinned post dropdown
+  await populatePinnedPostDropdown(id, profile.pinned_post_id);
 
   // Clear previous status messages
   clearProfileFormMsg();
@@ -4466,6 +4734,40 @@ async function handleProfileFormSubmit(e) {
       return;
     }
 
+    // Extract dynamic skills array
+    const skills = [];
+    document.querySelectorAll('#profile-skills-editor-list .skill-edit-row').forEach(row => {
+      const name = row.querySelector('.skill-name-input')?.value?.trim();
+      const pctRaw = row.querySelector('.skill-pct-input')?.value;
+      const pct = Math.min(100, Math.max(0, parseInt(pctRaw, 10) || 0));
+      if (name) {
+        skills.push({ name, percentage: pct });
+      }
+    });
+
+    // Extract social links
+    const social_links = {
+      github: dom.profileSocialGithub?.value?.trim() || '',
+      linkedin: dom.profileSocialLinkedin?.value?.trim() || '',
+      x: dom.profileSocialX?.value?.trim() || '',
+      youtube: dom.profileSocialYoutube?.value?.trim() || '',
+      facebook: dom.profileSocialFacebook?.value?.trim() || '',
+      bluesky: dom.profileSocialBluesky?.value?.trim() || '',
+      instagram: dom.profileSocialInstagram?.value?.trim() || ''
+    };
+
+    // Website with auto https://
+    let rawWebsite = dom.profileEditWebsite?.value?.trim() || '';
+    if (rawWebsite && !/^https?:\/\//i.test(rawWebsite)) {
+      rawWebsite = `https://${rawWebsite}`;
+    }
+
+    const bio = dom.profileEditBio?.value?.trim() || '';
+    const location = dom.profileEditLocation?.value?.trim() || '';
+    const institution = dom.profileEditInstitution?.value?.trim() || '';
+    const cover_url = dom.profileEditCover?.value?.trim() || '';
+    const pinned_post_id = dom.profileEditPinnedPost?.value || null;
+
     // 1. Update/Upsert in public.profiles table
     const profilePayload = {
       id: currentUser.id,
@@ -4473,8 +4775,20 @@ async function handleProfileFormSubmit(e) {
       display_name: newDisplayName,
       username: newUsername,
       avatar_url: newAvatarUrl || null,
-      role: currentProfile?.role || currentUserRole || 'visitor'
+      role: currentProfile?.role || currentUserRole || 'visitor',
+      bio,
+      location,
+      institution,
+      website_url: rawWebsite,
+      cover_url,
+      skills,
+      social_links,
+      pinned_post_id
     };
+
+    // If logged-in user is publisher, toggle is_verified
+    // Verified status is managed exclusively by DBMS admin; preserve existing database state
+    profilePayload.is_verified = Boolean(currentProfile?.is_verified);
 
     const { data: updatedProfile, error: dbError } = await supabaseClient
       .from('profiles')
@@ -4504,11 +4818,10 @@ async function handleProfileFormSubmit(e) {
     // 3. Update active session state
     currentProfile = updatedProfile || {
       ...currentProfile,
-      display_name: newDisplayName,
-      username: newUsername,
-      avatar_url: newAvatarUrl || null
+      ...profilePayload
     };
     window.currentProfile = currentProfile;
+    authorProfilesCache.set(currentUser.id, currentProfile);
 
     // 4. Update Navigation Bar UI
     updateAuthUI();
@@ -4518,7 +4831,23 @@ async function handleProfileFormSubmit(e) {
     if (dom.profileIdentityUsername) dom.profileIdentityUsername.textContent = `@${newUsername}`;
     renderProfileLargeAvatar(newDisplayName, newAvatarUrl);
 
+    if (dom.profileIdentityVerifiedBadge) {
+      if (currentProfile.is_verified) {
+        dom.profileIdentityVerifiedBadge.classList.remove('hidden');
+      } else {
+        dom.profileIdentityVerifiedBadge.classList.add('hidden');
+      }
+    }
+
+    // 6. Update Public Profile if active/cached
+    if (currentPublicProfileUser && currentPublicProfileUser.id === currentUser.id) {
+      currentPublicProfileUser = { ...currentProfile };
+      renderPublicProfileHero(currentPublicProfileUser);
+      renderPublicProfilePinnedPost(currentPublicProfileUser);
+    }
+
     showProfileSuccess('Profile updated successfully!');
+    showToast('Profile updated successfully!', 'success');
   } catch (err) {
     console.error('Profile update error:', err);
     showProfileError(err.message || 'Failed to update profile. Please try again.');
@@ -4646,21 +4975,23 @@ function clearProfilePasswordMsg() {
 }
 
 // ============================================================================
-// 12C. INTERACTIVE 1:1 SQUARE AVATAR CROPPER & AUTO-WEBP UPLOADER
+// 12C. INTERACTIVE AVATAR & COVER BANNER CROPPER & AUTO-WEBP UPLOADER
 // ============================================================================
 
 let avatarCropper = null;
 let currentCropObjectUrl = null;
+let currentCropMode = 'avatar'; // 'avatar' | 'cover'
 
 /**
- * Opens the interactive 1:1 square Cropper modal for a chosen image file
+ * Opens the interactive Cropper modal for a chosen image file
  * @param {File} file
+ * @param {'avatar'|'cover'} mode
  */
-function openAvatarCropModal(file) {
+function openCropModal(file, mode = 'avatar') {
   if (!file) return;
 
   if (!currentUser) {
-    alert('Please sign in to update your profile picture.');
+    alert(mode === 'cover' ? 'Please sign in to update your cover photo.' : 'Please sign in to update your profile picture.');
     return;
   }
 
@@ -4668,6 +4999,8 @@ function openAvatarCropModal(file) {
     alert('Please select a valid image file (PNG, JPG, WebP, etc.).');
     return;
   }
+
+  currentCropMode = mode;
 
   // Revoke previous object URL to avoid memory leaks
   if (currentCropObjectUrl) {
@@ -4688,6 +5021,16 @@ function openAvatarCropModal(file) {
   cropImg.src = currentCropObjectUrl;
   clearCropStatusMsg();
 
+  // Update modal header based on mode
+  if (dom.cropModalTitle) {
+    dom.cropModalTitle.textContent = mode === 'cover' ? 'Crop Cover Banner' : 'Crop Profile Picture';
+  }
+  if (dom.cropModalSubtitle) {
+    dom.cropModalSubtitle.textContent = mode === 'cover'
+      ? '16:5 Wide Banner • Auto-WebP Compression (1280×400)'
+      : '1:1 Square • Auto-WebP Compression (400×400)';
+  }
+
   // Show the modal
   dom.avatarCropModal?.classList.remove('hidden');
 
@@ -4702,8 +5045,9 @@ function openAvatarCropModal(file) {
       return;
     }
 
+    const isCover = currentCropMode === 'cover';
     avatarCropper = new Cropper(cropImg, {
-      aspectRatio: 1,
+      aspectRatio: isCover ? (16 / 5) : 1,
       viewMode: 1,
       autoCropArea: 1,
       responsive: true,
@@ -4715,9 +5059,183 @@ function openAvatarCropModal(file) {
       cropBoxResizable: true,
       toggleDragModeOnDblclick: false,
       minContainerWidth: 280,
-      minContainerHeight: 280
+      minContainerHeight: isCover ? 200 : 280
     });
   };
+}
+
+function openAvatarCropModal(file) {
+  openCropModal(file, 'avatar');
+}
+
+function openCoverCropModal(file) {
+  openCropModal(file, 'cover');
+}
+
+let activePhotoUploadMode = 'avatar'; // 'avatar' | 'cover'
+
+function openPhotoUploadModal(mode = 'avatar') {
+  if (!currentUser) {
+    alert(mode === 'cover' ? 'Please sign in to update your cover photo.' : 'Please sign in to update your profile photo.');
+    return;
+  }
+
+  activePhotoUploadMode = mode;
+  const isCover = mode === 'cover';
+
+  if (dom.photoModalBadgeText) {
+    dom.photoModalBadgeText.textContent = isCover ? 'Cover Banner' : 'Profile Photo';
+  }
+  if (dom.photoModalTitle) {
+    dom.photoModalTitle.textContent = isCover ? 'Update Cover Banner' : 'Update Profile Photo';
+  }
+  if (dom.photoModalSubtitle) {
+    dom.photoModalSubtitle.textContent = isCover
+      ? 'Upload a wide 16:5 banner image or paste an image URL.'
+      : 'Upload a square profile photo or paste an image URL.';
+  }
+  if (dom.photoModalHint) {
+    dom.photoModalHint.textContent = isCover
+      ? 'Recommended: 16:5 Wide Banner (1280×400) JPG, PNG, or WebP'
+      : 'Recommended: Square 1:1 (400×400) JPG, PNG, or WebP';
+  }
+  if (dom.photoModalRemoveText) {
+    dom.photoModalRemoveText.textContent = isCover ? 'Remove Cover (Use Fallback Pattern)' : 'Remove Profile Photo';
+  }
+  if (dom.photoModalUrlInput) {
+    dom.photoModalUrlInput.value = isCover ? (currentProfile?.cover_url || '') : (currentProfile?.avatar_url || '');
+  }
+  clearPhotoModalStatus();
+
+  dom.photoUploadModal?.classList.remove('hidden');
+}
+
+function closePhotoUploadModal() {
+  dom.photoUploadModal?.classList.add('hidden');
+  clearPhotoModalStatus();
+}
+
+function showPhotoModalStatus(msg, type = 'error') {
+  if (!dom.photoModalStatus) return;
+  dom.photoModalStatus.textContent = msg;
+  dom.photoModalStatus.className = `config-status-msg ${type}`;
+  dom.photoModalStatus.classList.remove('hidden');
+}
+
+function clearPhotoModalStatus() {
+  if (!dom.photoModalStatus) return;
+  dom.photoModalStatus.textContent = '';
+  dom.photoModalStatus.className = 'config-status-msg hidden';
+}
+
+async function handlePhotoModalApplyUrl() {
+  if (!currentUser || !supabaseClient) {
+    showPhotoModalStatus('Please sign in to update your profile.', 'error');
+    return;
+  }
+  const rawUrl = dom.photoModalUrlInput?.value?.trim() || '';
+  if (!rawUrl) {
+    showPhotoModalStatus('Please enter a valid image URL.', 'error');
+    return;
+  }
+
+  const isCover = activePhotoUploadMode === 'cover';
+  try {
+    showPhotoModalStatus('Saving image URL...', 'loading');
+    const updateField = isCover ? { cover_url: rawUrl } : { avatar_url: rawUrl };
+    const { error } = await supabaseClient.from('profiles').update(updateField).eq('id', currentUser.id);
+    if (error) throw error;
+
+    if (currentProfile) {
+      if (isCover) currentProfile.cover_url = rawUrl;
+      else currentProfile.avatar_url = rawUrl;
+    }
+    if (authorProfilesCache.has(currentUser.id)) {
+      const cached = authorProfilesCache.get(currentUser.id);
+      if (isCover) cached.cover_url = rawUrl;
+      else cached.avatar_url = rawUrl;
+    }
+    if (currentPublicProfileUser && currentPublicProfileUser.id === currentUser.id) {
+      if (isCover) currentPublicProfileUser.cover_url = rawUrl;
+      else currentPublicProfileUser.avatar_url = rawUrl;
+      renderPublicProfileHero(currentPublicProfileUser);
+    }
+    if (isCover) {
+      if (dom.profileEditCover) dom.profileEditCover.value = rawUrl;
+      updateProfileCoverPreview(rawUrl);
+    } else {
+      if (dom.profileEditAvatar) dom.profileEditAvatar.value = rawUrl;
+      renderProfileLargeAvatar(currentProfile?.display_name, rawUrl);
+    }
+    updateAuthUI();
+    closePhotoUploadModal();
+    showToast(isCover ? 'Cover banner updated!' : 'Profile photo updated!', 'success');
+  } catch (err) {
+    console.error('Error applying URL:', err);
+    showPhotoModalStatus(`Failed to update URL: ${err.message || 'Unknown error'}`, 'error');
+  }
+}
+
+async function handlePhotoModalRemove() {
+  if (!currentUser || !supabaseClient) {
+    showPhotoModalStatus('Please sign in to update your profile.', 'error');
+    return;
+  }
+
+  const isCover = activePhotoUploadMode === 'cover';
+  try {
+    showPhotoModalStatus('Removing image...', 'loading');
+    const updateField = isCover ? { cover_url: null } : { avatar_url: null };
+    const { error } = await supabaseClient.from('profiles').update(updateField).eq('id', currentUser.id);
+    if (error) throw error;
+
+    if (currentProfile) {
+      if (isCover) currentProfile.cover_url = null;
+      else currentProfile.avatar_url = null;
+    }
+    if (authorProfilesCache.has(currentUser.id)) {
+      const cached = authorProfilesCache.get(currentUser.id);
+      if (isCover) cached.cover_url = null;
+      else cached.avatar_url = null;
+    }
+    if (currentPublicProfileUser && currentPublicProfileUser.id === currentUser.id) {
+      if (isCover) currentPublicProfileUser.cover_url = null;
+      else currentPublicProfileUser.avatar_url = null;
+      renderPublicProfileHero(currentPublicProfileUser);
+    }
+    if (isCover) {
+      if (dom.profileEditCover) dom.profileEditCover.value = '';
+      updateProfileCoverPreview('');
+    } else {
+      if (dom.profileEditAvatar) dom.profileEditAvatar.value = '';
+      renderProfileLargeAvatar(currentProfile?.display_name, '');
+    }
+    updateAuthUI();
+    closePhotoUploadModal();
+    showToast(isCover ? 'Cover banner removed!' : 'Profile photo removed!', 'info');
+  } catch (err) {
+    console.error('Error removing photo:', err);
+    showPhotoModalStatus(`Failed to remove: ${err.message || 'Unknown error'}`, 'error');
+  }
+}
+
+function openVerifiedInfoModal(displayName, username) {
+  const name = displayName || 'This creator';
+  const handle = username ? `@${username}` : '';
+  const fullLabel = handle ? `${name} (${handle})` : name;
+
+  if (dom.verifiedModalUsername) {
+    dom.verifiedModalUsername.textContent = fullLabel;
+  }
+  if (dom.verifiedCopyFeedback) {
+    dom.verifiedCopyFeedback.textContent = 'Copy';
+  }
+
+  dom.verifiedInfoModal?.classList.remove('hidden');
+}
+
+function closeVerifiedInfoModal() {
+  dom.verifiedInfoModal?.classList.add('hidden');
 }
 
 /**
@@ -4736,9 +5254,8 @@ function closeAvatarCropModal() {
     currentCropObjectUrl = null;
   }
 
-  if (dom.profileAvatarFile) {
-    dom.profileAvatarFile.value = '';
-  }
+  if (dom.profileAvatarFile) dom.profileAvatarFile.value = '';
+  if (dom.profileCoverFile) dom.profileCoverFile.value = '';
 
   clearCropStatusMsg();
 }
@@ -4769,10 +5286,28 @@ function showProfileAvatarStatus(msg, type = 'info') {
   dom.profileAvatarStatus.classList.remove('hidden');
 }
 
+function showProfileCoverStatus(msg, type = 'info') {
+  if (!dom.profileCoverStatus) return;
+  dom.profileCoverStatus.textContent = msg;
+  dom.profileCoverStatus.className = `cover-status-badge ${type}`;
+  dom.profileCoverStatus.classList.remove('hidden');
+}
+
+function updateProfileCoverPreview(coverUrl) {
+  if (!dom.profileEditCoverPreview) return;
+  if (coverUrl && typeof coverUrl === 'string' && coverUrl.trim() !== '') {
+    dom.profileEditCoverPreview.style.backgroundImage = `url("${coverUrl.trim()}")`;
+    dom.profileEditCoverPreview.classList.remove('empty');
+  } else {
+    dom.profileEditCoverPreview.style.backgroundImage = '';
+    dom.profileEditCoverPreview.classList.add('empty');
+  }
+}
+
 /**
- * Generates 400x400 square canvas, converts to WebP Blob,
- * uploads to Supabase Storage ('avatars' bucket) at ${currentUser.id}/avatar.webp,
- * and sets publicUrl with cache-busting timestamp into the AVATAR IMAGE URL input.
+ * Generates square or banner canvas, converts to WebP Blob (0.85),
+ * uploads to Supabase Storage ('avatars' bucket) with upsert: true,
+ * and sets publicUrl with cache-busting timestamp into the corresponding input.
  */
 async function handleCropAndUpload() {
   if (!avatarCropper) {
@@ -4781,21 +5316,25 @@ async function handleCropAndUpload() {
   }
 
   if (!currentUser || !supabaseClient) {
-    showCropStatusMsg('You must be logged in to upload an avatar.', 'error');
+    showCropStatusMsg('You must be logged in to upload an image.', 'error');
     return;
   }
 
   const uploadBtn = dom.cropUploadBtn;
   const uploadText = dom.cropUploadText;
+  const isCover = currentCropMode === 'cover';
+  const targetWidth = isCover ? 1280 : 400;
+  const targetHeight = isCover ? 400 : 400;
+  const filePath = isCover ? `${currentUser.id}/cover.webp` : `${currentUser.id}/avatar.webp`;
 
   if (uploadBtn) uploadBtn.disabled = true;
   if (uploadText) uploadText.textContent = 'Cropping...';
-  showCropStatusMsg('Generating 400×400 square crop...', 'loading');
+  showCropStatusMsg(`Generating ${targetWidth}×${targetHeight} crop...`, 'loading');
 
-  // 1. Generate 400x400 square canvas with high smoothing quality
+  // 1. Generate cropped canvas with high smoothing quality
   const canvas = avatarCropper.getCroppedCanvas({
-    width: 400,
-    height: 400,
+    width: targetWidth,
+    height: targetHeight,
     imageSmoothingQuality: 'high'
   });
 
@@ -4807,7 +5346,7 @@ async function handleCropAndUpload() {
   }
 
   if (uploadText) uploadText.textContent = 'Compressing...';
-  showCropStatusMsg('Compressing to WebP format...', 'loading');
+  showCropStatusMsg('Compressing to WebP format (0.85 quality)...', 'loading');
 
   // 2. Convert cropped canvas to WebP Blob (0.85 quality)
   canvas.toBlob(async (webpBlob) => {
@@ -4822,10 +5361,7 @@ async function handleCropAndUpload() {
     showCropStatusMsg('Uploading to Supabase Storage (avatars bucket)...', 'loading');
 
     try {
-      // 3. User personal folder path: ${currentUser.id}/avatar.webp
-      const filePath = `${currentUser.id}/avatar.webp`;
-
-      // 4. Upload with upsert: true so old avatars are cleanly overwritten
+      // 3. User personal folder path: ${currentUser.id}/(cover|avatar).webp
       const { data: uploadData, error: uploadError } = await supabaseClient.storage
         .from('avatars')
         .upload(filePath, webpBlob, {
@@ -4838,7 +5374,7 @@ async function handleCropAndUpload() {
         throw uploadError;
       }
 
-      // 5. Retrieve public URL
+      // 4. Retrieve public URL
       const { data } = supabaseClient.storage
         .from('avatars')
         .getPublicUrl(filePath);
@@ -4847,31 +5383,360 @@ async function handleCropAndUpload() {
         throw new Error('Failed to retrieve public URL from avatars storage.');
       }
 
-      // 6. Append cache-busting timestamp so browser immediately displays the new picture
+      // 5. Append cache-busting timestamp so browser immediately displays the new picture
       const publicUrlWithCacheBust = `${data.publicUrl}?t=${Date.now()}`;
+      const sizeKb = Math.max(1, Math.round(webpBlob.size / 1024));
 
-      // 7. Set the "AVATAR IMAGE URL" input value to this new URL
-      if (dom.profileEditAvatar) {
-        dom.profileEditAvatar.value = publicUrlWithCacheBust;
+      if (isCover) {
+        if (dom.profileEditCover) {
+          dom.profileEditCover.value = publicUrlWithCacheBust;
+        }
+        updateProfileCoverPreview(publicUrlWithCacheBust);
+        showProfileCoverStatus(`✓ Cover cropped & uploaded (${sizeKb} KB .webp)!`, 'success');
+      } else {
+        if (dom.profileEditAvatar) {
+          dom.profileEditAvatar.value = publicUrlWithCacheBust;
+        }
+        const currentName = dom.profileEditName?.value || currentUser.email;
+        renderProfileLargeAvatar(currentName, publicUrlWithCacheBust);
+        showProfileAvatarStatus(`✓ Avatar cropped & uploaded (${sizeKb} KB .webp)!`, 'success');
       }
 
-      // 8. Update the profile avatar preview on the page
-      const currentName = dom.profileEditName?.value || currentUser.email;
-      renderProfileLargeAvatar(currentName, publicUrlWithCacheBust);
+      // Auto-persist directly to public.profiles so changes take effect immediately
+      try {
+        const updateField = isCover ? { cover_url: publicUrlWithCacheBust } : { avatar_url: publicUrlWithCacheBust };
+        await supabaseClient.from('profiles').update(updateField).eq('id', currentUser.id);
 
-      const sizeKb = Math.max(1, Math.round(webpBlob.size / 1024));
-      showProfileAvatarStatus(`✓ Avatar cropped & uploaded (${sizeKb} KB .webp)! Click "Save Changes" to save profile.`, 'success');
+        if (currentProfile) {
+          if (isCover) currentProfile.cover_url = publicUrlWithCacheBust;
+          else currentProfile.avatar_url = publicUrlWithCacheBust;
+        }
+        if (authorProfilesCache.has(currentUser.id)) {
+          const cached = authorProfilesCache.get(currentUser.id);
+          if (isCover) cached.cover_url = publicUrlWithCacheBust;
+          else cached.avatar_url = publicUrlWithCacheBust;
+        }
+        if (currentPublicProfileUser && currentPublicProfileUser.id === currentUser.id) {
+          if (isCover) currentPublicProfileUser.cover_url = publicUrlWithCacheBust;
+          else currentPublicProfileUser.avatar_url = publicUrlWithCacheBust;
+          renderPublicProfileHero(currentPublicProfileUser);
+        }
+        updateAuthUI();
+        showToast(isCover ? 'Cover banner updated successfully!' : 'Profile photo updated successfully!', 'success');
+      } catch (dbErr) {
+        console.warn('Could not auto-save image to public.profiles table:', dbErr);
+      }
 
-      // 9. Close crop modal
+      // 6. Close crop modal
       closeAvatarCropModal();
     } catch (err) {
-      console.error('Avatar upload error:', err);
+      console.error('Image upload error:', err);
       showCropStatusMsg(`Upload failed: ${err.message || 'Please check storage bucket settings.'}`, 'error');
     } finally {
       if (uploadBtn) uploadBtn.disabled = false;
       if (uploadText) uploadText.textContent = 'Crop & Upload';
     }
   }, 'image/webp', 0.85);
+}
+
+/**
+ * Renders dynamic rows inside Edit Profile Skills Editor
+ * @param {Array<{name: string, percentage: number}>} skills
+ */
+function renderSkillsEditor(skills = []) {
+  if (!dom.profileSkillsEditorList) return;
+  dom.profileSkillsEditorList.innerHTML = '';
+
+  const list = Array.isArray(skills) ? skills : [];
+  list.forEach(skill => {
+    if (skill && skill.name) {
+      addSkillEditorRow(skill.name, skill.percentage ?? 80);
+    }
+  });
+}
+
+function addSkillEditorRow(name = '', percentage = 80) {
+  if (!dom.profileSkillsEditorList) return;
+  const row = document.createElement('div');
+  row.className = 'skill-edit-row';
+
+  const cleanName = escapeHtml(name || '');
+  const cleanPct = Math.min(100, Math.max(0, parseInt(percentage, 10) || 0));
+
+  row.innerHTML = `
+    <input type="text" class="skill-name-input" placeholder="Skill name (e.g. JavaScript)" value="${cleanName}">
+    <div class="skill-pct-input-wrap">
+      <input type="number" class="skill-pct-input" min="0" max="100" placeholder="80" value="${cleanPct}">
+      <span class="skill-pct-suffix">%</span>
+    </div>
+    <button type="button" class="skill-remove-btn" title="Remove skill">&times;</button>
+  `;
+
+  row.querySelector('.skill-remove-btn')?.addEventListener('click', () => {
+    row.remove();
+  });
+
+  dom.profileSkillsEditorList.appendChild(row);
+}
+
+/**
+ * Populates the Pinned Article select dropdown in Edit Profile
+ * @param {string} userId
+ * @param {string|null} selectedPostId
+ */
+async function populatePinnedPostDropdown(userId, selectedPostId) {
+  if (!dom.profileEditPinnedPost) return;
+  dom.profileEditPinnedPost.innerHTML = '<option value="">None (Unpin)</option>';
+
+  let posts = [];
+  try {
+    if (supabaseClient && userId) {
+      const { data, error } = await supabaseClient
+        .from('posts')
+        .select('id, title, is_published, created_at')
+        .eq('author_id', userId)
+        .eq('is_published', true)
+        .order('created_at', { ascending: false });
+
+      if (!error && data) posts = data;
+    }
+  } catch (err) {
+    console.warn('Could not fetch user posts for pinning dropdown:', err);
+  }
+
+  // Fallback: check in-memory posts
+  if (posts.length === 0) {
+    const pool = (allPosts && allPosts.length > 0) ? allPosts : (window.allPosts || []);
+    posts = pool.filter(p => (userId && p.author_id === userId) || (currentUserRole === 'admin' && !p.author_id));
+  }
+
+  posts.forEach(post => {
+    const opt = document.createElement('option');
+    opt.value = post.id;
+    opt.textContent = post.title || 'Untitled Post';
+    if (selectedPostId && String(selectedPostId) === String(post.id)) {
+      opt.selected = true;
+    }
+    dom.profileEditPinnedPost.appendChild(opt);
+  });
+
+  if (selectedPostId) {
+    dom.profileEditPinnedPost.value = selectedPostId;
+  }
+}
+
+/**
+ * Synchronizes the Pin/Unpin button on single article view
+ */
+function updateArticlePinButton() {
+  if (!dom.articlePinBtn || !activePost) return;
+  const isPinned = Boolean(currentProfile?.pinned_post_id && String(currentProfile.pinned_post_id) === String(activePost.id));
+  if (isPinned) {
+    dom.articlePinBtn.classList.add('is-pinned');
+    dom.articlePinBtn.title = 'Unpin this post from your profile';
+    if (dom.articlePinBtnText) dom.articlePinBtnText.textContent = '📌 Pinned';
+  } else {
+    dom.articlePinBtn.classList.remove('is-pinned');
+    dom.articlePinBtn.title = 'Pin this post to your profile';
+    if (dom.articlePinBtnText) dom.articlePinBtnText.textContent = '📌 Pin to Profile';
+  }
+}
+
+/**
+ * Toggles pinning a post to the user's profile
+ * @param {string} postId
+ */
+async function togglePinPost(postId) {
+  if (!currentUser || !supabaseClient) {
+    alert('Please sign in to pin posts to your profile.');
+    return;
+  }
+
+  const isCurrentlyPinned = Boolean(currentProfile?.pinned_post_id && String(currentProfile.pinned_post_id) === String(postId));
+  const newPinnedPostId = isCurrentlyPinned ? null : postId;
+
+  try {
+    const { error } = await supabaseClient
+      .from('profiles')
+      .update({ pinned_post_id: newPinnedPostId })
+      .eq('id', currentUser.id);
+
+    if (error) throw error;
+
+    if (currentProfile) {
+      currentProfile.pinned_post_id = newPinnedPostId;
+    }
+    window.currentProfile = currentProfile;
+
+    if (authorProfilesCache.has(currentUser.id)) {
+      const cached = authorProfilesCache.get(currentUser.id);
+      cached.pinned_post_id = newPinnedPostId;
+    }
+
+    // Update single article pin button if visible
+    updateArticlePinButton();
+
+    // Re-render admin posts if admin view is open
+    if (dom.adminView && !dom.adminView.classList.contains('hidden')) {
+      renderAdminPostsList(adminPosts);
+    }
+
+    // Update edit profile dropdown if present
+    if (dom.profileEditPinnedPost) {
+      dom.profileEditPinnedPost.value = newPinnedPostId || '';
+    }
+
+    // Re-render public profile posts if viewing self
+    if (dom.publicProfileView && !dom.publicProfileView.classList.contains('hidden')) {
+      if (currentPublicProfileUser && currentPublicProfileUser.id === currentUser.id) {
+        currentPublicProfileUser.pinned_post_id = newPinnedPostId;
+        await loadPublicUserPosts(currentPublicProfileUser);
+      }
+    }
+
+    const toastMsg = isCurrentlyPinned
+      ? 'Article unpinned from your profile.'
+      : '📌 Article pinned to top of your profile!';
+    showToast(toastMsg, 'success');
+  } catch (err) {
+    console.error('Error toggling pin:', err);
+    alert('Failed to update pinned article: ' + (err.message || 'Unknown error'));
+  }
+}
+
+/**
+ * Pinned article is integrated at the top of the profile's articles grid
+ */
+async function renderPublicProfilePinnedPost(profile) {
+  if (dom.publicPinnedPostWrap) {
+    dom.publicPinnedPostWrap.innerHTML = '';
+    dom.publicPinnedPostWrap.classList.add('hidden');
+  }
+}
+
+const SOCIAL_PLATFORMS = [
+  { key: 'github', label: 'GitHub', prefix: 'https://github.com/' },
+  { key: 'linkedin', label: 'LinkedIn', prefix: 'https://linkedin.com/in/' },
+  { key: 'x', label: 'X (Twitter)', prefix: 'https://x.com/' },
+  { key: 'youtube', label: 'YouTube', prefix: 'https://youtube.com/' },
+  { key: 'facebook', label: 'Facebook', prefix: 'https://facebook.com/' },
+  { key: 'bluesky', label: 'Bluesky', prefix: 'https://bsky.app/profile/' },
+  { key: 'instagram', label: 'Instagram', prefix: 'https://instagram.com/' }
+];
+
+function formatSocialUrl(platformKey, rawVal) {
+  if (!rawVal) return '';
+  let str = String(rawVal).trim();
+  if (!str) return '';
+  if (/^https?:\/\//i.test(str)) return str;
+
+  const clean = str.replace(/^@/, '');
+  switch (platformKey) {
+    case 'github': return `https://github.com/${clean}`;
+    case 'linkedin':
+      return str.includes('/') ? `https://${str}` : `https://linkedin.com/in/${clean}`;
+    case 'x': return `https://x.com/${clean}`;
+    case 'youtube':
+      return str.startsWith('@') ? `https://youtube.com/${str}` : (str.includes('/') ? `https://${str}` : `https://youtube.com/@${clean}`);
+    case 'facebook': return `https://facebook.com/${clean}`;
+    case 'bluesky':
+      return str.includes('.') ? `https://bsky.app/profile/${clean}` : `https://bsky.app/profile/${clean}.bsky.social`;
+    case 'instagram': return `https://instagram.com/${clean}`;
+    default: return `https://${str}`;
+  }
+}
+
+function getSocialSvg(platformKey) {
+  switch (platformKey) {
+    case 'github':
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>`;
+    case 'linkedin':
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>`;
+    case 'x':
+      return `<svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`;
+    case 'youtube':
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>`;
+    case 'facebook':
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>`;
+    case 'bluesky':
+      return `<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566 1.01 1.5 1.577 1.5 4.542c0 1.63.35 6.84 1.135 8.358 1.488 2.875 4.67 3.33 6.365 2.112-2.82 1.46-3.85 4.298-1.573 6.643 3.655 3.763 4.573-2.035 4.573-2.035s.918 5.798 4.573 2.035c2.277-2.345 1.247-5.183-1.573-6.643 1.695 1.218 4.877.763 6.365-2.112.785-1.518 1.135-6.728 1.135-8.358 0-2.965-1.066-3.532-3.702-1.737-2.752 1.942-5.71 5.881-6.798 7.995z"/></svg>`;
+    case 'instagram':
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>`;
+    default:
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line></svg>`;
+  }
+}
+
+function renderPublicProfileSocials(socialLinks) {
+  if (!dom.publicProfileSocialRow || !dom.publicProfileSocialList) return;
+  dom.publicProfileSocialList.innerHTML = '';
+
+  if (!socialLinks || typeof socialLinks !== 'object') {
+    dom.publicProfileSocialRow.classList.add('hidden');
+    return;
+  }
+
+  let count = 0;
+  SOCIAL_PLATFORMS.forEach(({ key, label }) => {
+    const rawVal = socialLinks[key];
+    if (rawVal && String(rawVal).trim() !== '') {
+      const url = formatSocialUrl(key, rawVal);
+      if (url) {
+        count++;
+        const link = document.createElement('a');
+        link.className = `social-link-btn social-btn-${key}`;
+        link.href = url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.title = `${label}: ${rawVal}`;
+        link.setAttribute('aria-label', `${label} profile`);
+        link.innerHTML = getSocialSvg(key);
+        dom.publicProfileSocialList.appendChild(link);
+      }
+    }
+  });
+
+  if (count > 0) {
+    dom.publicProfileSocialRow.classList.remove('hidden');
+  } else {
+    dom.publicProfileSocialRow.classList.add('hidden');
+  }
+}
+
+function renderPublicProfileSkills(skills) {
+  if (!dom.publicProfileSkillsCard || !dom.publicProfileSkillsList) return;
+  dom.publicProfileSkillsList.innerHTML = '';
+
+  if (!Array.isArray(skills) || skills.length === 0) {
+    dom.publicProfileSkillsCard.classList.add('hidden');
+    return;
+  }
+
+  const validSkills = skills.filter(s => s && s.name && String(s.name).trim() !== '');
+  if (validSkills.length === 0) {
+    dom.publicProfileSkillsCard.classList.add('hidden');
+    return;
+  }
+
+  validSkills.forEach(s => {
+    const name = String(s.name).trim();
+    const pct = Math.min(100, Math.max(0, parseInt(s.percentage, 10) || 0));
+
+    const item = document.createElement('div');
+    item.className = 'skill-bar-item';
+    item.innerHTML = `
+      <div class="skill-bar-header">
+        <span class="skill-bar-name">${escapeHtml(name)}</span>
+        <span class="skill-bar-pct">${pct}%</span>
+      </div>
+      <div class="skill-bar-track" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100">
+        <div class="skill-bar-fill" style="width: ${pct}%;"></div>
+      </div>
+    `;
+    dom.publicProfileSkillsList.appendChild(item);
+  });
+
+  dom.publicProfileSkillsCard.classList.remove('hidden');
 }
 
 // ============================================================================
@@ -4979,7 +5844,17 @@ async function loadAndRenderPublicProfile(userIdentifier, fallbackUsername, fall
           display_name: p.display_name || fallbackName,
           username: p.username || fallbackUsername,
           avatar_url: p.avatar_url || null,
-          role: p.role || 'visitor'
+          role: p.role || 'visitor',
+          created_at: p.created_at || null,
+          bio: p.bio || null,
+          location: p.location || null,
+          institution: p.institution || null,
+          website_url: p.website_url || null,
+          cover_url: p.cover_url || null,
+          skills: Array.isArray(p.skills) ? p.skills : [],
+          social_links: (p.social_links && typeof p.social_links === 'object') ? p.social_links : {},
+          is_verified: !!p.is_verified,
+          pinned_post_id: p.pinned_post_id || null
         };
       }
     }
@@ -5003,8 +5878,19 @@ async function loadAndRenderPublicProfile(userIdentifier, fallbackUsername, fall
           username: data.username || fallbackUsername || '',
           avatar_url: data.avatar_url || null,
           role: data.role || 'visitor',
-          created_at: data.created_at
+          created_at: data.created_at,
+          bio: data.bio || null,
+          location: data.location || null,
+          institution: data.institution || null,
+          website_url: data.website_url || null,
+          cover_url: data.cover_url || null,
+          skills: Array.isArray(data.skills) ? data.skills : (typeof data.skills === 'string' ? JSON.parse(data.skills || '[]') : []),
+          social_links: (data.social_links && typeof data.social_links === 'object') ? data.social_links : (typeof data.social_links === 'string' ? JSON.parse(data.social_links || '{}') : {}),
+          is_verified: !!data.is_verified,
+          pinned_post_id: data.pinned_post_id || null
         };
+        authorProfilesCache.set(data.id, profile);
+        if (data.username) authorProfilesCache.set(data.username, profile);
       }
     } catch (err) {
       console.warn('Could not fetch public profile from Supabase:', err);
@@ -5020,7 +5906,16 @@ async function loadAndRenderPublicProfile(userIdentifier, fallbackUsername, fall
       username: fallbackUsername || (isDemo ? 'ocean_author' : (cleanId && !cleanId.includes('-') ? cleanId : 'member')),
       avatar_url: null,
       role: isDemo ? 'admin' : 'visitor',
-      created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString()
+      created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(),
+      bio: isDemo ? 'Engineering resilient, ultra-fast web architectures and systems.' : '',
+      location: isDemo ? 'Global Web' : '',
+      institution: isDemo ? 'OceanVerse Core' : '',
+      website_url: isDemo ? 'https://oceanverse.dev' : '',
+      cover_url: null,
+      skills: isDemo ? [{ name: 'Architecture', percentage: 95 }, { name: 'JavaScript', percentage: 90 }, { name: 'PostgreSQL', percentage: 85 }] : [],
+      social_links: isDemo ? { github: 'https://github.com', x: 'https://x.com' } : {},
+      is_verified: isDemo,
+      pinned_post_id: null
     };
   }
 
@@ -5047,8 +5942,9 @@ async function loadAndRenderPublicProfile(userIdentifier, fallbackUsername, fall
   // Render hero section
   renderPublicProfileHero(profile);
 
-  // Fetch & render articles and comments simultaneously
+  // Fetch & render pinned post, articles and comments simultaneously
   await Promise.all([
+    renderPublicProfilePinnedPost(profile),
     loadPublicUserPosts(profile, thisRequestId),
     loadPublicUserComments(profile, thisRequestId)
   ]);
@@ -5061,11 +5957,20 @@ function renderPublicProfileHero(profile) {
   const name = profile.display_name || 'Member';
   const username = profile.username ? `@${profile.username}` : '';
   const role = (profile.role || 'visitor').toLowerCase();
-  const roleLabel = role === 'admin' ? '👑 Administrator' : 'Visitor';
+  const roleLabel = role === 'admin' ? '👑 Publisher' : 'Visitor';
   const createdAt = profile.created_at ? formatDate(profile.created_at) : 'Recently';
 
   if (dom.publicProfileName) dom.publicProfileName.textContent = name;
   if (dom.publicProfileUsername) dom.publicProfileUsername.textContent = username;
+
+  // Verified Badge
+  if (dom.publicProfileVerifiedBadge) {
+    if (profile.is_verified) {
+      dom.publicProfileVerifiedBadge.classList.remove('hidden');
+    } else {
+      dom.publicProfileVerifiedBadge.classList.add('hidden');
+    }
+  }
 
   if (dom.publicProfileRoleBadge) {
     dom.publicProfileRoleBadge.className = `role-badge role-${role}`;
@@ -5080,13 +5985,92 @@ function renderPublicProfileHero(profile) {
     dom.publicProfileJoined.textContent = `Member since ${createdAt}`;
   }
 
-  // Edit My Profile button (strictly visible when viewing own profile)
-  if (dom.publicProfileEditBtn) {
-    if (currentUser && profile.id && currentUser.id === profile.id) {
-      dom.publicProfileEditBtn.classList.remove('hidden');
+  // Cover photo banner (with fallback pattern)
+  if (dom.publicProfileCoverBanner) {
+    if (profile.cover_url && typeof profile.cover_url === 'string' && profile.cover_url.trim() !== '') {
+      dom.publicProfileCoverBanner.style.backgroundImage = `url("${escapeHtml(profile.cover_url.trim())}")`;
+      dom.publicProfileCoverBanner.classList.remove('has-fallback');
     } else {
-      dom.publicProfileEditBtn.classList.add('hidden');
+      dom.publicProfileCoverBanner.style.backgroundImage = '';
+      dom.publicProfileCoverBanner.classList.add('has-fallback');
     }
+  }
+
+  // Description / Bio
+  if (dom.publicProfileBio) {
+    const bioText = profile.bio ? String(profile.bio).trim() : '';
+    if (bioText) {
+      dom.publicProfileBio.textContent = bioText;
+      dom.publicProfileBio.classList.remove('hidden', 'public-profile-bio-empty');
+    } else if (currentUser && profile.id && currentUser.id === profile.id) {
+      dom.publicProfileBio.textContent = 'Add a bio in Edit Profile to introduce yourself to readers.';
+      dom.publicProfileBio.classList.remove('hidden');
+      dom.publicProfileBio.classList.add('public-profile-bio-empty');
+    } else {
+      dom.publicProfileBio.textContent = '';
+      dom.publicProfileBio.classList.add('hidden');
+      dom.publicProfileBio.classList.remove('public-profile-bio-empty');
+    }
+  }
+
+  // Location
+  if (dom.publicProfileLocationWrap && dom.publicProfileLocation) {
+    if (profile.location && String(profile.location).trim() !== '') {
+      dom.publicProfileLocation.textContent = String(profile.location).trim();
+      dom.publicProfileLocationWrap.classList.remove('hidden');
+    } else {
+      dom.publicProfileLocation.textContent = '';
+      dom.publicProfileLocationWrap.classList.add('hidden');
+    }
+  }
+
+  // Institution
+  if (dom.publicProfileInstitutionWrap && dom.publicProfileInstitution) {
+    if (profile.institution && String(profile.institution).trim() !== '') {
+      dom.publicProfileInstitution.textContent = String(profile.institution).trim();
+      dom.publicProfileInstitutionWrap.classList.remove('hidden');
+    } else {
+      dom.publicProfileInstitution.textContent = '';
+      dom.publicProfileInstitutionWrap.classList.add('hidden');
+    }
+  }
+
+  // Website (external clickable link, auto-prepending https:// if missing)
+  if (dom.publicProfileWebsiteWrap && dom.publicProfileWebsite) {
+    if (profile.website_url && String(profile.website_url).trim() !== '') {
+      let webUrl = String(profile.website_url).trim();
+      if (!/^https?:\/\//i.test(webUrl)) {
+        webUrl = `https://${webUrl}`;
+      }
+      dom.publicProfileWebsite.textContent = webUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+      dom.publicProfileWebsiteWrap.href = webUrl;
+      dom.publicProfileWebsiteWrap.classList.remove('hidden');
+    } else {
+      dom.publicProfileWebsite.textContent = '';
+      dom.publicProfileWebsiteWrap.removeAttribute('href');
+      dom.publicProfileWebsiteWrap.classList.add('hidden');
+    }
+  }
+
+  // Render "Find Me" Social Links
+  renderPublicProfileSocials(profile.social_links);
+
+  // Render Skills
+  renderPublicProfileSkills(profile.skills);
+
+  // Owner-only action buttons (Edit Profile, Edit Cover, Edit Avatar)
+  const isSelf = Boolean(currentUser && profile.id && currentUser.id === profile.id);
+  if (dom.publicProfileEditBtn) {
+    if (isSelf) dom.publicProfileEditBtn.classList.remove('hidden');
+    else dom.publicProfileEditBtn.classList.add('hidden');
+  }
+  if (dom.publicProfileEditCoverBtn) {
+    if (isSelf) dom.publicProfileEditCoverBtn.classList.remove('hidden');
+    else dom.publicProfileEditCoverBtn.classList.add('hidden');
+  }
+  if (dom.publicProfileEditAvatarBtn) {
+    if (isSelf) dom.publicProfileEditAvatarBtn.classList.remove('hidden');
+    else dom.publicProfileEditAvatarBtn.classList.add('hidden');
   }
 
   // Large Avatar
@@ -5165,6 +6149,33 @@ async function loadPublicUserPosts(profile, requestId) {
     return true;
   });
 
+  // If the author has a pinned post, ensure it is fetched and placed at the very top of the grid
+  const pinnedId = profile.pinned_post_id ? String(profile.pinned_post_id) : null;
+  if (pinnedId) {
+    const hasPinned = uniquePosts.some(p => String(p.id) === pinnedId || p.slug === pinnedId);
+    if (!hasPinned && supabaseClient) {
+      try {
+        const { data: pinnedPostData } = await supabaseClient
+          .from('posts')
+          .select('*')
+          .eq('id', pinnedId)
+          .eq('is_published', true)
+          .maybeSingle();
+        if (pinnedPostData) {
+          uniquePosts.unshift(pinnedPostData);
+        }
+      } catch (pinnedErr) {
+        console.warn('Could not fetch pinned post for grid:', pinnedErr);
+      }
+    }
+
+    uniquePosts.sort((a, b) => {
+      const aPinned = (String(a.id) === pinnedId || a.slug === pinnedId) ? 1 : 0;
+      const bPinned = (String(b.id) === pinnedId || b.slug === pinnedId) ? 1 : 0;
+      return bPinned - aPinned;
+    });
+  }
+
   // Guard against stale response
   if (requestId && requestId !== publicProfileRequestId) return;
 
@@ -5181,9 +6192,15 @@ async function loadPublicUserPosts(profile, requestId) {
 
   dom.publicPostsEmpty?.classList.add('hidden');
 
+  const isOwner = Boolean(currentUser && profile.id && currentUser.id === profile.id);
   const fragment = document.createDocumentFragment();
   uniquePosts.forEach(post => {
-    const card = createCardElement(post);
+    const card = createCardElement(post, {
+      isProfileOwnerView: isOwner,
+      onPinToggle: () => {
+        loadPublicUserPosts(profile, requestId);
+      }
+    });
     fragment.appendChild(card);
   });
   dom.publicPostsGrid.appendChild(fragment);
@@ -5467,6 +6484,32 @@ function initEventListeners() {
   dom.publicProfileEditBtn?.addEventListener('click', openProfileView);
   dom.publicTabPosts?.addEventListener('click', () => setPublicProfileTab('posts'));
   dom.publicTabComments?.addEventListener('click', () => setPublicProfileTab('comments'));
+
+  // Direct Profile Photo & Cover Edit buttons on Profile
+  dom.publicProfileEditCoverBtn?.addEventListener('click', () => {
+    openPhotoUploadModal('cover');
+  });
+
+  dom.publicProfileEditAvatarBtn?.addEventListener('click', () => {
+    openPhotoUploadModal('avatar');
+  });
+
+  dom.profileIdentityEditAvatarBtn?.addEventListener('click', () => {
+    openPhotoUploadModal('avatar');
+  });
+
+  // Verified checkmark buttons
+  dom.publicProfileVerifiedBadge?.addEventListener('click', () => {
+    if (currentPublicProfileUser) {
+      openVerifiedInfoModal(currentPublicProfileUser.display_name, currentPublicProfileUser.username);
+    }
+  });
+
+  dom.profileIdentityVerifiedBadge?.addEventListener('click', () => {
+    if (currentProfile) {
+      openVerifiedInfoModal(currentProfile.display_name, currentProfile.username);
+    }
+  });
   dom.articleAuthorProfileBtn?.addEventListener('click', () => {
     if (currentArticleAuthor) {
       openPublicProfileView(currentArticleAuthor.id || currentArticleAuthor.username, currentArticleAuthor.username, currentArticleAuthor.display_name);
@@ -5561,6 +6604,39 @@ function initEventListeners() {
     if (file) {
       openAvatarCropModal(file);
     }
+  });
+
+  // Profile Cover Photo Controls (16:5 Cropper & Previews)
+  dom.profileUploadCoverBtn?.addEventListener('click', () => {
+    dom.profileCoverFile?.click();
+  });
+
+  dom.profileCoverFile?.addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      openCoverCropModal(file);
+    }
+  });
+
+  dom.profileClearCoverBtn?.addEventListener('click', () => {
+    if (dom.profileEditCover) {
+      dom.profileEditCover.value = '';
+      updateProfileCoverPreview('');
+    }
+  });
+
+  dom.profilePreviewCoverBtn?.addEventListener('click', () => {
+    const url = dom.profileEditCover?.value.trim();
+    updateProfileCoverPreview(url);
+  });
+
+  dom.profileEditCover?.addEventListener('input', (e) => {
+    updateProfileCoverPreview(e.target.value.trim());
+  });
+
+  // Dynamic Skills Editor "+ Add Skill" Button
+  dom.profileAddSkillBtn?.addEventListener('click', () => {
+    addSkillEditorRow('', 80);
   });
 
   dom.avatarCropCloseBtn?.addEventListener('click', closeAvatarCropModal);
@@ -5725,6 +6801,13 @@ function initEventListeners() {
       }
       const postId = activePost.id;
       await deletePost(postId);
+    }
+  });
+
+  // Article Quick Pin / Unpin Button (strictly post author)
+  dom.articlePinBtn?.addEventListener('click', () => {
+    if (activePost) {
+      togglePinPost(activePost.id);
     }
   });
 
@@ -5904,11 +6987,92 @@ function initEventListeners() {
   dom.adminBottomResetBtn?.addEventListener('click', resetAdminEditor);
   initSplitViewScrollSync();
 
+  // Photo Upload Modal Listeners
+  dom.photoModalCloseBtn?.addEventListener('click', closePhotoUploadModal);
+  dom.photoUploadModal?.addEventListener('click', (e) => {
+    if (e.target === dom.photoUploadModal) {
+      closePhotoUploadModal();
+    }
+  });
+  dom.photoModalChooseBtn?.addEventListener('click', () => {
+    dom.photoModalFileInput?.click();
+  });
+  dom.photoModalFileInput?.addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      closePhotoUploadModal();
+      openCropModal(file, activePhotoUploadMode);
+    }
+  });
+  dom.photoModalApplyUrlBtn?.addEventListener('click', handlePhotoModalApplyUrl);
+  dom.photoModalRemoveBtn?.addEventListener('click', handlePhotoModalRemove);
+
+  // Drag and drop for Photo Upload Modal Dropzone
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dom.photoModalDropzone?.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dom.photoModalDropzone.classList.add('drag-active');
+    });
+  });
+  ['dragleave', 'drop'].forEach(eventName => {
+    dom.photoModalDropzone?.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dom.photoModalDropzone.classList.remove('drag-active');
+    });
+  });
+  dom.photoModalDropzone?.addEventListener('drop', (e) => {
+    const file = e.dataTransfer?.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      closePhotoUploadModal();
+      openCropModal(file, activePhotoUploadMode);
+    }
+  });
+
+  // Verified Info Modal Listeners
+  dom.verifiedModalCloseBtn?.addEventListener('click', closeVerifiedInfoModal);
+  dom.verifiedModalDoneBtn?.addEventListener('click', closeVerifiedInfoModal);
+  dom.verifiedInfoModal?.addEventListener('click', (e) => {
+    if (e.target === dom.verifiedInfoModal) {
+      closeVerifiedInfoModal();
+    }
+  });
+  dom.verifiedCopyEmailBtn?.addEventListener('click', async () => {
+    const emailToCopy = 'oceanmallik@oceanmallik.com';
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(emailToCopy);
+      } else {
+        const tempInput = document.createElement('input');
+        tempInput.value = emailToCopy;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+      }
+      if (dom.verifiedCopyFeedback) {
+        dom.verifiedCopyFeedback.textContent = 'Copied!';
+        setTimeout(() => {
+          if (dom.verifiedCopyFeedback) dom.verifiedCopyFeedback.textContent = 'Copy';
+        }, 2000);
+      }
+      showToast('Email address copied to clipboard!', 'info');
+    } catch (err) {
+      console.warn('Clipboard write error:', err);
+      showToast('Failed to copy email address', 'error');
+    }
+  });
+
   // Escape key closes open modals
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       if (dom.avatarCropModal && !dom.avatarCropModal.classList.contains('hidden')) {
         closeAvatarCropModal();
+      } else if (dom.photoUploadModal && !dom.photoUploadModal.classList.contains('hidden')) {
+        closePhotoUploadModal();
+      } else if (dom.verifiedInfoModal && !dom.verifiedInfoModal.classList.contains('hidden')) {
+        closeVerifiedInfoModal();
       } else if (dom.authModal && !dom.authModal.classList.contains('hidden')) {
         closeAuthModal();
       } else if (dom.writerModal && !dom.writerModal.classList.contains('hidden')) {

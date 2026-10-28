@@ -451,14 +451,21 @@
           <!-- Article Header -->
           <header class="article-header">
             <div id="article-admin-actions" class="article-admin-actions-bar hidden">
-              <button type="button" id="article-admin-edit-btn" class="card-admin-btn card-edit-btn" title="Edit this post (Admin)">
+              <button type="button" id="article-admin-edit-btn" class="card-admin-btn card-edit-btn" title="Edit this post (Publisher)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
                   <path d="M12 20h9"></path>
                   <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
                 </svg>
                 <span>Edit Post</span>
               </button>
-              <button type="button" id="article-admin-delete-btn" class="card-admin-btn card-delete-btn" title="Delete this post (Admin)">
+              <button type="button" id="article-pin-btn" class="card-admin-btn card-pin-btn" title="Pin this post to your profile">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                  <line x1="12" y1="17" x2="12" y2="22"></line>
+                  <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.89A2 2 0 0 1 15 10.77V6h1a1 1 0 0 0 0-2H8a1 1 0 0 0 0 2h1v4.77a2 2 0 0 1-1.11 1.79l-1.78.89A2 2 0 0 0 5 15.24Z"></path>
+                </svg>
+                <span id="article-pin-btn-text">📌 Pin to Profile</span>
+              </button>
+              <button type="button" id="article-admin-delete-btn" class="card-admin-btn card-delete-btn" title="Delete this post (Publisher)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
                   <polyline points="3 6 5 6 21 6"></polyline>
                   <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -563,7 +570,7 @@
             <span>New Post</span>
           </button>
           <div class="admin-header-badge">
-            <span class="role-badge role-admin">👑 Administrator</span>
+            <span class="role-badge role-admin">👑 Publisher</span>
           </div>
         </div>
       </div>
@@ -841,9 +848,9 @@
                     </div>
                     <div class="sidebar-section author-byline-section">
                       <span class="sidebar-label">Written By</span>
-                      <h4 id="admin-preview-author-name" class="sidebar-author-name">Admin</h4>
-                      <span id="admin-preview-author-username" class="sidebar-author-username hidden">@admin</span>
-                      <a id="admin-preview-author-email" class="sidebar-author-email" href="">admin@example.com</a>
+                      <h4 id="admin-preview-author-name" class="sidebar-author-name">Publisher</h4>
+                      <span id="admin-preview-author-username" class="sidebar-author-username hidden">@publisher</span>
+                      <a id="admin-preview-author-email" class="sidebar-author-email" href="">publisher@oceanverse.dev</a>
                     </div>
                   </div>
                 </div>
@@ -902,11 +909,32 @@
         </div>
       </div>
 
-      <!-- Public Profile Hero Banner Card -->
+      <!-- Public Profile Hero Banner Card with Wide Cover & Overlapping Avatar -->
       <div class="public-profile-hero">
+        <!-- Wide Cover Banner (16:5 ratio with fallback gradient) -->
+        <div class="public-profile-cover-wrap">
+          <div id="public-profile-cover-banner" class="public-profile-cover-banner has-fallback" title="Cover Photo"></div>
+          <!-- Quick Edit Cover button: shown strictly when viewing own profile -->
+          <button type="button" id="public-profile-edit-cover-btn" class="profile-cover-edit-btn hidden" title="Change Cover Photo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+              <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+            <span>Edit Cover</span>
+          </button>
+        </div>
+
         <div class="public-profile-card">
+          <!-- Square Avatar Overlapping Bottom-Left of Cover -->
           <div class="public-profile-avatar-wrap">
             <div id="public-profile-avatar" class="profile-avatar-large public-avatar-large" title="Profile Avatar"></div>
+            <!-- Quick Edit Avatar button: shown strictly when viewing own profile -->
+            <button type="button" id="public-profile-edit-avatar-btn" class="profile-avatar-edit-btn hidden" title="Change Profile Picture" aria-label="Change Profile Picture">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="15" height="15" aria-hidden="true">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+            </button>
             <div class="profile-avatar-badge" title="Community Member">
               <span class="status-indicator-dot online"></span>
             </div>
@@ -915,24 +943,18 @@
           <div class="public-profile-info">
             <div class="public-profile-title-row">
               <h1 id="public-profile-name" class="public-profile-name">Member</h1>
+              <!-- Crisp icon-only VERIFIED check mark badge (Clickable to learn more & get verified) -->
+              <button type="button" id="public-profile-verified-badge" class="verified-badge verified-check-btn hidden" title="Verified Creator • Click to learn more" aria-label="Verified Creator">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" class="verified-badge-svg">
+                  <path fill="#0284c7" stroke="#000000" stroke-width="0.8" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"></path>
+                  <path fill="#FFFFFF" d="M10.54 16.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"></path>
+                </svg>
+              </button>
               <span id="public-profile-role-badge" class="role-badge role-visitor">Visitor</span>
             </div>
-            <span id="public-profile-username" class="public-profile-username">@username</span>
             
-            <div class="public-profile-meta-row">
-              <span class="public-meta-pill">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                  <line x1="16" y1="2" x2="16" y2="6"></line>
-                  <line x1="8" y1="2" x2="8" y2="6"></line>
-                  <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
-                <span id="public-profile-joined">Member</span>
-              </span>
-              <span class="public-meta-pill" id="public-profile-status-pill">
-                <span class="status-indicator-dot online" style="width: 7px; height: 7px;"></span>
-                <span>Active Member</span>
-              </span>
+            <div class="public-profile-handle-row">
+              <span id="public-profile-username" class="public-profile-username">@username</span>
             </div>
           </div>
 
@@ -950,51 +972,141 @@
         </div>
       </div>
 
-      <!-- Public Profile Tabs & Content -->
-      <div class="public-profile-content-wrap">
-        <div class="public-profile-tabs" role="tablist">
-          <button type="button" id="public-tab-posts" class="public-tab-btn active" role="tab" aria-selected="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-              <path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10l6 6v10a2 2 0 0 1-2 2z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-            </svg>
-            <span>Articles (<strong id="public-tab-posts-count">0</strong>)</span>
-          </button>
-          <button type="button" id="public-tab-comments" class="public-tab-btn" role="tab" aria-selected="false">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-            <span>Comments (<strong id="public-tab-comments-count">0</strong>)</span>
-          </button>
-        </div>
+      <!-- Public Profile Main Layout Grid: 33% Left (About & Skills) | 66% Right (Articles & Comments) -->
+      <div class="public-profile-layout-grid">
+        <!-- LEFT COLUMN (33%): About Section & Skills Bars -->
+        <aside class="public-profile-sidebar-col">
+          <!-- About Section Card -->
+          <div id="public-profile-about-card" class="public-profile-about-card">
+            <div class="about-card-header">
+              <div class="about-card-title-group">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <h3 class="about-card-heading">About</h3>
+              </div>
+            </div>
 
-        <!-- Posts Pane -->
-        <div id="public-pane-posts" class="public-tab-pane">
-          <div id="public-posts-loading" class="public-tab-loading hidden">
-            <div class="skeleton-line sm skeleton-anim" style="width: 140px; margin-bottom: 1rem;"></div>
-            <div class="skeleton-line lg skeleton-anim"></div>
-          </div>
-          <div id="public-posts-grid" class="posts-grid"></div>
-          <div id="public-posts-empty" class="state-container hidden">
-            <div class="state-icon">📝</div>
-            <h3 class="state-title">No published articles yet</h3>
-            <p class="state-desc">This author has not published any articles on OceanVerse yet.</p>
-          </div>
-        </div>
+            <!-- About Section: Description Paragraph (bio) -->
+            <p id="public-profile-bio" class="public-profile-bio hidden"></p>
 
-        <!-- Comments Pane -->
-        <div id="public-pane-comments" class="public-tab-pane hidden">
-          <div id="public-comments-loading" class="public-tab-loading hidden">
-            <div class="skeleton-line sm skeleton-anim" style="width: 140px; margin-bottom: 1rem;"></div>
-            <div class="skeleton-line lg skeleton-anim"></div>
+            <!-- About Section: Location, Institution, Website Meta Row -->
+            <div class="public-profile-meta-row" id="public-profile-meta-row">
+              <span class="public-meta-pill hidden" id="public-profile-location-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <span id="public-profile-location"></span>
+              </span>
+
+              <span class="public-meta-pill hidden" id="public-profile-institution-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                  <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                </svg>
+                <span id="public-profile-institution"></span>
+              </span>
+
+              <a class="public-meta-pill public-website-pill hidden" id="public-profile-website-wrap" target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="2" y1="12" x2="22" y2="12"></line>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+                <span id="public-profile-website"></span>
+              </a>
+
+              <span class="public-meta-pill">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span id="public-profile-joined">Member</span>
+              </span>
+
+              <span class="public-meta-pill" id="public-profile-status-pill">
+                <span class="status-indicator-dot online" style="width: 7px; height: 7px;"></span>
+                <span>Active Member</span>
+              </span>
+            </div>
+
+            <!-- "Find Me" Social Links Row -->
+            <div id="public-profile-social-row" class="public-profile-social-row hidden">
+              <span class="social-row-label">Find Me:</span>
+              <div id="public-profile-social-list" class="public-social-links-list"></div>
+            </div>
           </div>
-          <div id="public-comments-list" class="public-comments-list"></div>
-          <div id="public-comments-empty" class="state-container hidden">
-            <div class="state-icon">💬</div>
-            <h3 class="state-title">No comments yet</h3>
-            <p class="state-desc">This member has not posted any comments in discussions yet.</p>
+
+          <!-- Skills Card -->
+          <div id="public-profile-skills-card" class="public-profile-skills-card hidden">
+            <div class="skills-card-header">
+              <div class="skills-card-title-group">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                <h3 class="skills-card-heading">Skills &amp; Expertise</h3>
+              </div>
+            </div>
+            <div id="public-profile-skills-list" class="skills-bars-container"></div>
           </div>
-        </div>
+        </aside>
+
+        <!-- RIGHT COLUMN (66%): Articles & Comments -->
+        <main class="public-profile-main-col">
+          <!-- Public Profile Tabs & Content -->
+          <div class="public-profile-content-wrap">
+            <!-- Pinned Article Card Container -->
+            <div id="public-pinned-post-wrap" class="public-pinned-post-wrap hidden"></div>
+            <div class="public-profile-tabs" role="tablist">
+              <button type="button" id="public-tab-posts" class="public-tab-btn active" role="tab" aria-selected="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                  <path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10l6 6v10a2 2 0 0 1-2 2z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                <span>Articles (<strong id="public-tab-posts-count">0</strong>)</span>
+              </button>
+              <button type="button" id="public-tab-comments" class="public-tab-btn" role="tab" aria-selected="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span>Comments (<strong id="public-tab-comments-count">0</strong>)</span>
+              </button>
+            </div>
+
+            <!-- Posts Pane -->
+            <div id="public-pane-posts" class="public-tab-pane">
+              <div id="public-posts-loading" class="public-tab-loading hidden">
+                <div class="skeleton-line sm skeleton-anim" style="width: 140px; margin-bottom: 1rem;"></div>
+                <div class="skeleton-line lg skeleton-anim"></div>
+              </div>
+              <div id="public-posts-grid" class="posts-grid"></div>
+              <div id="public-posts-empty" class="state-container hidden">
+                <div class="state-icon">📝</div>
+                <h3 class="state-title">No published articles yet</h3>
+                <p class="state-desc">This author has not published any articles on OceanVerse yet.</p>
+              </div>
+            </div>
+
+            <!-- Comments Pane -->
+            <div id="public-pane-comments" class="public-tab-pane hidden">
+              <div id="public-comments-loading" class="public-tab-loading hidden">
+                <div class="skeleton-line sm skeleton-anim" style="width: 140px; margin-bottom: 1rem;"></div>
+                <div class="skeleton-line lg skeleton-anim"></div>
+              </div>
+              <div id="public-comments-list" class="public-comments-list"></div>
+              <div id="public-comments-empty" class="state-container hidden">
+                <div class="state-icon">💬</div>
+                <h3 class="state-title">No comments yet</h3>
+                <p class="state-desc">This member has not posted any comments in discussions yet.</p>
+              </div>
+            </div>
+          </div>
+        </main>
       </div>
     </section>
 
@@ -1037,12 +1149,28 @@
         <div class="profile-card profile-identity-card">
           <div class="profile-avatar-wrap">
             <div id="profile-avatar-large" class="profile-avatar-large" title="Profile Avatar"></div>
+            <!-- Quick Edit Avatar button on Settings Identity card -->
+            <button type="button" id="profile-identity-edit-avatar-btn" class="profile-avatar-edit-btn" title="Change Profile Picture" aria-label="Change Profile Picture">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="15" height="15" aria-hidden="true">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+            </button>
             <div class="profile-avatar-badge" id="profile-avatar-badge" title="Active Account">
               <span class="status-indicator-dot online"></span>
             </div>
           </div>
 
-          <h2 id="profile-identity-name" class="profile-identity-name">Member</h2>
+          <div class="profile-name-badge-row">
+            <h2 id="profile-identity-name" class="profile-identity-name">Member</h2>
+            <!-- Crisp icon-only VERIFIED check mark badge (Clickable to learn more & get verified) -->
+            <button type="button" id="profile-identity-verified-badge" class="verified-badge verified-check-btn hidden" title="Verified Creator • Click to learn more" aria-label="Verified Creator">
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" class="verified-badge-svg">
+                <path fill="#0284c7" stroke="#000000" stroke-width="0.8" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"></path>
+                <path fill="#FFFFFF" d="M10.54 16.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"></path>
+              </svg>
+            </button>
+          </div>
           <span id="profile-identity-username" class="profile-identity-username"></span>
           <div class="profile-role-wrap">
             <span id="profile-identity-role" class="role-badge role-visitor">Visitor</span>
@@ -1165,6 +1293,65 @@
                 <span class="field-hint">Unique handle across the platform (3–24 characters: a–z, 0–9, _).</span>
               </div>
 
+              <!-- Bio / Description -->
+              <div class="form-group">
+                <label for="profile-edit-bio">Bio / Description</label>
+                <textarea id="profile-edit-bio" rows="3" placeholder="Tell readers about yourself, your background, or what you write about..."></textarea>
+                <span class="field-hint">Displayed prominently on your public profile card.</span>
+              </div>
+
+              <!-- Location & Institution -->
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="profile-edit-location">Location</label>
+                  <input type="text" id="profile-edit-location" placeholder="e.g. San Francisco, CA or Remote">
+                  <span class="field-hint">City, country, or timezone.</span>
+                </div>
+                <div class="form-group">
+                  <label for="profile-edit-institution">Institution / Organization</label>
+                  <input type="text" id="profile-edit-institution" placeholder="e.g. Stanford University / Tech Corp">
+                  <span class="field-hint">University, company, or team.</span>
+                </div>
+              </div>
+
+              <!-- Website URL -->
+              <div class="form-group">
+                <label for="profile-edit-website">Website URL</label>
+                <input type="url" id="profile-edit-website" placeholder="https://yourwebsite.com">
+                <span class="field-hint">Personal portfolio, blog, or project site (https:// auto-prepended if missing).</span>
+              </div>
+
+              <!-- Cover Photo URL & 16:5 Wide Cropper -->
+              <div class="form-group">
+                <div class="label-with-action">
+                  <label for="profile-edit-cover">Cover Photo URL</label>
+                  <button type="button" id="profile-preview-cover-btn" class="btn-text-action">Preview Cover</button>
+                </div>
+                <input type="url" id="profile-edit-cover" placeholder="https://images.unsplash.com/... or upload & crop banner">
+                
+                <div class="avatar-upload-action-row">
+                  <input type="file" id="profile-cover-file" accept="image/*" class="visually-hidden">
+                  <button type="button" id="profile-upload-cover-btn" class="upload-thumbnail-btn profile-crop-upload-btn" title="Upload and crop cover banner to 16:5 wide WebP">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                      <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                      <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                    <span>Upload &amp; Crop Cover</span>
+                  </button>
+                  <button type="button" id="profile-clear-cover-btn" class="avatar-preset-pill danger">✕ Clear Cover</button>
+                  <div id="profile-cover-status" class="cover-status-badge hidden" role="status" aria-live="polite"></div>
+                </div>
+
+                <span class="field-hint">Wide 16:5 banner recommended (1280×400). Displays at the top of your public profile.</span>
+
+                <div class="profile-edit-cover-preview-wrap">
+                  <div id="profile-edit-cover-preview" class="profile-edit-cover-preview empty">
+                    <span class="cover-preview-label">Cover Banner Preview</span>
+                  </div>
+                </div>
+              </div>
+
               <!-- Avatar URL -->
               <div class="form-group">
                 <div class="label-with-action">
@@ -1199,6 +1386,63 @@
                 </div>
               </div>
 
+              <!-- Skills & Expertise Editor (JSONB array) -->
+              <div class="form-group skills-editor-group">
+                <div class="label-with-action">
+                  <label>Skills &amp; Expertise</label>
+                  <button type="button" id="profile-add-skill-btn" class="btn-text-action">+ Add Skill</button>
+                </div>
+                <span class="field-hint">Showcase your skills and proficiency percentage (0–100%).</span>
+                <div id="profile-skills-editor-list" class="skills-editor-list">
+                  <!-- Dynamic skill rows -->
+                </div>
+              </div>
+
+              <!-- "Find Me" Social Links (JSONB object) -->
+              <div class="form-group social-editor-group">
+                <label>Social Profiles ("Find Me")</label>
+                <span class="field-hint">Add your profile URLs or handles for supported platforms.</span>
+                <div class="social-editor-grid">
+                  <div class="social-editor-item">
+                    <label for="profile-social-github">GitHub</label>
+                    <input type="text" id="profile-social-github" placeholder="https://github.com/username">
+                  </div>
+                  <div class="social-editor-item">
+                    <label for="profile-social-linkedin">LinkedIn</label>
+                    <input type="text" id="profile-social-linkedin" placeholder="https://linkedin.com/in/username">
+                  </div>
+                  <div class="social-editor-item">
+                    <label for="profile-social-x">X (Twitter)</label>
+                    <input type="text" id="profile-social-x" placeholder="https://x.com/username">
+                  </div>
+                  <div class="social-editor-item">
+                    <label for="profile-social-youtube">YouTube</label>
+                    <input type="text" id="profile-social-youtube" placeholder="https://youtube.com/@channel">
+                  </div>
+                  <div class="social-editor-item">
+                    <label for="profile-social-facebook">Facebook</label>
+                    <input type="text" id="profile-social-facebook" placeholder="https://facebook.com/username">
+                  </div>
+                  <div class="social-editor-item">
+                    <label for="profile-social-bluesky">Bluesky</label>
+                    <input type="text" id="profile-social-bluesky" placeholder="username.bsky.social">
+                  </div>
+                  <div class="social-editor-item">
+                    <label for="profile-social-instagram">Instagram</label>
+                    <input type="text" id="profile-social-instagram" placeholder="https://instagram.com/username">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pinned Article Dropdown -->
+              <div class="form-group">
+                <label for="profile-edit-pinned-post">Pinned Article</label>
+                <select id="profile-edit-pinned-post" class="form-select">
+                  <option value="">None (Unpin)</option>
+                </select>
+                <span class="field-hint">Select one of your published articles to feature at the top of your Profile.</span>
+              </div>
+
               <!-- Read-only Account Details Group -->
               <div class="profile-readonly-group">
                 <div class="form-group">
@@ -1214,7 +1458,7 @@
                   <div class="form-group">
                     <label for="profile-edit-role">User Role</label>
                     <input type="text" id="profile-edit-role" readonly disabled>
-                    <span class="field-hint">Managed by administrator.</span>
+                    <span class="field-hint">Managed by publisher.</span>
                   </div>
                   <div class="form-group">
                     <label for="profile-edit-joined">Created At</label>
@@ -1429,7 +1673,7 @@
       <div class="modal-header crop-modal-header">
         <div class="crop-modal-title-wrap">
           <h3 id="crop-modal-title" class="crop-modal-title">Crop Profile Picture</h3>
-          <span class="crop-modal-subtitle">1:1 Square &bull; Auto-WebP Compression (400&times;400)</span>
+          <span id="crop-modal-subtitle" class="crop-modal-subtitle">1:1 Square &bull; Auto-WebP Compression (400&times;400)</span>
         </div>
         <button id="avatar-crop-close-btn" class="modal-close" aria-label="Close crop dialog">&times;</button>
       </div>
@@ -1583,6 +1827,161 @@
     </div>
   </div>
 
+  <!-- ==============================================
+       PHOTO UPLOAD MODAL (Avatar & Cover Uploader)
+       ============================================== -->
+  <div id="photo-upload-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="photo-modal-title">
+    <div class="modal-card photo-upload-modal-card">
+      <div class="modal-header photo-modal-header">
+        <div class="photo-modal-header-text">
+          <div class="photo-modal-badge-pill" id="photo-modal-badge">
+            <span class="photo-badge-star">📷</span>
+            <span id="photo-modal-badge-text">Profile Photo</span>
+          </div>
+          <h3 id="photo-modal-title" class="photo-modal-title">Update Profile Photo</h3>
+          <p id="photo-modal-subtitle" class="photo-modal-subtitle">Upload an image from your device or enter a direct image link.</p>
+        </div>
+        <button id="photo-modal-close-btn" class="modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <div class="modal-body photo-modal-body">
+        <!-- Drag & Drop / File Select Box -->
+        <div id="photo-modal-dropzone" class="photo-modal-dropzone">
+          <div class="photo-dropzone-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="36" height="36" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+          </div>
+          <div class="photo-dropzone-content">
+            <p class="photo-dropzone-title">Upload Image from Device</p>
+            <p id="photo-modal-hint" class="photo-dropzone-hint">Recommended: Square 400&times;400 JPG, PNG, or WebP</p>
+          </div>
+          <button type="button" id="photo-modal-choose-btn" class="btn-primary photo-modal-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="15" height="15" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+            <span>Choose Image to Crop &amp; Upload</span>
+          </button>
+          <input type="file" id="photo-modal-file-input" accept="image/png,image/jpeg,image/webp,image/gif" class="hidden">
+        </div>
+
+        <div class="photo-modal-divider">
+          <span>OR PASTE URL</span>
+        </div>
+
+        <!-- URL Input Group -->
+        <div class="photo-modal-url-group">
+          <label for="photo-modal-url-input" class="photo-url-label">Direct Image Link (URL):</label>
+          <div class="photo-url-input-wrap">
+            <input type="url" id="photo-modal-url-input" placeholder="https://images.unsplash.com/..." class="photo-url-input">
+            <button type="button" id="photo-modal-apply-url-btn" class="btn-secondary photo-url-btn">
+              <span>Save URL</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Remove Photo Quick Action -->
+        <div class="photo-modal-actions-footer">
+          <button type="button" id="photo-modal-remove-btn" class="photo-modal-remove-btn" title="Remove image">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            <span id="photo-modal-remove-text">Remove Photo</span>
+          </button>
+        </div>
+
+        <div id="photo-modal-status" class="config-status-msg hidden"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================================
+       VERIFIED CREATOR INFO MODAL
+       ============================================== -->
+  <div id="verified-info-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="verified-modal-title">
+    <div class="modal-card verified-modal-card">
+      <div class="modal-header verified-modal-header">
+        <div class="verified-modal-title-wrap">
+          <div class="verified-modal-badge-seal">
+            <svg viewBox="0 0 24 24" width="36" height="36" aria-hidden="true" class="verified-badge-svg">
+              <path fill="#0284c7" stroke="#000000" stroke-width="0.8" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"></path>
+              <path fill="#FFFFFF" d="M10.54 16.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 id="verified-modal-title" class="verified-modal-title">Verified Creator</h3>
+            <p class="verified-modal-subtitle">Identity &amp; Authenticity Verified</p>
+          </div>
+        </div>
+        <button id="verified-modal-close-btn" class="modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <div class="modal-body verified-modal-body">
+        <div class="verified-status-banner">
+          <div class="verified-status-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="24" height="24" aria-hidden="true">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+          </div>
+          <div class="verified-status-text">
+            <p class="verified-status-heading" id="verified-modal-username">Verified Creator</p>
+            <p class="verified-status-desc">
+              This person is verified as a real person and an authentic contributor on OceanVerse. Their identity has been validated.
+            </p>
+          </div>
+        </div>
+
+        <div class="verified-apply-box">
+          <div class="verified-apply-header">
+            <span class="verified-apply-tag">✦ OceanVerse Verification</span>
+            <h4 class="verified-apply-title">Want to get verified?</h4>
+          </div>
+          <p class="verified-apply-desc">
+            To prevent impersonation and verify your account as a real person or recognized writer, contact the publisher directly with your details:
+          </p>
+
+          <div class="writer-email-box verified-email-box">
+            <div class="writer-email-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20" aria-hidden="true">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </div>
+            <a href="mailto:oceanmallik@oceanmallik.com?subject=Verification%20Request%20-%20OceanVerse" id="verified-email-link" class="writer-email-address" title="Send verification request to oceanmallik@oceanmallik.com">
+              oceanmallik@oceanmallik.com
+            </a>
+            <button type="button" id="verified-copy-email-btn" class="writer-copy-btn" title="Copy email address">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span id="verified-copy-feedback">Copy</span>
+            </button>
+          </div>
+
+          <div class="verified-modal-actions">
+            <a href="mailto:oceanmallik@oceanmallik.com?subject=Verification%20Request%20-%20OceanVerse" class="btn-primary writer-mail-action-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="15" height="15" aria-hidden="true">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+              <span>Email to Get Verified</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer verified-modal-footer">
+        <button type="button" id="verified-modal-done-btn" class="btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Global Floating Scroll-To-Top Button -->
   <button id="scroll-top-btn" class="scroll-top-btn floating-top-btn" title="Back to top" aria-label="Scroll to top">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1604,8 +2003,11 @@
     </div>
   </footer>
 
+  <!-- Global Toast Notifications Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
   <!-- Application Logic -->
-  <script src="app.js?v=4.7"></script>
+  <script src="app.js?v=5.2"></script>
 </body>
 </html>
 
