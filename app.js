@@ -2838,12 +2838,8 @@ async function openArticleView(post, updateHash = true) {
     const targetHash = `#/post/${encodeURIComponent(postIdentifier)}`;
     const basePath = getAppBasePath() || '/';
     try {
-      if (window.location.protocol !== 'file:' && window.history && window.history.pushState) {
-        if (window.location.pathname.includes('/@')) {
-          window.history.pushState({ view: 'article', postIdentifier }, '', `${basePath}${targetHash}`);
-        } else if (window.location.hash !== targetHash) {
-          window.location.hash = targetHash;
-        }
+      if (window.location.pathname.includes('/@') && window.history && window.history.replaceState && window.location.protocol !== 'file:') {
+        window.history.replaceState(null, '', `${basePath}${targetHash}`);
       } else if (window.location.hash !== targetHash) {
         window.location.hash = targetHash;
       }
@@ -2947,24 +2943,16 @@ function returnToHomeView() {
 
   const basePath = getAppBasePath() || '/';
   try {
-    if (window.history && window.history.pushState && window.location.protocol !== 'file:') {
-      if (selectedTopic && selectedTopic !== 'all') {
-        const targetUrl = `${basePath}#/topic/${encodeURIComponent(selectedTopic)}`;
-        window.history.pushState(null, '', targetUrl);
-      } else {
-        if (window.location.pathname !== basePath || window.location.hash) {
-          window.history.pushState(null, '', basePath);
-        }
-      }
-    } else {
-      if (!selectedTopic || selectedTopic === 'all') {
-        window.location.hash = '';
-      }
+    if (window.location.pathname.includes('/@') && window.history && window.history.replaceState && window.location.protocol !== 'file:') {
+      window.history.replaceState(null, '', basePath);
     }
-  } catch (err) {
-    if (window.location.protocol === 'file:') {
+    if (selectedTopic && selectedTopic !== 'all') {
+      window.location.hash = `#/topic/${encodeURIComponent(selectedTopic)}`;
+    } else if (window.location.hash) {
       window.location.hash = '';
     }
+  } catch (err) {
+    window.location.hash = '';
   }
 
   document.title = 'OceanVerse - A Blog Site';
@@ -6145,24 +6133,26 @@ async function loadAndRenderPublicProfile(userIdentifier, fallbackUsername, fall
 
   currentPublicProfileUser = profile;
 
-  // Update route to clean /@username URL
+  // Update route to clean #/@username URL (reliable across all static servers without 404s)
   if (updateHash) {
     const rawUsername = (profile.username || cleanId || '').replace(/^@/, '');
     const cleanUsername = encodeURIComponent(rawUsername);
+    const targetHash = `#/@${cleanUsername}`;
 
-    try {
-      if (window.location.protocol !== 'file:' && window.history && window.history.pushState) {
-        const basePath = getAppBasePath() || '/';
-        const finalUrl = `${basePath}@${cleanUsername}`;
-        const currentPath = window.location.pathname;
-        if (currentPath !== finalUrl || window.location.hash) {
-          window.history.pushState({ view: 'profile', userIdentifier: rawUsername }, '', finalUrl);
+    // If pathname previously had /@ (e.g. from direct URL or old pushState), clean it up cleanly
+    if (window.location.pathname.includes('/@')) {
+      const basePath = getAppBasePath() || '/';
+      try {
+        if (window.history && window.history.replaceState && window.location.protocol !== 'file:') {
+          window.history.replaceState(null, '', `${basePath}${targetHash}`);
+        } else {
+          window.location.hash = targetHash;
         }
-      } else {
-        window.location.hash = `#/@${cleanUsername}`;
+      } catch (e) {
+        window.location.hash = targetHash;
       }
-    } catch (e) {
-      window.location.hash = `#/@${cleanUsername}`;
+    } else if (window.location.hash !== targetHash && decodeURIComponent(window.location.hash) !== targetHash) {
+      window.location.hash = targetHash;
     }
   }
 
