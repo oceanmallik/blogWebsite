@@ -2278,12 +2278,16 @@ function createCardElement(post, options = {}) {
   const body = document.createElement('div');
   body.className = 'card-body';
 
-  // Check if pinned
+  // Check if pinned - pinned styling & badges are strictly displayed on user profile views, NEVER on the home page feed
+  const isProfileView = Boolean(options && (options.isPublicProfileView || options.isProfileOwnerView));
   const prof = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
   const cachedAuthor = post.author_id ? authorProfilesCache.get(post.author_id) : null;
-  const isPostPinned = (currentProfile?.pinned_post_id && String(currentProfile.pinned_post_id) === String(post.id) && post.author_id === currentUser?.id) ||
-    (cachedAuthor?.pinned_post_id && String(cachedAuthor.pinned_post_id) === String(post.id)) ||
-    (prof?.pinned_post_id && String(prof.pinned_post_id) === String(post.id));
+  const targetPinnedId = options?.pinnedPostId ||
+    (options?.isProfileOwnerView ? currentProfile?.pinned_post_id : (cachedAuthor?.pinned_post_id || prof?.pinned_post_id));
+
+  const isPostPinned = isProfileView && Boolean(
+    targetPinnedId && (String(targetPinnedId) === String(post.id) || String(targetPinnedId) === String(post.slug))
+  );
 
   if (isPostPinned) {
     card.classList.add('is-pinned-card');
@@ -6369,7 +6373,11 @@ async function loadPublicUserPosts(profile, requestId) {
   });
 
   // If the author has a pinned post, ensure it is fetched and placed at the very top of the grid
-  const pinnedId = profile.pinned_post_id ? String(profile.pinned_post_id) : null;
+  const isProfileOwner = Boolean(currentUser && profile.id && currentUser.id === profile.id);
+  const rawPinnedId = (isProfileOwner && currentProfile && currentProfile.pinned_post_id !== undefined)
+    ? currentProfile.pinned_post_id
+    : profile.pinned_post_id;
+  const pinnedId = rawPinnedId ? String(rawPinnedId) : null;
   if (pinnedId) {
     const hasPinned = uniquePosts.some(p => String(p.id) === pinnedId || p.slug === pinnedId);
     if (!hasPinned && supabaseClient) {
@@ -6412,10 +6420,16 @@ async function loadPublicUserPosts(profile, requestId) {
   dom.publicPostsEmpty?.classList.add('hidden');
 
   const isOwner = Boolean(currentUser && profile.id && currentUser.id === profile.id);
+  const activePinnedId = (isOwner && currentProfile && currentProfile.pinned_post_id !== undefined)
+    ? currentProfile.pinned_post_id
+    : profile.pinned_post_id;
+
   const fragment = document.createDocumentFragment();
   uniquePosts.forEach(post => {
     const card = createCardElement(post, {
       isProfileOwnerView: isOwner,
+      isPublicProfileView: true,
+      pinnedPostId: activePinnedId ? String(activePinnedId) : null,
       onPinToggle: () => {
         loadPublicUserPosts(profile, requestId);
       }

@@ -8088,6 +8088,23 @@ input[type="datetime-local"] {
   box-shadow: 4px 4px 0 var(--accent-yellow);
 }
 
+/* Home Page Grid Safeguard: Main feed cards are strictly standard cards */
+#posts-grid .post-card.is-pinned-card {
+  grid-column: auto !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-shadow: var(--shadow-brutal) !important;
+  margin-bottom: 0 !important;
+  padding: 0 !important;
+}
+
+#posts-grid .card-pinned-header,
+#posts-grid .card-pinned-badge,
+#posts-grid .card-pin-action-btn {
+  display: none !important;
+}
+
 /* Remove old pseudo badge since it is now cleanly in the left header */
 .post-card.is-pinned-card::before {
   display: none !important;
