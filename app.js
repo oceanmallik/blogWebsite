@@ -1757,13 +1757,14 @@ function initTopicFilters() {
 
   // Populate admin topic select dropdown options if needed
   if (dom.adminTopic && dom.adminTopic.options.length <= 1) {
-    dom.adminTopic.innerHTML = '<option value="">Select a topic (optional)...</option>';
+    dom.adminTopic.innerHTML = '<option value="">Select a topic (required)...</option>';
     POST_TOPICS.forEach(topic => {
       const opt = document.createElement('option');
       opt.value = topic;
       opt.textContent = topic;
       dom.adminTopic.appendChild(opt);
     });
+    dom.adminTopic.required = true;
   }
 
   // Article view topic buttons
@@ -3261,16 +3262,47 @@ async function handleAdminPostSubmit(e) {
   const cover_image = dom.adminCoverImage.value.trim() || null;
   const content = dom.adminContent.value.trim();
   const is_published = dom.adminIsPublished.checked;
-  const topic = dom.adminTopic ? (dom.adminTopic.value.trim() || null) : null;
+  const topic = dom.adminTopic ? dom.adminTopic.value.trim() : '';
 
   if (!title) {
     showAdminMsg('Article title is required.', 'error');
+    if (dom.adminTitle && typeof dom.adminTitle.focus === 'function') dom.adminTitle.focus();
     return;
   }
 
   if (!slug) {
     slug = generateSlugFromText(title);
-    dom.adminSlug.value = slug;
+    if (dom.adminSlug) dom.adminSlug.value = slug;
+  }
+
+  if (!slug) {
+    showAdminMsg('Article slug (URL identifier) is required.', 'error');
+    if (dom.adminSlug && typeof dom.adminSlug.focus === 'function') dom.adminSlug.focus();
+    return;
+  }
+
+  if (!summary) {
+    showAdminMsg('Article summary (excerpt) is required.', 'error');
+    if (dom.adminSummary && typeof dom.adminSummary.focus === 'function') dom.adminSummary.focus();
+    return;
+  }
+
+  if (!topic) {
+    showAdminMsg('Please select a topic for your article (required).', 'error');
+    if (dom.adminTopic && typeof dom.adminTopic.focus === 'function') dom.adminTopic.focus();
+    return;
+  }
+
+  if (!POST_TOPICS.some(t => t.toLowerCase() === topic.toLowerCase())) {
+    showAdminMsg('Please select a valid topic from the official topics list.', 'error');
+    if (dom.adminTopic && typeof dom.adminTopic.focus === 'function') dom.adminTopic.focus();
+    return;
+  }
+
+  if (!content) {
+    showAdminMsg('Article content is required.', 'error');
+    if (dom.adminContent && typeof dom.adminContent.focus === 'function') dom.adminContent.focus();
+    return;
   }
 
   const customDateVal = dom.adminCustomDate?.value;

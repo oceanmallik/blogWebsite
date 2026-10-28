@@ -3011,6 +3011,25 @@ img {
   font-family: var(--font-mono);
 }
 
+.form-group label .required,
+.form-group label .required-star,
+.editor-heading .required,
+.standalone-title-row .required {
+  color: var(--accent-coral);
+  font-weight: 800;
+  margin-left: 0.2rem;
+}
+
+.form-group label .field-optional,
+.standalone-title-row .field-optional {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: 0.78rem;
+  margin-left: 0.35rem;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
 .form-group input,
 .form-group textarea {
   width: 100%;
