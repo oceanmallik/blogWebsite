@@ -1020,6 +1020,35 @@ function closeTopWritersModal() {
   }
 }
 
+/**
+ * Creates an authentic verified badge button with rosette seal SVG.
+ * Clicking it opens the Verified Creator Information modal.
+ */
+function createVerifiedBadge(displayName, username, size = 16) {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'verified-badge verified-check-btn';
+  btn.title = 'Verified Creator • Click to learn more';
+  btn.setAttribute('aria-label', 'Verified Creator');
+  btn.innerHTML = `
+    <svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" class="verified-badge-svg">
+      <path fill="#0284c7" stroke="#000000" stroke-width="0.8" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"></path>
+      <path fill="#FFFFFF" d="M10.54 16.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"></path>
+    </svg>
+  `;
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openVerifiedInfoModal(displayName, username);
+  });
+  btn.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.stopPropagation();
+    }
+  });
+  return btn;
+}
+
 function getTopContributors(limit = 3) {
   const contributorMap = new Map();
 
@@ -1041,6 +1070,11 @@ function getTopContributors(limit = 3) {
       let role = (isSelf && currentProfile?.role)
         ? currentProfile.role
         : (initialProfile?.role || cached?.role || 'reader');
+      let isVerified = Boolean(
+        (isSelf && currentProfile?.is_verified) ||
+        cached?.is_verified ||
+        initialProfile?.is_verified
+      );
 
       if (!name) {
         name = username || 'Contributor';
@@ -1055,6 +1089,7 @@ function getTopContributors(limit = 3) {
         username,
         avatarUrl,
         role,
+        isVerified,
         postCount: 0,
         commentCount: 0,
         score: 0
@@ -1067,11 +1102,19 @@ function getTopContributors(limit = 3) {
   allPosts.forEach(post => {
     const prof = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
     const authorId = post.author_id || prof?.id || 'demo-author';
+    const cached = authorId ? authorProfilesCache.get(authorId) : null;
+    const isSelf = currentUser && currentUser.id === authorId;
+
     const initialProf = {
-      display_name: prof?.display_name || post.author_name,
-      username: prof?.username || post.author_username,
-      avatar_url: prof?.avatar_url || post.author_avatar,
-      role: prof?.role || 'admin'
+      display_name: (isSelf && currentProfile?.display_name) ? currentProfile.display_name : (prof?.display_name || post.author_name || cached?.display_name),
+      username: (isSelf && currentProfile?.username) ? currentProfile.username : (prof?.username || post.author_username || cached?.username),
+      avatar_url: (isSelf && currentProfile?.avatar_url) ? currentProfile.avatar_url : (prof?.avatar_url || post.author_avatar || cached?.avatar_url),
+      role: (isSelf && currentProfile?.role) ? currentProfile.role : (prof?.role || cached?.role || 'admin'),
+      is_verified: Boolean(
+        (isSelf && currentProfile?.is_verified) ||
+        prof?.is_verified ||
+        cached?.is_verified
+      )
     };
 
     const entry = getOrCreateContributor(authorId, initialProf);
@@ -1090,6 +1133,9 @@ function getTopContributors(limit = 3) {
     if (initialProf.role && initialProf.role === 'admin') {
       entry.role = 'admin';
     }
+    if (initialProf.is_verified) {
+      entry.isVerified = true;
+    }
   });
 
   // 2. Process comments (1 point per comment)
@@ -1101,6 +1147,34 @@ function getTopContributors(limit = 3) {
     entry.score += COMMENT_GRADE_POINTS;
   });
 
+  // 3. Post-sync with authorProfilesCache and currentProfile
+  contributorMap.forEach(entry => {
+    const cachedEntry = authorProfilesCache.get(entry.id);
+    const isSelf = currentUser && currentUser.id === entry.id;
+
+    if (isSelf && currentProfile) {
+      if (currentProfile.display_name) entry.name = currentProfile.display_name;
+      if (currentProfile.username) entry.username = currentProfile.username;
+      if (currentProfile.avatar_url) entry.avatarUrl = currentProfile.avatar_url;
+      if (currentProfile.is_verified) entry.isVerified = true;
+    }
+
+    if (cachedEntry) {
+      if ((!entry.name || entry.name === 'Contributor') && cachedEntry.display_name) {
+        entry.name = cachedEntry.display_name;
+      }
+      if ((!entry.username || entry.username === 'contributor') && cachedEntry.username) {
+        entry.username = cachedEntry.username;
+      }
+      if (!entry.avatarUrl && cachedEntry.avatar_url) {
+        entry.avatarUrl = cachedEntry.avatar_url;
+      }
+      if (cachedEntry.is_verified) {
+        entry.isVerified = true;
+      }
+    }
+  });
+
   if (contributorMap.size === 0) {
     contributorMap.set('demo-author', {
       id: 'demo-author',
@@ -1108,6 +1182,7 @@ function getTopContributors(limit = 3) {
       username: 'ocean_author',
       avatarUrl: '',
       role: 'admin',
+      isVerified: true,
       postCount: 1,
       commentCount: 0,
       score: 10
@@ -1185,6 +1260,15 @@ function renderHeroTopWriters() {
       <span class="hero-writer-count-pill" title="${writer.score} pts: ${articleText} (${writer.postCount * ARTICLE_GRADE_POINTS} pts) + ${commentText} (${writer.commentCount * COMMENT_GRADE_POINTS} pts)">${writer.score} pts</span>
     `;
 
+    if (writer.isVerified) {
+      const nameRow = item.querySelector('.hero-writer-name-row');
+      if (nameRow) {
+        const vBadge = createVerifiedBadge(writer.name, writer.username, 15);
+        vBadge.classList.add('hero-writer-verified-badge');
+        nameRow.appendChild(vBadge);
+      }
+    }
+
     const handleProfileClick = (e) => {
       e.stopPropagation();
       openPublicProfileView(writer.id, writer.username, writer.name);
@@ -1254,6 +1338,15 @@ function renderTopWritersList() {
         </button>
       </div>
     `;
+
+    if (writer.isVerified) {
+      const nameRow = card.querySelector('.writer-name-row');
+      if (nameRow) {
+        const vBadge = createVerifiedBadge(writer.name, writer.username, 16);
+        vBadge.classList.add('writer-modal-verified-badge');
+        nameRow.appendChild(vBadge);
+      }
+    }
 
     const viewBtn = card.querySelector('.writer-profile-btn');
     const handleViewClick = (e) => {
@@ -2590,22 +2683,8 @@ function renderArticleAuthor(author) {
   if (dom.articleAuthorName) {
     dom.articleAuthorName.innerHTML = escapeHtml(name);
     if (author?.is_verified) {
-      const vBtn = document.createElement('button');
-      vBtn.type = 'button';
-      vBtn.className = 'verified-badge verified-check-btn';
-      vBtn.title = 'Verified Creator • Click to learn more';
-      vBtn.setAttribute('aria-label', 'Verified Creator');
+      const vBtn = createVerifiedBadge(name, username, 18);
       vBtn.style.marginLeft = '0.35rem';
-      vBtn.innerHTML = `
-        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="verified-badge-svg">
-          <path fill="#0284c7" stroke="#000000" stroke-width="0.8" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"></path>
-          <path fill="#FFFFFF" d="M10.54 16.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"></path>
-        </svg>
-      `;
-      vBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openVerifiedInfoModal(name, username);
-      });
       dom.articleAuthorName.appendChild(vBtn);
     }
   }
@@ -2757,7 +2836,18 @@ async function openArticleView(post, updateHash = true) {
   if (updateHash) {
     const postIdentifier = post.slug || post.id;
     const targetHash = `#/post/${encodeURIComponent(postIdentifier)}`;
-    if (window.location.hash !== targetHash) {
+    const basePath = getAppBasePath() || '/';
+    try {
+      if (window.location.protocol !== 'file:' && window.history && window.history.pushState) {
+        if (window.location.pathname.includes('/@')) {
+          window.history.pushState({ view: 'article', postIdentifier }, '', `${basePath}${targetHash}`);
+        } else if (window.location.hash !== targetHash) {
+          window.location.hash = targetHash;
+        }
+      } else if (window.location.hash !== targetHash) {
+        window.location.hash = targetHash;
+      }
+    } catch (e) {
       window.location.hash = targetHash;
     }
   }
@@ -2822,6 +2912,25 @@ async function openPostByIdOrSlug(id, slug, fallbackPost = null, updateHash = tr
 }
 
 /**
+ * Safely determines the base application pathname without user handles
+ */
+function getAppBasePath() {
+  if (typeof window === 'undefined') return '/';
+  if (window.location.protocol === 'file:') return '';
+  const pathname = window.location.pathname || '/';
+  const atIdx = pathname.indexOf('/@');
+  if (atIdx !== -1) {
+    const base = pathname.substring(0, atIdx);
+    return base ? (base.endsWith('/') ? base : base + '/') : '/';
+  }
+  if (pathname.endsWith('/index.html')) {
+    const base = pathname.slice(0, -'index.html'.length);
+    return base.endsWith('/') ? base : base + '/';
+  }
+  return pathname.endsWith('/') ? pathname : (pathname.lastIndexOf('/') !== -1 ? pathname.substring(0, pathname.lastIndexOf('/') + 1) : '/');
+}
+
+/**
  * Restores home view and hides article & admin views
  */
 function returnToHomeView() {
@@ -2836,22 +2945,73 @@ function returnToHomeView() {
 
   collapseTopics();
 
-  if (window.location.hash && !window.location.hash.startsWith('#/topic/')) {
-    if (window.history && window.history.pushState) {
-      window.history.pushState(null, '', window.location.pathname);
+  const basePath = getAppBasePath() || '/';
+  try {
+    if (window.history && window.history.pushState && window.location.protocol !== 'file:') {
+      if (selectedTopic && selectedTopic !== 'all') {
+        const targetUrl = `${basePath}#/topic/${encodeURIComponent(selectedTopic)}`;
+        window.history.pushState(null, '', targetUrl);
+      } else {
+        if (window.location.pathname !== basePath || window.location.hash) {
+          window.history.pushState(null, '', basePath);
+        }
+      }
+    } else {
+      if (!selectedTopic || selectedTopic === 'all') {
+        window.location.hash = '';
+      }
+    }
+  } catch (err) {
+    if (window.location.protocol === 'file:') {
+      window.location.hash = '';
     }
   }
-  document.title = 'OceanVerse - A Blog Site';
 
+  document.title = 'OceanVerse - A Blog Site';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function handleHashChange() {
-  handleHashNavigation();
+  handleAppNavigation();
 }
 
-function handleHashNavigation() {
+function handleAppNavigation() {
+  // 1. Check pathname for /@username
+  const pathname = decodeURIComponent(window.location.pathname || '');
+  const pathAtMatch = pathname.match(/(?:^|\/)@([a-zA-Z0-9_\-\.]+)/);
+  if (pathAtMatch && pathAtMatch[1]) {
+    const username = pathAtMatch[1].trim();
+    if (
+      currentPublicProfileUser &&
+      (currentPublicProfileUser.username === username || currentPublicProfileUser.id === username) &&
+      dom.publicProfileView &&
+      !dom.publicProfileView.classList.contains('hidden')
+    ) {
+      return;
+    }
+    openPublicProfileView(username, null, null, false);
+    return;
+  }
+
+  // 2. Check hash
   const hash = window.location.hash;
+
+  // Check if hash has /@username or /#/user/@username or /#/profile/@username or /#@username
+  const hashAtMatch = hash.match(/#\/?(?:user\/|profile\/)?@([a-zA-Z0-9_\-\.]+)/);
+  if (hashAtMatch && hashAtMatch[1]) {
+    const username = hashAtMatch[1].trim();
+    if (
+      currentPublicProfileUser &&
+      (currentPublicProfileUser.username === username || currentPublicProfileUser.id === username) &&
+      dom.publicProfileView &&
+      !dom.publicProfileView.classList.contains('hidden')
+    ) {
+      return;
+    }
+    openPublicProfileView(username, null, null, true);
+    return;
+  }
+
   if (hash.startsWith('#/topic/')) {
     const rawParam = decodeURIComponent(hash.replace('#/topic/', '')).trim();
     if (rawParam.toLowerCase() === 'all') {
@@ -2865,6 +3025,7 @@ function handleHashNavigation() {
     returnToHomeView();
     return;
   }
+
   if (hash === '#/profile') {
     if (currentUser) {
       openProfileView();
@@ -2874,6 +3035,7 @@ function handleHashNavigation() {
     }
     return;
   }
+
   if (hash.startsWith('#/user/') || hash.startsWith('#/profile/')) {
     const rawParam = hash.startsWith('#/user/') ? hash.replace('#/user/', '') : hash.replace('#/profile/', '');
     const userIdentifier = decodeURIComponent(rawParam).trim();
@@ -2885,12 +3047,13 @@ function handleHashNavigation() {
         dom.publicProfileView &&
         !dom.publicProfileView.classList.contains('hidden')
       ) {
-        return; // Already actively viewing this profile, skip duplicate processing
+        return;
       }
-      openPublicProfileView(userIdentifier, null, null, false);
+      openPublicProfileView(userIdentifier, null, null, true);
       return;
     }
   }
+
   if (hash === '#/create' || hash === '#/admin') {
     if (currentUserRole === 'admin') {
       openAdminView();
@@ -2899,10 +3062,10 @@ function handleHashNavigation() {
     }
     return;
   }
+
   if (hash.startsWith('#/post/')) {
     const identifier = decodeURIComponent(hash.replace('#/post/', '')).trim();
     if (identifier) {
-      // If already actively viewing this post, do not duplicate view open or comments fetch
       if (activePost && (String(activePost.id) === identifier || activePost.slug === identifier) && !dom.articleView?.classList.contains('hidden')) {
         return;
       }
@@ -2914,6 +3077,10 @@ function handleHashNavigation() {
       returnToHomeView();
     }
   }
+}
+
+function handleHashNavigation() {
+  handleAppNavigation();
 }
 
 // ============================================================================
@@ -3073,21 +3240,8 @@ function createCommentCardElement(comment) {
   const commentRole = (profile?.role || cachedProf?.role || (currentUser && currentUser.id === comment.user_id ? currentUserRole : 'visitor')).toLowerCase();
 
   if (isVerified) {
-    const verifiedBadge = document.createElement('button');
-    verifiedBadge.type = 'button';
-    verifiedBadge.className = 'verified-badge comment-verified-badge';
-    verifiedBadge.title = 'Verified Creator • Click to learn more';
-    verifiedBadge.setAttribute('aria-label', 'Verified Creator');
-    verifiedBadge.innerHTML = `
-      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" class="verified-badge-svg">
-        <path fill="#0284c7" stroke="#000000" stroke-width="0.8" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"></path>
-        <path fill="#FFFFFF" d="M10.54 16.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"></path>
-      </svg>
-    `;
-    verifiedBadge.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openVerifiedInfoModal(displayName, username);
-    });
+    const verifiedBadge = createVerifiedBadge(displayName, username, 16);
+    verifiedBadge.classList.add('comment-verified-badge');
     authorNameRow.appendChild(verifiedBadge);
   }
 
@@ -3257,7 +3411,16 @@ function openAdminView() {
   dom.publicProfileView?.classList.add('hidden');
   dom.adminView?.classList.remove('hidden');
 
-  window.location.hash = '#/create';
+  const basePath = getAppBasePath() || '/';
+  try {
+    if (window.location.pathname.includes('/@') && window.history && window.history.pushState && window.location.protocol !== 'file:') {
+      window.history.pushState(null, '', `${basePath}#/create`);
+    } else if (window.location.hash !== '#/create') {
+      window.location.hash = '#/create';
+    }
+  } catch (e) {
+    window.location.hash = '#/create';
+  }
   document.title = 'Create a post — OceanVerse';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -4503,7 +4666,14 @@ async function openProfileView() {
   dom.publicProfileView?.classList.add('hidden');
   dom.profileView?.classList.remove('hidden');
 
-  if (window.location.hash !== '#/profile') {
+  const basePath = getAppBasePath() || '/';
+  try {
+    if (window.location.pathname.includes('/@') && window.history && window.history.pushState && window.location.protocol !== 'file:') {
+      window.history.pushState(null, '', `${basePath}#/profile`);
+    } else if (window.location.hash !== '#/profile') {
+      window.location.hash = '#/profile';
+    }
+  } catch (e) {
     window.location.hash = '#/profile';
   }
   document.title = 'Account Profile — OceanVerse';
@@ -5975,16 +6145,24 @@ async function loadAndRenderPublicProfile(userIdentifier, fallbackUsername, fall
 
   currentPublicProfileUser = profile;
 
-  // Update hash route smoothly without page reload (preserves literal @ for clean handle URLs)
+  // Update route to clean /@username URL
   if (updateHash) {
-    const routeHandle = profile.username ? `@${profile.username}` : (profile.id || cleanId);
-    const targetParam = routeHandle.startsWith('@')
-      ? `@${encodeURIComponent(routeHandle.slice(1))}`
-      : encodeURIComponent(routeHandle);
-    const targetHash = `#/user/${targetParam}`;
-    if (window.location.hash !== targetHash && decodeURIComponent(window.location.hash) !== targetHash) {
-      // Use replaceState to update the URL cleanly without triggering duplicate hashchange events
-      history.replaceState(null, '', targetHash);
+    const rawUsername = (profile.username || cleanId || '').replace(/^@/, '');
+    const cleanUsername = encodeURIComponent(rawUsername);
+
+    try {
+      if (window.location.protocol !== 'file:' && window.history && window.history.pushState) {
+        const basePath = getAppBasePath() || '/';
+        const finalUrl = `${basePath}@${cleanUsername}`;
+        const currentPath = window.location.pathname;
+        if (currentPath !== finalUrl || window.location.hash) {
+          window.history.pushState({ view: 'profile', userIdentifier: rawUsername }, '', finalUrl);
+        }
+      } else {
+        window.location.hash = `#/@${cleanUsername}`;
+      }
+    } catch (e) {
+      window.location.hash = `#/@${cleanUsername}`;
     }
   }
 
@@ -6717,8 +6895,9 @@ function initEventListeners() {
     }
   });
 
-  // Browser hash change
+  // Browser history & hash change navigation
   window.addEventListener('hashchange', handleHashChange);
+  window.addEventListener('popstate', handleAppNavigation);
 
   // Search input live filtering
   dom.searchInput?.addEventListener('input', (e) => {
