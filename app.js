@@ -2185,24 +2185,109 @@ function createCardElement(post, options = {}) {
   const body = document.createElement('div');
   body.className = 'card-body';
 
-  // Topic Badge
-  if (post.topic && typeof post.topic === 'string' && post.topic.trim() !== '') {
-    const topicRow = document.createElement('div');
-    topicRow.className = 'card-topic-row';
+  // Check if pinned
+  const prof = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
+  const cachedAuthor = post.author_id ? authorProfilesCache.get(post.author_id) : null;
+  const isPostPinned = (currentProfile?.pinned_post_id && String(currentProfile.pinned_post_id) === String(post.id) && post.author_id === currentUser?.id) ||
+    (cachedAuthor?.pinned_post_id && String(cachedAuthor.pinned_post_id) === String(post.id)) ||
+    (prof?.pinned_post_id && String(prof.pinned_post_id) === String(post.id));
 
-    const topicBadge = document.createElement('button');
-    topicBadge.type = 'button';
-    topicBadge.className = 'card-topic-badge';
-    topicBadge.textContent = post.topic;
-    topicBadge.setAttribute('aria-label', `Topic: ${post.topic}`);
-    topicBadge.title = `Filter posts by ${post.topic}`;
-    topicBadge.addEventListener('click', (e) => {
-      e.stopPropagation();
-      filterByTopic(post.topic);
-    });
+  if (isPostPinned) {
+    card.classList.add('is-pinned-card');
 
-    topicRow.appendChild(topicBadge);
-    body.appendChild(topicRow);
+    const pinnedHeader = document.createElement('div');
+    pinnedHeader.className = 'card-pinned-header';
+
+    const pinBadge = document.createElement('span');
+    pinBadge.className = 'card-pinned-badge';
+    pinBadge.innerHTML = '<span>📌 Pinned Article</span>';
+    pinnedHeader.appendChild(pinBadge);
+
+    // Topic badge inside pinned header
+    if (post.topic && typeof post.topic === 'string' && post.topic.trim() !== '') {
+      const topicBadge = document.createElement('button');
+      topicBadge.type = 'button';
+      topicBadge.className = 'card-topic-badge';
+      topicBadge.textContent = post.topic;
+      topicBadge.setAttribute('aria-label', `Topic: ${post.topic}`);
+      topicBadge.title = `Filter posts by ${post.topic}`;
+      topicBadge.addEventListener('click', (e) => {
+        e.stopPropagation();
+        filterByTopic(post.topic);
+      });
+      pinnedHeader.appendChild(topicBadge);
+    }
+
+    // Pin / Unpin button inside pinned header row on the left side
+    if (options && options.isProfileOwnerView) {
+      const pinActionBtn = document.createElement('button');
+      pinActionBtn.type = 'button';
+      pinActionBtn.className = 'card-pin-action-btn is-pinned';
+      pinActionBtn.title = 'Unpin article from your profile';
+      pinActionBtn.innerHTML = '<span>📌 Pinned</span>';
+
+      pinActionBtn.addEventListener('mouseenter', () => {
+        const span = pinActionBtn.querySelector('span');
+        if (span) span.textContent = '✕ Unpin';
+      });
+      pinActionBtn.addEventListener('mouseleave', () => {
+        const span = pinActionBtn.querySelector('span');
+        if (span) span.textContent = '📌 Pinned';
+      });
+
+      pinActionBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        pinActionBtn.disabled = true;
+        await togglePinPost(post.id);
+        if (typeof options.onPinToggle === 'function') {
+          options.onPinToggle();
+        }
+      });
+      pinnedHeader.appendChild(pinActionBtn);
+    }
+
+    body.appendChild(pinnedHeader);
+  } else {
+    // Topic Badge for regular unpinned cards
+    if (post.topic && typeof post.topic === 'string' && post.topic.trim() !== '') {
+      const topicRow = document.createElement('div');
+      topicRow.className = 'card-topic-row';
+
+      const topicBadge = document.createElement('button');
+      topicBadge.type = 'button';
+      topicBadge.className = 'card-topic-badge';
+      topicBadge.textContent = post.topic;
+      topicBadge.setAttribute('aria-label', `Topic: ${post.topic}`);
+      topicBadge.title = `Filter posts by ${post.topic}`;
+      topicBadge.addEventListener('click', (e) => {
+        e.stopPropagation();
+        filterByTopic(post.topic);
+      });
+
+      topicRow.appendChild(topicBadge);
+      body.appendChild(topicRow);
+    }
+
+    // Direct Pin button on unpinned cards when viewing own profile
+    if (options && options.isProfileOwnerView) {
+      const pinActionBtn = document.createElement('button');
+      pinActionBtn.type = 'button';
+      pinActionBtn.className = 'card-pin-action-btn';
+      pinActionBtn.title = 'Pin article to the top of your profile';
+      pinActionBtn.innerHTML = '<span>📌 Pin</span>';
+
+      pinActionBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        pinActionBtn.disabled = true;
+        await togglePinPost(post.id);
+        if (typeof options.onPinToggle === 'function') {
+          options.onPinToggle();
+        }
+      });
+      card.appendChild(pinActionBtn);
+    }
   }
 
   // Meta (Date & Time Ago)
@@ -2229,40 +2314,6 @@ function createCardElement(post, options = {}) {
   meta.appendChild(dateSpan);
   meta.appendChild(dotSpan);
   meta.appendChild(timeSpan);
-
-  // Author Pinned Post badge
-  const prof = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
-  const cachedAuthor = post.author_id ? authorProfilesCache.get(post.author_id) : null;
-  const isPostPinned = (currentProfile?.pinned_post_id && String(currentProfile.pinned_post_id) === String(post.id) && post.author_id === currentUser?.id) ||
-    (cachedAuthor?.pinned_post_id && String(cachedAuthor.pinned_post_id) === String(post.id)) ||
-    (prof?.pinned_post_id && String(prof.pinned_post_id) === String(post.id));
-
-  if (isPostPinned) {
-    card.classList.add('is-pinned-card');
-    const pinBadge = document.createElement('span');
-    pinBadge.className = 'card-pinned-tag';
-    pinBadge.textContent = '📌 Pinned';
-    pinBadge.title = 'Pinned article by author';
-    meta.insertBefore(pinBadge, meta.firstChild);
-  }
-
-  // If viewing own profile page, show direct Pin / Unpin button on every card
-  if (options && options.isProfileOwnerView) {
-    const pinActionBtn = document.createElement('button');
-    pinActionBtn.type = 'button';
-    pinActionBtn.className = `card-pin-action-btn ${isPostPinned ? 'is-pinned' : ''}`;
-    pinActionBtn.title = isPostPinned ? 'Unpin article from your profile' : 'Pin article to the top of your profile';
-    pinActionBtn.innerHTML = `<span>📌 ${isPostPinned ? 'Pinned' : 'Pin'}</span>`;
-    pinActionBtn.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      pinActionBtn.disabled = true;
-      await togglePinPost(post.id);
-      if (typeof options.onPinToggle === 'function') {
-        options.onPinToggle();
-      }
-    });
-    meta.appendChild(pinActionBtn);
-  }
 
   // Title
   const title = document.createElement('h2');
