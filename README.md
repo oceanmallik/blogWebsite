@@ -9,7 +9,8 @@ A modern, responsive blog frontend built with pure HTML (`index.html`), CSS (`st
 - **Pure Vanilla Stack**: Zero framework dependencies, instant load times, and lightweight code.
 - **Supabase v2 Integration**: Uses `@supabase/supabase-js@2` to fetch published articles.
 - **Query & Filtering**:
-  - Targets `public.posts` table with exact schema: `id, author_id, title, slug, summary, content, cover_image, is_published, created_at`.
+  - Targets `public.posts` table with exact schema: `id, author_id, title, slug, summary, content, cover_image, topic, is_published, created_at`.
+  - Supports topic filtering across 20 official blog topics (Technology, Programming, Gadgets, AI, etc.) automatically sorted from most published posts to least, with a dynamic responsive Priority+ filter bar that fills all available row space and neatly places overflowing topics into an expandable "Explore More" drawer that auto-collapses upon selection, combined with live search.
   - Filters strictly by `.eq('is_published', true)`.
   - Orders by `created_at` descending.
 - **Responsive Layout**: Fluid CSS Grid that seamlessly adapts from widescreen desktop monitors down to mobile viewports.
@@ -43,6 +44,7 @@ create table public.posts (
   summary text,
   content text,
   cover_image text,
+  topic text,
   is_published boolean default false,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );

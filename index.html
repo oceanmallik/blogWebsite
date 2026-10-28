@@ -23,7 +23,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=4.2">
+  <link rel="stylesheet" href="style.css?v=4.6">
 </head>
 <body>
   <!-- Header / Navigation -->
@@ -221,6 +221,90 @@
         </div>
       </div>
 
+      <!-- Topics Filter Bar (Top Topics + Expandable More Drawer) -->
+      <nav class="topics-filter-section" id="topics-filter-section" aria-label="Filter posts by topic">
+        <div class="topics-bar-header">
+          <div class="topics-primary-bar" id="topics-primary-bar" role="tablist" aria-label="Top Topics">
+            <button type="button" class="topic-pill active" data-topic="all" role="tab" aria-selected="true">
+              <span class="topic-name">ALL</span><span class="topic-count"></span>
+            </button>
+            <button type="button" class="topic-pill" data-topic="Technology" role="tab" aria-selected="false">
+              <span class="topic-name">Technology</span><span class="topic-count"></span>
+            </button>
+            <button type="button" class="topic-pill" data-topic="Programming" role="tab" aria-selected="false">
+              <span class="topic-name">Programming</span><span class="topic-count"></span>
+            </button>
+            <button type="button" class="topic-pill" data-topic="Gadgets" role="tab" aria-selected="false">
+              <span class="topic-name">Gadgets</span><span class="topic-count"></span>
+            </button>
+            <button type="button" class="topic-pill" data-topic="AI" role="tab" aria-selected="false">
+              <span class="topic-name">AI</span><span class="topic-count"></span>
+            </button>
+            <button type="button" class="topic-pill" data-topic="Lifestyle" role="tab" aria-selected="false">
+              <span class="topic-name">Lifestyle</span><span class="topic-count"></span>
+            </button>
+          </div>
+          <button type="button" id="topics-toggle-btn" class="topics-toggle-btn" aria-expanded="false" aria-controls="topics-expandable-panel" title="Click to browse more topics">
+            <span class="topics-toggle-icon">⚡</span>
+            <span id="topics-toggle-label" class="topics-toggle-label">Explore More (15)</span>
+            <svg class="topics-chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+        </div>
+
+        <div class="topics-expandable-panel hidden" id="topics-expandable-panel" role="tablist" aria-label="More Topics">
+          <button type="button" class="topic-pill" data-topic="Casual" role="tab" aria-selected="false">
+            <span class="topic-name">Casual</span><span class="topic-count"></span>
+          </button>
+          <button type="button" class="topic-pill" data-topic="Education" role="tab" aria-selected="false">
+            <span class="topic-name">Education</span><span class="topic-count"></span>
+          </button>
+          <button type="button" class="topic-pill" data-topic="Career" role="tab" aria-selected="false">
+            <span class="topic-name">Career</span><span class="topic-count"></span>
+          </button>
+          <button type="button" class="topic-pill" data-topic="Health" role="tab" aria-selected="false">
+            <span class="topic-name">Health</span><span class="topic-count"></span>
+          </button>
+          <button type="button" class="topic-pill" data-topic="Food" role="tab" aria-selected="false">
+            <span class="topic-name">Food</span><span class="topic-count"></span>
+          </button>
+          <button type="button" class="topic-pill" data-topic="Travel" role="tab" aria-selected="false">
+            <span class="topic-name">Travel</span><span class="topic-count"></span>
+          </button>
+          <button type="button" class="topic-pill" data-topic="Gaming" role="tab" aria-selected="false">
+            <span class="topic-name">Gaming</span><span class="topic-count"></span>
+          </button>
+          <button type="button" class="topic-pill" data-topic="Entertainment" role="tab" aria-selected="false">
+            <span class="topic-name">Entertainment</span><span class="topic-count"></span>
+          </button>
+          <button type="button" class="topic-pill" data-topic="Finance" role="tab" aria-selected="false">
+            <span class="topic-name">Finance</span><span class="topic-count"></span>
+          </button>
+          <button type="button" class="topic-pill" data-topic="Business" role="tab" aria-selected="false">
+            <span class="topic-name">Business</span><span class="topic-count"></span>
+          </button>
+          <button type="button" class="topic-pill" data-topic="Science" role="tab" aria-selected="false">
+            <span class="topic-name">Science</span><span class="topic-count"></span>
+          </button>
+          <button type="button" class="topic-pill" data-topic="News" role="tab" aria-selected="false">
+            <span class="topic-name">News</span><span class="topic-count"></span>
+          </button>
+          <button type="button" class="topic-pill" data-topic="Sports" role="tab" aria-selected="false">
+            <span class="topic-name">Sports</span><span class="topic-count"></span>
+          </button>
+          <button type="button" class="topic-pill" data-topic="Fashion" role="tab" aria-selected="false">
+            <span class="topic-name">Fashion</span><span class="topic-count"></span>
+          </button>
+          <button type="button" class="topic-pill" data-topic="Tutorials" role="tab" aria-selected="false">
+            <span class="topic-name">Tutorials</span><span class="topic-count"></span>
+          </button>
+        </div>
+
+        <!-- Hidden Measurement Ruler for Dynamic Responsive Priority+ Overflow Calculation -->
+        <div class="topics-measure-ruler" id="topics-measure-ruler" aria-hidden="true"></div>
+      </nav>
+
       <!-- Loading Skeleton Grid -->
       <div id="posts-skeleton" class="posts-grid">
         <div class="post-card skeleton-card">
@@ -327,6 +411,13 @@
               </button>
             </div>
 
+            <div class="sidebar-section hidden" id="article-topic-section">
+              <span class="sidebar-label">Topic</span>
+              <button type="button" id="article-topic-btn" class="sidebar-topic-btn" title="Filter by this topic">
+                <span id="article-topic-val">Technology</span>
+              </button>
+            </div>
+
             <div class="sidebar-section">
               <span class="sidebar-label">Published</span>
               <span id="article-date" class="sidebar-meta-val"></span>
@@ -373,6 +464,11 @@
                   <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                 </svg>
                 <span>Delete Post</span>
+              </button>
+            </div>
+            <div id="article-topic-badge-wrap" class="article-topic-badge-wrap hidden">
+              <button type="button" id="article-header-topic-btn" class="article-header-topic-tag" title="Filter by this topic">
+                <span id="article-header-topic-text">Technology</span>
               </button>
             </div>
             <h1 id="article-title" class="article-title"></h1>
@@ -519,6 +615,40 @@
               <div class="form-group">
                 <label for="admin-summary">Summary (Excerpt)</label>
                 <textarea id="admin-summary" rows="2" placeholder="Brief 1-2 sentence preview for cards..."></textarea>
+              </div>
+
+              <!-- Article Topic Selector -->
+              <div class="form-group">
+                <label for="admin-topic">Topic / Category</label>
+                <div class="select-wrapper">
+                  <select id="admin-topic">
+                    <option value="">Select a topic (optional)...</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Programming">Programming</option>
+                    <option value="Gadgets">Gadgets</option>
+                    <option value="AI">AI</option>
+                    <option value="Lifestyle">Lifestyle</option>
+                    <option value="Casual">Casual</option>
+                    <option value="Education">Education</option>
+                    <option value="Career">Career</option>
+                    <option value="Health">Health</option>
+                    <option value="Food">Food</option>
+                    <option value="Travel">Travel</option>
+                    <option value="Gaming">Gaming</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Finance">Finance</option>
+                    <option value="Business">Business</option>
+                    <option value="Science">Science</option>
+                    <option value="News">News</option>
+                    <option value="Sports">Sports</option>
+                    <option value="Fashion">Fashion</option>
+                    <option value="Tutorials">Tutorials</option>
+                  </select>
+                  <svg class="select-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16" aria-hidden="true">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </div>
+                <span class="field-hint">Assign this post to one of the 20 official blog topics.</span>
               </div>
 
               <!-- Cover Image (Hybrid URL / Auto-WebP Upload) -->
@@ -1473,7 +1603,7 @@
   </footer>
 
   <!-- Application Logic -->
-  <script src="app.js?v=4.2"></script>
+  <script src="app.js?v=4.6"></script>
 </body>
 </html>
 

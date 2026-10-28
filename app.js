@@ -12,11 +12,22 @@ const SUPABASE_ANON_KEY = 'sb_publishable_z9Hk9GwzczIGsJWZpHoh0w_grcfZbAX';
 // ============================================================================
 // 2. STATE MANAGEMENT
 // ============================================================================
+// Official 20 Topics Array for Categorization & Filtering
+const POST_TOPICS = [
+  'Technology', 'Programming', 'Gadgets', 'AI', 'Lifestyle',
+  'Casual', 'Education', 'Career', 'Health', 'Food',
+  'Travel', 'Gaming', 'Entertainment', 'Finance', 'Business',
+  'Science', 'News', 'Sports', 'Fashion', 'Tutorials'
+];
+window.POST_TOPICS = POST_TOPICS;
+
 // FIX 1: Use supabaseClient to prevent collision with global window.supabase CDN object
 let supabaseClient = null;
 let allPosts = [];
 window.allPosts = allPosts;
 let currentFilter = '';
+let selectedTopic = 'all';
+window.selectedTopic = selectedTopic;
 let activePost = null;
 
 // User Authentication & Role State
@@ -48,6 +59,7 @@ const DEMO_PREVIEW_POSTS = [
     author_id: null,
     title: 'The Architecture of the Modern Ocean: Designing Resilient Web Systems',
     slug: 'architecture-of-modern-ocean',
+    topic: 'Technology',
     summary: 'A deep dive into distributed systems, modular frontend design, and how building resilient web platforms resembles the fluid dynamics of ocean currents.',
     content: `## The Fluid Nature of Modern Systems\n\nSoftware architectures, much like tidal systems, must adapt to immense pressure and sudden shifts in volume. When designing scalable applications, rigidity leads to breakage.\n\n### Core Tenets of Resilient Design\n\n- **Loose Coupling:** Services should function independently with well-defined contracts.\n- **Graceful Degradation:** When a component fails, the system provides a predictable fallback rather than a complete blackout.\n- **Stateless Horizons:** Treating compute as ephemeral allows systems to scale effortlessly.\n\n> "The sea does not ask the storm to cease; it adjusts its surface to endure."\n\n\`\`\`javascript\n// Embracing resilience with retry backoffs\nasync function fetchWithResilience(url, retries = 3) {\n  for (let attempt = 0; attempt < retries; attempt++) {\n    try {\n      return await fetch(url);\n    } catch (err) {\n      if (attempt === retries - 1) throw err;\n      await new Promise(r => setTimeout(r, Math.pow(2, attempt) * 1000));\n    }\n  }\n}\n\`\`\`\n\nBy treating web systems with fluid design principles, we craft user experiences that feel smooth, dependable, and enduring.`,
     cover_image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
@@ -59,6 +71,7 @@ const DEMO_PREVIEW_POSTS = [
     author_id: null,
     title: 'Crafting High-Performance Vanilla JavaScript Applications',
     slug: 'high-performance-vanilla-javascript',
+    topic: 'Programming',
     summary: 'Why reaching for zero-dependency native JavaScript often delivers unmatched speed, clarity, and longevity for modern web frontends.',
     content: `## The Power of the Native Web\n\nIn an era dominated by sprawling framework ecosystems, the power of modern vanilla JavaScript is often underestimated. Browsers today are faster, more capable, and more standardized than ever before.\n\n### Why Vanilla JS Still Reigns\n\n1. **Zero Bundle Overhead:** No 300KB runtime shipped before the first render.\n2. **Direct DOM Interaction:** Using \`DocumentFragment\` and modern CSS containment yields incredible frame rates.\n3. **Future Proofing:** Code written to web standards remains functional decade after decade.\n\n\`\`\`javascript\n// Efficient batched DOM updates\nconst fragment = document.createDocumentFragment();\nposts.forEach(post => {\n  const card = createPostCard(post);\n  fragment.appendChild(card);\n});\ndocument.getElementById('posts-grid').appendChild(fragment);\n\`\`\`\n\nBy mastering the web platform's built-in APIs, you build experiences that load instantly on any network.`,
     cover_image: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1200&q=80',
@@ -70,6 +83,7 @@ const DEMO_PREVIEW_POSTS = [
     author_id: null,
     title: 'Undercurrents: The Quiet Evolution of Edge Computing',
     slug: 'undercurrents-quiet-evolution-edge-computing',
+    topic: 'AI',
     summary: 'How shifting computation closer to the edge transforms distributed performance, latency, and real-time experiences.',
     content: `## Beyond Centralized Horizons\n\nFor decades, computing oscillated between centralized mainframes and localized client hardware. Today, the edge represents a harmonious equilibrium — data processed precisely where it is generated.\n\n### Why the Edge Matters\n\n- **Sub-millisecond Latency:** Processing requests in local edge clusters eliminates round-trip lag across oceanic fiber cables.\n- **Resilience Under Pressure:** If an origin datacenter experiences disruption, edge nodes continue serving cached and dynamic workloads.\n- **Smart Data Routing:** Intelligent routing steers requests dynamically along optimal paths.\n\n> "Speed is not merely a feature; it is the silent foundation of trust in digital spaces."\n\nAs web platforms evolve, embracing edge computing ensures that every reader experiences instantaneous, seamless engagement regardless of where they reside on the globe.`,
     cover_image: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?auto=format&fit=crop&w=1200&q=80',
@@ -105,6 +119,15 @@ function initDOM() {
   dom.searchClearBtn = document.getElementById('search-clear-btn');
   dom.emptyResetBtn = document.getElementById('empty-reset-btn');
   dom.errorRetryBtn = document.getElementById('error-retry-btn');
+  dom.topicsFilterSection = document.getElementById('topics-filter-section');
+  dom.topicsBarHeader = document.querySelector('.topics-bar-header') || dom.topicsFilterSection;
+  dom.topicsPrimaryBar = document.getElementById('topics-primary-bar');
+  dom.topicsActiveGroup = dom.topicsPrimaryBar || document.getElementById('topics-active-group');
+  dom.topicsToggleBtn = document.getElementById('topics-toggle-btn');
+  dom.topicsToggleLabel = document.getElementById('topics-toggle-label');
+  dom.topicsExpandablePanel = document.getElementById('topics-expandable-panel');
+  dom.topicsPillsBar = dom.topicsExpandablePanel;
+  dom.topicsMeasureRuler = document.getElementById('topics-measure-ruler');
   dom.heroBecomeWriterBtn = document.getElementById('hero-become-writer-btn');
   dom.heroSignupBtn = document.getElementById('hero-signup-btn');
   dom.heroSignupBtnText = document.getElementById('hero-signup-btn-text');
@@ -135,6 +158,12 @@ function initDOM() {
   dom.articleSummary = document.getElementById('article-summary');
   dom.articleDate = document.getElementById('article-date');
   dom.articleReadingTime = document.getElementById('article-reading-time');
+  dom.articleTopicSection = document.getElementById('article-topic-section');
+  dom.articleTopicVal = document.getElementById('article-topic-val');
+  dom.articleTopicBtn = document.getElementById('article-topic-btn');
+  dom.articleTopicBadgeWrap = document.getElementById('article-topic-badge-wrap');
+  dom.articleHeaderTopicBtn = document.getElementById('article-header-topic-btn');
+  dom.articleHeaderTopicText = document.getElementById('article-header-topic-text');
   dom.articleCoverWrap = document.getElementById('article-cover-wrap');
   dom.articleCover = document.getElementById('article-cover');
   dom.articleContent = document.getElementById('article-content');
@@ -190,6 +219,7 @@ function initDOM() {
   dom.adminSlug = document.getElementById('admin-slug');
   dom.adminGenerateSlug = document.getElementById('admin-generate-slug');
   dom.adminSummary = document.getElementById('admin-summary');
+  dom.adminTopic = document.getElementById('admin-topic');
   dom.adminCoverGroup = document.getElementById('admin-cover-group');
   dom.adminCoverImage = document.getElementById('admin-cover-image');
   dom.adminCoverFile = document.getElementById('admin-cover-file');
@@ -458,6 +488,7 @@ async function loadPosts() {
       }
     }
 
+    updateTopicCounts();
     renderPostsGrid(allPosts);
     renderHeroTopWriters();
     handleHashNavigation();
@@ -737,6 +768,7 @@ function updateAuthUI() {
 
   // Re-render home posts grid and hero top writers if posts exist
   if (allPosts && allPosts.length > 0) {
+    updateTopicCounts();
     renderPostsGrid(allPosts);
     renderHeroTopWriters();
   }
@@ -1472,30 +1504,488 @@ function showAuthSuccess(element, message) {
 }
 
 // ============================================================================
+// 5.5. TOPIC FILTERING & CATEGORIZATION (DYNAMIC PRIORITY+ OVERFLOW)
+// ============================================================================
+
+/**
+ * Computes post counts for all published posts and topics
+ */
+function getTopicCounts() {
+  const counts = {};
+  POST_TOPICS.forEach(t => { counts[t.toLowerCase()] = 0; });
+
+  let totalPublished = 0;
+  const pool = (allPosts && allPosts.length > 0) ? allPosts : (window.allPosts || []);
+
+  pool.forEach(post => {
+    if (post && post.is_published !== false) {
+      totalPublished++;
+      if (post.topic) {
+        const key = String(post.topic).trim().toLowerCase();
+        if (counts[key] !== undefined) {
+          counts[key]++;
+        } else {
+          counts[key] = (counts[key] || 0) + 1;
+        }
+      }
+    }
+  });
+
+  return { total: totalPublished, byTopic: counts };
+}
+
+/**
+ * Measures the exact rendered pixel width of each topic pill using the offscreen ruler
+ */
+function getPillWidths(total, byTopic) {
+  let ruler = dom.topicsMeasureRuler || document.getElementById('topics-measure-ruler');
+  if (!ruler && typeof document !== 'undefined' && document.createElement) {
+    ruler = document.createElement('div');
+    ruler.id = 'topics-measure-ruler';
+    ruler.className = 'topics-measure-ruler';
+    ruler.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(ruler);
+    dom.topicsMeasureRuler = ruler;
+  }
+
+  if (!ruler) {
+    return { allWidth: 80, toggleWidth: 160, topicWidthMap: {} };
+  }
+
+  // Populate ruler with ALL pill, each topic pill, and the toggle button
+  let html = `<button type="button" class="topic-pill" id="ruler-all-pill"><span class="topic-name">ALL</span><span class="topic-count"> (${total})</span></button>`;
+
+  POST_TOPICS.forEach(topic => {
+    const count = byTopic[topic.toLowerCase()] || 0;
+    html += `<button type="button" class="topic-pill" data-ruler-topic="${escapeHtml(topic)}"><span class="topic-name">${escapeHtml(topic)}</span><span class="topic-count"> (${count})</span></button>`;
+  });
+
+  html += `<button type="button" class="topics-toggle-btn" id="ruler-toggle-btn"><span class="topics-toggle-icon">⚡</span><span class="topics-toggle-label">Explore More (20)</span></button>`;
+
+  ruler.innerHTML = html;
+
+  const allPill = ruler.querySelector('#ruler-all-pill');
+  const allWidth = allPill ? (allPill.offsetWidth || 80) : 80;
+
+  const toggleBtn = ruler.querySelector('#ruler-toggle-btn');
+  const toggleWidth = toggleBtn ? (toggleBtn.offsetWidth || 160) : 160;
+
+  const topicWidthMap = {};
+  const topicPills = ruler.querySelectorAll('[data-ruler-topic]');
+  topicPills.forEach(pill => {
+    const t = pill.getAttribute('data-ruler-topic');
+    topicWidthMap[t.toLowerCase()] = pill.offsetWidth || 120;
+  });
+
+  return { allWidth, toggleWidth, topicWidthMap };
+}
+
+/**
+ * Splits POST_TOPICS into topics that fit the single-row primary bar and remaining topics for the drawer,
+ * automatically sorted from most published posts to least published posts.
+ */
+function getTopTopics(total, byTopic) {
+  const { allWidth, toggleWidth, topicWidthMap } = getPillWidths(total, byTopic);
+
+  // Sort ALL topics automatically from MOST published posts to LEAST published posts
+  const sortedTopics = [...POST_TOPICS].sort((a, b) => {
+    const countA = byTopic[a.toLowerCase()] || 0;
+    const countB = byTopic[b.toLowerCase()] || 0;
+    if (countB !== countA) {
+      return countB - countA; // Descending: most posts first, least posts last
+    }
+    // Deterministic tie-breaker for identical counts: default topic order
+    return POST_TOPICS.indexOf(a) - POST_TOPICS.indexOf(b);
+  });
+
+  const gap = 8; // 0.5rem gap in pixels
+  const containerWidth = dom.topicsBarHeader ? (dom.topicsBarHeader.clientWidth || dom.topicsFilterSection?.clientWidth || 0) : 0;
+
+  // Fallback for headless environments or before DOM measurement is ready
+  if (containerWidth <= 0) {
+    const fallbackCount = 6;
+    const top = sortedTopics.slice(0, fallbackCount);
+    const rem = sortedTopics.slice(fallbackCount);
+    return { topTopics: top, remainingTopics: rem, showToggle: rem.length > 0 };
+  }
+
+  // Check if ALL 20 topics can fit without needing the toggle button
+  let totalWidthIfAll = allWidth + gap;
+  sortedTopics.forEach(t => {
+    totalWidthIfAll += (topicWidthMap[t.toLowerCase()] || 120) + gap;
+  });
+
+  if (totalWidthIfAll <= containerWidth) {
+    // All topics fit without overflow, preserved in most-to-least order
+    return { topTopics: [...sortedTopics], remainingTopics: [], showToggle: false };
+  }
+
+  // Not all fit: reserve space for the toggle button and pack as many topics as possible (from most to least)
+  const availableWidth = containerWidth - toggleWidth - gap;
+  let currentWidth = allWidth + gap;
+  const topList = [];
+  const remList = [];
+
+  sortedTopics.forEach(topic => {
+    const pillWidth = (topicWidthMap[topic.toLowerCase()] || 120) + gap;
+    if ((currentWidth + pillWidth <= availableWidth) || topList.length === 0) {
+      topList.push(topic);
+      currentWidth += pillWidth;
+    } else {
+      remList.push(topic);
+    }
+  });
+
+  // Preserve the most-to-least sorting in both the top bar and the overflow drawer!
+  return { topTopics: topList, remainingTopics: remList, showToggle: remList.length > 0 };
+}
+
+/**
+ * Checks whether the expandable topics drawer is currently open
+ */
+function isTopicsExpanded() {
+  return Boolean(dom.topicsExpandablePanel && !dom.topicsExpandablePanel.classList.contains('hidden'));
+}
+
+/**
+ * Expands the topics drawer
+ */
+function expandTopics() {
+  if (!dom.topicsExpandablePanel) return;
+  dom.topicsExpandablePanel.classList.remove('hidden');
+  if (dom.topicsToggleBtn) {
+    dom.topicsToggleBtn.setAttribute('aria-expanded', 'true');
+    dom.topicsToggleBtn.classList.add('expanded');
+  }
+  if (dom.topicsToggleLabel) {
+    dom.topicsToggleLabel.textContent = 'Close Topics';
+  }
+}
+
+/**
+ * Collapses (shrinks back) the topics drawer
+ */
+function collapseTopics() {
+  if (!dom.topicsExpandablePanel) return;
+  dom.topicsExpandablePanel.classList.add('hidden');
+  if (dom.topicsToggleBtn) {
+    dom.topicsToggleBtn.setAttribute('aria-expanded', 'false');
+    dom.topicsToggleBtn.classList.remove('expanded');
+  }
+  if (dom.topicsToggleLabel) {
+    const { total, byTopic } = getTopicCounts();
+    const { remainingTopics } = getTopTopics(total, byTopic);
+    dom.topicsToggleLabel.textContent = `Explore More (${remainingTopics.length})`;
+  }
+}
+
+/**
+ * Toggles the topics drawer open or closed
+ */
+function toggleTopics() {
+  if (isTopicsExpanded()) {
+    collapseTopics();
+  } else {
+    expandTopics();
+  }
+}
+
+/**
+ * Initializes topic filter bar pills, drawer toggle, and event listeners
+ */
+function initTopicFilters() {
+  const panel = dom.topicsExpandablePanel || dom.topicsPillsBar;
+  const primaryBar = dom.topicsPrimaryBar || dom.topicsActiveGroup;
+
+  // Toggle button listener
+  dom.topicsToggleBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleTopics();
+  });
+
+  // Expandable panel selection handler - immediately shrinks back on topic click!
+  panel?.addEventListener('click', (e) => {
+    const pill = e.target.closest('.topic-pill');
+    if (!pill) return;
+    const topic = pill.dataset.topic;
+    selectTopic(topic, true);
+    collapseTopics(); // Immediately shrink back upon topic selection
+  });
+
+  // Primary bar (Top Topics + ALL) click handler
+  primaryBar?.addEventListener('click', (e) => {
+    const pill = e.target.closest('.topic-pill');
+    if (!pill) return;
+    const topic = pill.dataset.topic;
+    if (topic === selectedTopic && selectedTopic !== 'all') {
+      selectTopic('all', true);
+    } else {
+      selectTopic(topic, true);
+    }
+    collapseTopics();
+  });
+
+  // Close when clicking outside of the topics filter section
+  document.addEventListener('click', (e) => {
+    if (dom.topicsFilterSection && !dom.topicsFilterSection.contains(e.target)) {
+      collapseTopics();
+    }
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isTopicsExpanded()) {
+      collapseTopics();
+    }
+  });
+
+  // Dynamic ResizeObserver to auto-fit topics on screen resize
+  if (typeof ResizeObserver !== 'undefined' && dom.topicsBarHeader) {
+    let resizeTimer = null;
+    const ro = new ResizeObserver(() => {
+      if (resizeTimer) cancelAnimationFrame(resizeTimer);
+      resizeTimer = requestAnimationFrame(() => {
+        updateTopicPillsUI();
+      });
+    });
+    ro.observe(dom.topicsBarHeader);
+  } else if (typeof window !== 'undefined' && window.addEventListener) {
+    window.addEventListener('resize', () => {
+      updateTopicPillsUI();
+    }, { passive: true });
+  }
+
+  // Populate admin topic select dropdown options if needed
+  if (dom.adminTopic && dom.adminTopic.options.length <= 1) {
+    dom.adminTopic.innerHTML = '<option value="">Select a topic (optional)...</option>';
+    POST_TOPICS.forEach(topic => {
+      const opt = document.createElement('option');
+      opt.value = topic;
+      opt.textContent = topic;
+      dom.adminTopic.appendChild(opt);
+    });
+  }
+
+  // Article view topic buttons
+  dom.articleTopicBtn?.addEventListener('click', () => {
+    if (activePost?.topic) {
+      filterByTopic(activePost.topic);
+    }
+  });
+  dom.articleHeaderTopicBtn?.addEventListener('click', () => {
+    if (activePost?.topic) {
+      filterByTopic(activePost.topic);
+    }
+  });
+
+  updateTopicCounts();
+}
+
+/**
+ * Updates post count badges and re-renders both bars
+ */
+function updateTopicCounts() {
+  updateTopicPillsUI();
+}
+
+/**
+ * Selects an active topic filter and updates UI and views
+ */
+function selectTopic(topicName, updateHash = false) {
+  const normalized = (!topicName || topicName.toLowerCase() === 'all')
+    ? 'all'
+    : (POST_TOPICS.find(t => t.toLowerCase() === topicName.toLowerCase()) || topicName);
+
+  selectedTopic = normalized;
+  window.selectedTopic = selectedTopic;
+
+  updateTopicPillsUI();
+  renderPostsGrid(allPosts);
+
+  if (updateHash) {
+    if (selectedTopic === 'all') {
+      if (window.location.hash.startsWith('#/topic/')) {
+        if (window.history && window.history.pushState) {
+          window.history.pushState(null, '', window.location.pathname);
+        }
+      }
+    } else {
+      window.location.hash = `#/topic/${encodeURIComponent(selectedTopic)}`;
+    }
+  }
+}
+
+/**
+ * Syncs active state and counts across the top primary bar and expandable more drawer
+ */
+function updateTopicPillsUI() {
+  const { total, byTopic } = getTopicCounts();
+  const { topTopics, remainingTopics, showToggle } = getTopTopics(total, byTopic);
+
+  // 1. Update the primary bar (ALL + Topics that fit on the line)
+  const primaryBar = dom.topicsPrimaryBar || dom.topicsActiveGroup;
+  if (primaryBar) {
+    let html = `
+      <button type="button" class="topic-pill ${selectedTopic === 'all' ? 'active' : ''}" data-topic="all" role="tab" aria-selected="${selectedTopic === 'all'}">
+        <span class="topic-name">ALL</span><span class="topic-count"> (${total})</span>
+      </button>
+    `;
+
+    topTopics.forEach(topic => {
+      const isActive = selectedTopic !== 'all' && selectedTopic.toLowerCase() === topic.toLowerCase();
+      const count = byTopic[topic.toLowerCase()] || 0;
+      html += `
+        <button type="button" class="topic-pill ${isActive ? 'active' : ''}" data-topic="${escapeHtml(topic)}" role="tab" aria-selected="${isActive}">
+          <span class="topic-name">${escapeHtml(topic)}</span><span class="topic-count"> (${count})</span>
+          ${isActive ? '<span class="topic-clear-icon" aria-hidden="true">✕</span>' : ''}
+        </button>
+      `;
+    });
+
+    // If selectedTopic is active and not in topTopics (i.e. chosen from More drawer or card badge)
+    const isSelectedInTop = selectedTopic === 'all' || topTopics.some(t => t.toLowerCase() === selectedTopic.toLowerCase());
+    if (!isSelectedInTop) {
+      const activeCount = byTopic[selectedTopic.toLowerCase()] || 0;
+      html += `
+        <button type="button" class="topic-pill active" data-topic="${escapeHtml(selectedTopic)}" role="tab" aria-selected="true" title="Click to clear filter">
+          <span class="topic-name">${escapeHtml(selectedTopic)}</span><span class="topic-count"> (${activeCount})</span>
+          <span class="topic-clear-icon" aria-hidden="true">✕</span>
+        </button>
+      `;
+    }
+
+    primaryBar.innerHTML = html;
+  }
+
+  // 2. Update the expandable drawer panel (Remaining topics that didn't fit)
+  const panel = dom.topicsExpandablePanel || dom.topicsPillsBar;
+  if (panel) {
+    let panelHtml = '';
+    remainingTopics.forEach(topic => {
+      const isActive = selectedTopic !== 'all' && selectedTopic.toLowerCase() === topic.toLowerCase();
+      const count = byTopic[topic.toLowerCase()] || 0;
+      panelHtml += `
+        <button type="button" class="topic-pill ${isActive ? 'active' : ''}" data-topic="${escapeHtml(topic)}" role="tab" aria-selected="${isActive}">
+          <span class="topic-name">${escapeHtml(topic)}</span><span class="topic-count"> (${count})</span>
+        </button>
+      `;
+    });
+    panel.innerHTML = panelHtml;
+  }
+
+  // 3. Update the toggle button visibility and label
+  if (dom.topicsToggleBtn) {
+    if (!showToggle || remainingTopics.length === 0) {
+      dom.topicsToggleBtn.classList.add('hidden');
+    } else {
+      dom.topicsToggleBtn.classList.remove('hidden');
+      if (dom.topicsToggleLabel) {
+        if (isTopicsExpanded()) {
+          dom.topicsToggleLabel.textContent = 'Close Topics';
+        } else {
+          dom.topicsToggleLabel.textContent = `Explore More (${remainingTopics.length})`;
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Filters posts by topic, collapses drawer, returns to home, and smoothly scrolls to posts toolbar
+ */
+function filterByTopic(topicName) {
+  selectTopic(topicName, true);
+  collapseTopics();
+  returnToHomeView();
+  scrollToPostsToolbar();
+}
+
+function scrollToPostsToolbar(focusSearch = false) {
+  const target = dom.postsToolbar || document.getElementById('posts-toolbar') || dom.postsGrid;
+  if (!target) return;
+
+  const header = document.querySelector('.site-header');
+  const headerHeight = header ? header.offsetHeight : 70;
+  const extraOffset = 20;
+
+  const targetRect = target.getBoundingClientRect ? target.getBoundingClientRect() : { top: 0 };
+  const absoluteTargetTop = targetRect.top + window.pageYOffset;
+  const targetScrollTop = Math.max(0, Math.round(absoluteTargetTop - headerHeight - extraOffset));
+
+  if (focusSearch && dom.searchInput) {
+    try {
+      dom.searchInput.focus({ preventScroll: true });
+    } catch {
+      dom.searchInput.focus();
+    }
+  }
+
+  window.scrollTo({
+    top: targetScrollTop,
+    behavior: 'smooth'
+  });
+
+  if (focusSearch && dom.searchInput) {
+    setTimeout(() => {
+      try {
+        dom.searchInput.focus({ preventScroll: true });
+        if (dom.searchInput.value) {
+          dom.searchInput.select();
+        }
+      } catch {
+        dom.searchInput.focus();
+      }
+    }, 500);
+  }
+}
+
+// ============================================================================
 // 6. VIEW RENDERING & CARD CREATION
 // ============================================================================
 
 /**
- * Renders the responsive post cards grid
+ * Renders the responsive post cards grid with topic and search filters
  */
 function renderPostsGrid(posts) {
   const query = currentFilter.trim().toLowerCase();
-  const filtered = query
-    ? posts.filter(p => {
-        const titleMatch = (p.title || '').toLowerCase().includes(query);
-        const summaryMatch = (p.summary || '').toLowerCase().includes(query);
-        return titleMatch || summaryMatch;
-      })
-    : posts;
+  const hasTopicFilter = selectedTopic && selectedTopic.toLowerCase() !== 'all' && selectedTopic.trim() !== '';
+
+  const filtered = posts.filter(p => {
+    // Search query matches title, summary, or topic
+    const titleMatch = (p.title || '').toLowerCase().includes(query);
+    const summaryMatch = (p.summary || '').toLowerCase().includes(query);
+    const topicMatch = (p.topic || '').toLowerCase().includes(query);
+    const matchesQuery = !query || titleMatch || summaryMatch || topicMatch;
+
+    // Topic filter match
+    const matchesTopic = !hasTopicFilter || ((p.topic || '').toLowerCase() === selectedTopic.toLowerCase());
+
+    return matchesQuery && matchesTopic;
+  });
 
   if (dom.postsGrid) dom.postsGrid.innerHTML = '';
 
   // Update post count indicator
   if (dom.postsCountText) {
+    const topicLabel = hasTopicFilter ? selectedTopic : '';
     if (filtered.length === 0) {
-      dom.postsCountText.textContent = query ? 'No matching posts found' : '0 published posts';
-    } else if (query) {
-      dom.postsCountText.textContent = `Showing ${filtered.length} of ${posts.length} posts`;
+      if (query && hasTopicFilter) {
+        dom.postsCountText.textContent = `No posts match "${query}" in ${topicLabel}`;
+      } else if (hasTopicFilter) {
+        dom.postsCountText.textContent = `No posts in ${topicLabel}`;
+      } else if (query) {
+        dom.postsCountText.textContent = 'No matching posts found';
+      } else {
+        dom.postsCountText.textContent = '0 published posts';
+      }
+    } else if (query || hasTopicFilter) {
+      if (hasTopicFilter && query) {
+        dom.postsCountText.textContent = `Showing ${filtered.length} of ${posts.length} posts in ${topicLabel}`;
+      } else if (hasTopicFilter) {
+        dom.postsCountText.textContent = `Showing ${filtered.length} ${filtered.length === 1 ? 'post' : 'posts'} in ${topicLabel}`;
+      } else {
+        dom.postsCountText.textContent = `Showing ${filtered.length} of ${posts.length} posts`;
+      }
     } else {
       dom.postsCountText.textContent = `Showing all ${filtered.length} published ${filtered.length === 1 ? 'post' : 'posts'}`;
     }
@@ -1506,8 +1996,41 @@ function renderPostsGrid(posts) {
     dom.errorState?.classList.add('hidden');
     dom.postsGrid?.classList.add('hidden');
     dom.emptyState?.classList.remove('hidden');
+
+    const emptyTitle = dom.emptyState?.querySelector('.state-title');
+    const emptyDesc = dom.emptyState?.querySelector('.state-desc');
+    const resetBtn = dom.emptyResetBtn || dom.emptyState?.querySelector('#empty-reset-btn');
+
+    if (resetBtn) {
+      resetBtn.textContent = 'View All Posts';
+    }
+
+    if (hasTopicFilter) {
+      if (emptyTitle) {
+        emptyTitle.textContent = `No posts in ${selectedTopic} yet`;
+      }
+      if (emptyDesc) {
+        emptyDesc.textContent = query
+          ? `No published articles match "${query}" in ${selectedTopic}.`
+          : `No posts in ${selectedTopic} yet. Check back soon or explore other topics!`;
+      }
+    } else {
+      if (emptyTitle) {
+        emptyTitle.textContent = query ? 'No matching posts found' : 'No published posts found';
+      }
+      if (emptyDesc) {
+        emptyDesc.textContent = query
+          ? `No published articles match "${query}".`
+          : 'There are no published articles yet, or none match your search query.';
+      }
+    }
     return;
   }
+
+  const emptyTitle = dom.emptyState?.querySelector('.state-title');
+  if (emptyTitle) emptyTitle.textContent = 'No published posts found';
+  const resetBtn = dom.emptyResetBtn || dom.emptyState?.querySelector('#empty-reset-btn');
+  if (resetBtn) resetBtn.textContent = 'View All Posts';
 
   const fragment = document.createDocumentFragment();
   filtered.forEach(post => {
@@ -1556,6 +2079,26 @@ function createCardElement(post) {
   // Card Body
   const body = document.createElement('div');
   body.className = 'card-body';
+
+  // Topic Badge
+  if (post.topic && typeof post.topic === 'string' && post.topic.trim() !== '') {
+    const topicRow = document.createElement('div');
+    topicRow.className = 'card-topic-row';
+
+    const topicBadge = document.createElement('button');
+    topicBadge.type = 'button';
+    topicBadge.className = 'card-topic-badge';
+    topicBadge.textContent = post.topic;
+    topicBadge.setAttribute('aria-label', `Topic: ${post.topic}`);
+    topicBadge.title = `Filter posts by ${post.topic}`;
+    topicBadge.addEventListener('click', (e) => {
+      e.stopPropagation();
+      filterByTopic(post.topic);
+    });
+
+    topicRow.appendChild(topicBadge);
+    body.appendChild(topicRow);
+  }
 
   // Meta (Date & Time Ago)
   const meta = document.createElement('div');
@@ -1929,6 +2472,17 @@ async function openArticleView(post, updateHash = true) {
     dom.articleReadingTime.textContent = timeAgo || '0 days ago';
   }
 
+  // Topic in sidebar & header
+  if (post.topic && typeof post.topic === 'string' && post.topic.trim() !== '') {
+    if (dom.articleTopicVal) dom.articleTopicVal.textContent = post.topic;
+    if (dom.articleTopicSection) dom.articleTopicSection.classList.remove('hidden');
+    if (dom.articleHeaderTopicText) dom.articleHeaderTopicText.textContent = post.topic;
+    if (dom.articleTopicBadgeWrap) dom.articleTopicBadgeWrap.classList.remove('hidden');
+  } else {
+    if (dom.articleTopicSection) dom.articleTopicSection.classList.add('hidden');
+    if (dom.articleTopicBadgeWrap) dom.articleTopicBadgeWrap.classList.add('hidden');
+  }
+
   // Populate author card (photo, name, email on left)
   getPostAuthorProfile(post).then(author => {
     if (activePost && (activePost.id === post.id || activePost.slug === post.slug)) {
@@ -2063,8 +2617,12 @@ function returnToHomeView() {
   dom.publicProfileView?.classList.add('hidden');
   dom.homeView?.classList.remove('hidden');
 
-  if (window.location.hash) {
-    history.pushState(null, '', window.location.pathname);
+  collapseTopics();
+
+  if (window.location.hash && !window.location.hash.startsWith('#/topic/')) {
+    if (window.history && window.history.pushState) {
+      window.history.pushState(null, '', window.location.pathname);
+    }
   }
   document.title = 'OceanVerse - A Blog Site';
 
@@ -2077,6 +2635,19 @@ function handleHashChange() {
 
 function handleHashNavigation() {
   const hash = window.location.hash;
+  if (hash.startsWith('#/topic/')) {
+    const rawParam = decodeURIComponent(hash.replace('#/topic/', '')).trim();
+    if (rawParam.toLowerCase() === 'all') {
+      selectTopic('all', false);
+    } else {
+      const match = POST_TOPICS.find(t => t.toLowerCase() === rawParam.toLowerCase());
+      if (match) {
+        selectTopic(match, false);
+      }
+    }
+    returnToHomeView();
+    return;
+  }
   if (hash === '#/profile') {
     if (currentUser) {
       openProfileView();
@@ -2604,6 +3175,7 @@ function renderAdminPostsList(posts) {
     body.innerHTML = `
       <h3 class="card-title admin-card-title">${escapeHtml(post.title || 'Untitled Post')}</h3>
       <div class="card-meta">
+        ${post.topic ? `<span class="admin-topic-tag">${escapeHtml(post.topic)}</span><span class="card-dot">•</span>` : ''}
         <span class="card-date">${dateFormatted}</span>
         <span class="card-dot">•</span>
         <span class="card-reading-time card-time-ago">${timeAgo || '0 days ago'}</span>
@@ -2689,6 +3261,7 @@ async function handleAdminPostSubmit(e) {
   const cover_image = dom.adminCoverImage.value.trim() || null;
   const content = dom.adminContent.value.trim();
   const is_published = dom.adminIsPublished.checked;
+  const topic = dom.adminTopic ? (dom.adminTopic.value.trim() || null) : null;
 
   if (!title) {
     showAdminMsg('Article title is required.', 'error');
@@ -2729,7 +3302,8 @@ async function handleAdminPostSubmit(e) {
         summary,
         cover_image,
         content,
-        is_published
+        is_published,
+        topic
       };
       if (customCreatedAt) {
         updatePayload.created_at = customCreatedAt;
@@ -2762,6 +3336,7 @@ async function handleAdminPostSubmit(e) {
         cover_image,
         content,
         is_published,
+        topic,
         author_id: currentUser.id
       };
       if (customCreatedAt) {
@@ -2813,6 +3388,9 @@ function editPost(postId) {
   hideCoverStatus();
   dom.adminContent.value = post.content || '';
   dom.adminIsPublished.checked = Boolean(post.is_published);
+  if (dom.adminTopic) {
+    dom.adminTopic.value = post.topic || '';
+  }
   if (dom.adminCustomDate) {
     dom.adminCustomDate.value = post.created_at ? formatDatetimeLocal(post.created_at) : '';
   }
@@ -2838,6 +3416,9 @@ function resetAdminEditor() {
   dom.adminPostId.value = '';
   dom.adminPostForm.reset();
   dom.adminIsPublished.checked = true;
+  if (dom.adminTopic) {
+    dom.adminTopic.value = '';
+  }
   if (dom.adminCustomDate) {
     dom.adminCustomDate.value = '';
   }
@@ -5007,56 +5588,12 @@ function initEventListeners() {
     if (dom.searchInput) dom.searchInput.value = '';
     currentFilter = '';
     dom.searchClearBtn?.classList.add('hidden');
-    renderPostsGrid(allPosts);
+    selectTopic('all', true);
   });
 
   dom.errorRetryBtn?.addEventListener('click', async () => {
     await loadPosts();
   });
-
-  // Smoothly scroll to posts toolbar below the sticky header without jarring jumps
-  function scrollToPostsToolbar(focusSearch = false) {
-    const target = dom.postsToolbar || document.getElementById('posts-toolbar') || dom.postsGrid;
-    if (!target) return;
-
-    // Dynamically calculate sticky header height and offset
-    const header = document.querySelector('.site-header');
-    const headerHeight = header ? header.offsetHeight : 70;
-    const extraOffset = 20; // 20px comfortable breathing space below sticky header
-
-    const targetRect = target.getBoundingClientRect();
-    const absoluteTargetTop = targetRect.top + window.pageYOffset;
-    const targetScrollTop = Math.max(0, Math.round(absoluteTargetTop - headerHeight - extraOffset));
-
-    // Focus input synchronously within user gesture with preventScroll: true
-    // so virtual keyboards on mobile can open and browser will not perform an abrupt scroll jump
-    if (focusSearch && dom.searchInput) {
-      try {
-        dom.searchInput.focus({ preventScroll: true });
-      } catch {
-        dom.searchInput.focus();
-      }
-    }
-
-    window.scrollTo({
-      top: targetScrollTop,
-      behavior: 'smooth'
-    });
-
-    // Re-verify focus and selection once smooth scroll finishes
-    if (focusSearch && dom.searchInput) {
-      setTimeout(() => {
-        try {
-          dom.searchInput.focus({ preventScroll: true });
-          if (dom.searchInput.value) {
-            dom.searchInput.select();
-          }
-        } catch {
-          dom.searchInput.focus();
-        }
-      }, 500);
-    }
-  }
 
   // Hero Action Buttons (Apply for Writer Access & Sign Up)
   dom.heroBecomeWriterBtn?.addEventListener('click', openWriterModal);
@@ -5357,6 +5894,12 @@ window.openPublicProfileView = openPublicProfileView;
 window.openProfileView = openProfileView;
 window.openArticleView = openArticleView;
 window.openPostByIdOrSlug = openPostByIdOrSlug;
+window.selectTopic = selectTopic;
+window.filterByTopic = filterByTopic;
+window.expandTopics = expandTopics;
+window.collapseTopics = collapseTopics;
+window.toggleTopics = toggleTopics;
+window.isTopicsExpanded = isTopicsExpanded;
 
 // ============================================================================
 // 15. DOM READY EXECUTION
@@ -5365,6 +5908,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initDOM();
   initTheme();
   initEventListeners();
+  initTopicFilters();
   initSupabase();
   await initAuth();
   await loadPosts();
