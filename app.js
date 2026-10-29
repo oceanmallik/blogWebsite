@@ -182,6 +182,8 @@ function initDOM() {
   dom.themeToggle = document.getElementById('theme-toggle');
   dom.sunIcon = document.querySelector('.sun-icon');
   dom.moonIcon = document.querySelector('.moon-icon');
+  dom.zapIcon = document.querySelector('.zap-icon');
+  dom.themeToggleLabel = document.querySelector('.theme-toggle-label');
 
   // Auth & Profile Navbar Elements
   dom.navAuthContainer = document.getElementById('nav-auth-container');
@@ -4609,30 +4611,57 @@ function showErrorState(message) {
 
 function initTheme() {
   const savedTheme = localStorage.getItem('ocean_verse_theme');
-  // Default to light theme if no saved preference, ensuring users aren't forced into dark mode
-  const activeTheme = savedTheme || 'light';
+  const validThemes = ['light', 'dark', 'cyberpunk'];
+  const activeTheme = validThemes.includes(savedTheme) ? savedTheme : 'light';
 
   setTheme(activeTheme);
 }
 
 function setTheme(theme) {
-  document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('ocean_verse_theme', theme);
+  const validThemes = ['light', 'dark', 'cyberpunk'];
+  const activeTheme = validThemes.includes(theme) ? theme : 'light';
 
-  if (theme === 'dark') {
-    dom.sunIcon?.classList.remove('hidden');
-    dom.moonIcon?.classList.add('hidden');
-    if (dom.themeToggle) dom.themeToggle.title = 'Switch to Light mode';
-  } else {
-    dom.sunIcon?.classList.add('hidden');
+  document.documentElement.setAttribute('data-theme', activeTheme);
+  localStorage.setItem('ocean_verse_theme', activeTheme);
+
+  // Hide all theme icons
+  dom.sunIcon?.classList.add('hidden');
+  dom.moonIcon?.classList.add('hidden');
+  dom.zapIcon?.classList.add('hidden');
+
+  if (activeTheme === 'dark') {
     dom.moonIcon?.classList.remove('hidden');
-    if (dom.themeToggle) dom.themeToggle.title = 'Switch to Dark mode';
+    if (dom.themeToggle) {
+      dom.themeToggle.title = 'Current: Dark — Click for Cyberpunk mode';
+      dom.themeToggle.setAttribute('aria-label', 'Theme toggle: current theme is Dark');
+    }
+    if (dom.themeToggleLabel) dom.themeToggleLabel.textContent = 'Dark';
+  } else if (activeTheme === 'cyberpunk') {
+    dom.zapIcon?.classList.remove('hidden');
+    if (dom.themeToggle) {
+      dom.themeToggle.title = 'Current: Cyberpunk — Click for Light mode';
+      dom.themeToggle.setAttribute('aria-label', 'Theme toggle: current theme is Cyberpunk');
+    }
+    if (dom.themeToggleLabel) dom.themeToggleLabel.textContent = 'Cyber';
+  } else {
+    dom.sunIcon?.classList.remove('hidden');
+    if (dom.themeToggle) {
+      dom.themeToggle.title = 'Current: Light — Click for Dark mode';
+      dom.themeToggle.setAttribute('aria-label', 'Theme toggle: current theme is Light');
+    }
+    if (dom.themeToggleLabel) dom.themeToggleLabel.textContent = 'Light';
   }
 }
 
 function toggleTheme() {
   const current = document.documentElement.getAttribute('data-theme') || 'light';
-  setTheme(current === 'dark' ? 'light' : 'dark');
+  const cycle = {
+    'light': 'dark',
+    'dark': 'cyberpunk',
+    'cyberpunk': 'light'
+  };
+  const nextTheme = cycle[current] || 'light';
+  setTheme(nextTheme);
 }
 
 // ============================================================================
