@@ -203,6 +203,18 @@
           <span id="posts-count-text">Loading posts...</span>
         </div>
         <div class="posts-controls">
+          <!-- Filter Button (on the left side of search bar) -->
+          <button type="button" id="topics-toggle-btn" class="filter-btn" aria-expanded="false" aria-controls="topics-expandable-panel" title="Filter posts by topic">
+            <svg class="filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+            <span id="topics-toggle-label" class="filter-btn-label">Filter</span>
+            <span id="filter-active-pill" class="filter-active-pill hidden"></span>
+            <svg class="filter-chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+
           <!-- Live search bar for posts -->
           <div class="search-container" id="search-container">
             <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -224,88 +236,24 @@
         </div>
       </div>
 
-      <!-- Topics Filter Bar (Top Topics + Expandable More Drawer) -->
+      <!-- Expandable Topics Filter Box (opens when Filter button is clicked) -->
       <nav class="topics-filter-section" id="topics-filter-section" aria-label="Filter posts by topic">
-        <div class="topics-bar-header">
-          <div class="topics-primary-bar" id="topics-primary-bar" role="tablist" aria-label="Top Topics">
-            <button type="button" class="topic-pill active" data-topic="all" role="tab" aria-selected="true">
-              <span class="topic-name">ALL</span><span class="topic-count"></span>
-            </button>
-            <button type="button" class="topic-pill" data-topic="Technology" role="tab" aria-selected="false">
-              <span class="topic-name">Technology</span><span class="topic-count"></span>
-            </button>
-            <button type="button" class="topic-pill" data-topic="Programming" role="tab" aria-selected="false">
-              <span class="topic-name">Programming</span><span class="topic-count"></span>
-            </button>
-            <button type="button" class="topic-pill" data-topic="Gadgets" role="tab" aria-selected="false">
-              <span class="topic-name">Gadgets</span><span class="topic-count"></span>
-            </button>
-            <button type="button" class="topic-pill" data-topic="AI" role="tab" aria-selected="false">
-              <span class="topic-name">AI</span><span class="topic-count"></span>
-            </button>
-            <button type="button" class="topic-pill" data-topic="Lifestyle" role="tab" aria-selected="false">
-              <span class="topic-name">Lifestyle</span><span class="topic-count"></span>
+        <div class="topics-expandable-panel hidden" id="topics-expandable-panel" role="region" aria-label="Topics Filter">
+          <div class="topics-panel-header">
+            <div class="topics-panel-title-group">
+              <svg class="topics-panel-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+              </svg>
+              <span class="topics-panel-title">Filter by Topic</span>
+            </div>
+            <button type="button" id="topics-panel-clear-btn" class="topics-panel-clear-btn hidden" title="Clear active filter">
+              <span>Reset Filter</span>
             </button>
           </div>
-          <button type="button" id="topics-toggle-btn" class="topics-toggle-btn" aria-expanded="false" aria-controls="topics-expandable-panel" title="Click to browse more topics">
-            <span class="topics-toggle-icon">⚡</span>
-            <span id="topics-toggle-label" class="topics-toggle-label">Explore More (15)</span>
-            <svg class="topics-chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" aria-hidden="true">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </button>
+          <div class="topics-pills-wrap" id="topics-pills-wrap" role="tablist">
+            <!-- Dynamically populated topic pills (ALL + all topics with post counts) -->
+          </div>
         </div>
-
-        <div class="topics-expandable-panel hidden" id="topics-expandable-panel" role="tablist" aria-label="More Topics">
-          <button type="button" class="topic-pill" data-topic="Casual" role="tab" aria-selected="false">
-            <span class="topic-name">Casual</span><span class="topic-count"></span>
-          </button>
-          <button type="button" class="topic-pill" data-topic="Education" role="tab" aria-selected="false">
-            <span class="topic-name">Education</span><span class="topic-count"></span>
-          </button>
-          <button type="button" class="topic-pill" data-topic="Career" role="tab" aria-selected="false">
-            <span class="topic-name">Career</span><span class="topic-count"></span>
-          </button>
-          <button type="button" class="topic-pill" data-topic="Health" role="tab" aria-selected="false">
-            <span class="topic-name">Health</span><span class="topic-count"></span>
-          </button>
-          <button type="button" class="topic-pill" data-topic="Food" role="tab" aria-selected="false">
-            <span class="topic-name">Food</span><span class="topic-count"></span>
-          </button>
-          <button type="button" class="topic-pill" data-topic="Travel" role="tab" aria-selected="false">
-            <span class="topic-name">Travel</span><span class="topic-count"></span>
-          </button>
-          <button type="button" class="topic-pill" data-topic="Gaming" role="tab" aria-selected="false">
-            <span class="topic-name">Gaming</span><span class="topic-count"></span>
-          </button>
-          <button type="button" class="topic-pill" data-topic="Entertainment" role="tab" aria-selected="false">
-            <span class="topic-name">Entertainment</span><span class="topic-count"></span>
-          </button>
-          <button type="button" class="topic-pill" data-topic="Finance" role="tab" aria-selected="false">
-            <span class="topic-name">Finance</span><span class="topic-count"></span>
-          </button>
-          <button type="button" class="topic-pill" data-topic="Business" role="tab" aria-selected="false">
-            <span class="topic-name">Business</span><span class="topic-count"></span>
-          </button>
-          <button type="button" class="topic-pill" data-topic="Science" role="tab" aria-selected="false">
-            <span class="topic-name">Science</span><span class="topic-count"></span>
-          </button>
-          <button type="button" class="topic-pill" data-topic="News" role="tab" aria-selected="false">
-            <span class="topic-name">News</span><span class="topic-count"></span>
-          </button>
-          <button type="button" class="topic-pill" data-topic="Sports" role="tab" aria-selected="false">
-            <span class="topic-name">Sports</span><span class="topic-count"></span>
-          </button>
-          <button type="button" class="topic-pill" data-topic="Fashion" role="tab" aria-selected="false">
-            <span class="topic-name">Fashion</span><span class="topic-count"></span>
-          </button>
-          <button type="button" class="topic-pill" data-topic="Tutorials" role="tab" aria-selected="false">
-            <span class="topic-name">Tutorials</span><span class="topic-count"></span>
-          </button>
-        </div>
-
-        <!-- Hidden Measurement Ruler for Dynamic Responsive Priority+ Overflow Calculation -->
-        <div class="topics-measure-ruler" id="topics-measure-ruler" aria-hidden="true"></div>
       </nav>
 
       <!-- Loading Skeleton Grid -->

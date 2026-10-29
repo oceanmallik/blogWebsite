@@ -125,7 +125,10 @@ function initDOM() {
   dom.topicsActiveGroup = dom.topicsPrimaryBar || document.getElementById('topics-active-group');
   dom.topicsToggleBtn = document.getElementById('topics-toggle-btn');
   dom.topicsToggleLabel = document.getElementById('topics-toggle-label');
+  dom.filterActivePill = document.getElementById('filter-active-pill');
   dom.topicsExpandablePanel = document.getElementById('topics-expandable-panel');
+  dom.topicsPillsWrap = document.getElementById('topics-pills-wrap');
+  dom.topicsPanelClearBtn = document.getElementById('topics-panel-clear-btn');
   dom.topicsPillsBar = dom.topicsExpandablePanel;
   dom.topicsMeasureRuler = document.getElementById('topics-measure-ruler');
   dom.heroBecomeWriterBtn = document.getElementById('hero-become-writer-btn');
@@ -1734,109 +1737,25 @@ function getTopicCounts() {
 }
 
 /**
- * Measures the exact rendered pixel width of each topic pill using the offscreen ruler
+ * Measures the exact rendered pixel width of each topic pill (fallback helper)
  */
 function getPillWidths(total, byTopic) {
-  let ruler = dom.topicsMeasureRuler || document.getElementById('topics-measure-ruler');
-  if (!ruler && typeof document !== 'undefined' && document.createElement) {
-    ruler = document.createElement('div');
-    ruler.id = 'topics-measure-ruler';
-    ruler.className = 'topics-measure-ruler';
-    ruler.setAttribute('aria-hidden', 'true');
-    document.body.appendChild(ruler);
-    dom.topicsMeasureRuler = ruler;
-  }
-
-  if (!ruler) {
-    return { allWidth: 80, toggleWidth: 160, topicWidthMap: {} };
-  }
-
-  // Populate ruler with ALL pill, each topic pill, and the toggle button
-  let html = `<button type="button" class="topic-pill" id="ruler-all-pill"><span class="topic-name">ALL</span><span class="topic-count"> (${total})</span></button>`;
-
-  POST_TOPICS.forEach(topic => {
-    const count = byTopic[topic.toLowerCase()] || 0;
-    html += `<button type="button" class="topic-pill" data-ruler-topic="${escapeHtml(topic)}"><span class="topic-name">${escapeHtml(topic)}</span><span class="topic-count"> (${count})</span></button>`;
-  });
-
-  html += `<button type="button" class="topics-toggle-btn" id="ruler-toggle-btn"><span class="topics-toggle-icon">⚡</span><span class="topics-toggle-label">Explore More (20)</span></button>`;
-
-  ruler.innerHTML = html;
-
-  const allPill = ruler.querySelector('#ruler-all-pill');
-  const allWidth = allPill ? (allPill.offsetWidth || 80) : 80;
-
-  const toggleBtn = ruler.querySelector('#ruler-toggle-btn');
-  const toggleWidth = toggleBtn ? (toggleBtn.offsetWidth || 160) : 160;
-
-  const topicWidthMap = {};
-  const topicPills = ruler.querySelectorAll('[data-ruler-topic]');
-  topicPills.forEach(pill => {
-    const t = pill.getAttribute('data-ruler-topic');
-    topicWidthMap[t.toLowerCase()] = pill.offsetWidth || 120;
-  });
-
-  return { allWidth, toggleWidth, topicWidthMap };
+  return { allWidth: 80, toggleWidth: 160, topicWidthMap: {} };
 }
 
 /**
- * Splits POST_TOPICS into topics that fit the single-row primary bar and remaining topics for the drawer,
- * automatically sorted from most published posts to least published posts.
+ * Splits POST_TOPICS into topics sorted from most published posts to least published posts.
  */
 function getTopTopics(total, byTopic) {
-  const { allWidth, toggleWidth, topicWidthMap } = getPillWidths(total, byTopic);
-
-  // Sort ALL topics automatically from MOST published posts to LEAST published posts
   const sortedTopics = [...POST_TOPICS].sort((a, b) => {
-    const countA = byTopic[a.toLowerCase()] || 0;
-    const countB = byTopic[b.toLowerCase()] || 0;
+    const countA = (byTopic && byTopic[a.toLowerCase()]) || 0;
+    const countB = (byTopic && byTopic[b.toLowerCase()]) || 0;
     if (countB !== countA) {
-      return countB - countA; // Descending: most posts first, least posts last
+      return countB - countA;
     }
-    // Deterministic tie-breaker for identical counts: default topic order
     return POST_TOPICS.indexOf(a) - POST_TOPICS.indexOf(b);
   });
-
-  const gap = 8; // 0.5rem gap in pixels
-  const containerWidth = dom.topicsBarHeader ? (dom.topicsBarHeader.clientWidth || dom.topicsFilterSection?.clientWidth || 0) : 0;
-
-  // Fallback for headless environments or before DOM measurement is ready
-  if (containerWidth <= 0) {
-    const fallbackCount = 6;
-    const top = sortedTopics.slice(0, fallbackCount);
-    const rem = sortedTopics.slice(fallbackCount);
-    return { topTopics: top, remainingTopics: rem, showToggle: rem.length > 0 };
-  }
-
-  // Check if ALL 20 topics can fit without needing the toggle button
-  let totalWidthIfAll = allWidth + gap;
-  sortedTopics.forEach(t => {
-    totalWidthIfAll += (topicWidthMap[t.toLowerCase()] || 120) + gap;
-  });
-
-  if (totalWidthIfAll <= containerWidth) {
-    // All topics fit without overflow, preserved in most-to-least order
-    return { topTopics: [...sortedTopics], remainingTopics: [], showToggle: false };
-  }
-
-  // Not all fit: reserve space for the toggle button and pack as many topics as possible (from most to least)
-  const availableWidth = containerWidth - toggleWidth - gap;
-  let currentWidth = allWidth + gap;
-  const topList = [];
-  const remList = [];
-
-  sortedTopics.forEach(topic => {
-    const pillWidth = (topicWidthMap[topic.toLowerCase()] || 120) + gap;
-    if ((currentWidth + pillWidth <= availableWidth) || topList.length === 0) {
-      topList.push(topic);
-      currentWidth += pillWidth;
-    } else {
-      remList.push(topic);
-    }
-  });
-
-  // Preserve the most-to-least sorting in both the top bar and the overflow drawer!
-  return { topTopics: topList, remainingTopics: remList, showToggle: remList.length > 0 };
+  return { topTopics: sortedTopics, remainingTopics: [], showToggle: true };
 }
 
 /**
@@ -1854,10 +1773,7 @@ function expandTopics() {
   dom.topicsExpandablePanel.classList.remove('hidden');
   if (dom.topicsToggleBtn) {
     dom.topicsToggleBtn.setAttribute('aria-expanded', 'true');
-    dom.topicsToggleBtn.classList.add('expanded');
-  }
-  if (dom.topicsToggleLabel) {
-    dom.topicsToggleLabel.textContent = 'Close Topics';
+    dom.topicsToggleBtn.classList.add('active', 'expanded');
   }
 }
 
@@ -1869,12 +1785,7 @@ function collapseTopics() {
   dom.topicsExpandablePanel.classList.add('hidden');
   if (dom.topicsToggleBtn) {
     dom.topicsToggleBtn.setAttribute('aria-expanded', 'false');
-    dom.topicsToggleBtn.classList.remove('expanded');
-  }
-  if (dom.topicsToggleLabel) {
-    const { total, byTopic } = getTopicCounts();
-    const { remainingTopics } = getTopTopics(total, byTopic);
-    dom.topicsToggleLabel.textContent = `Explore More (${remainingTopics.length})`;
+    dom.topicsToggleBtn.classList.remove('active', 'expanded');
   }
 }
 
@@ -1893,8 +1804,8 @@ function toggleTopics() {
  * Initializes topic filter bar pills, drawer toggle, and event listeners
  */
 function initTopicFilters() {
-  const panel = dom.topicsExpandablePanel || dom.topicsPillsBar;
-  const primaryBar = dom.topicsPrimaryBar || dom.topicsActiveGroup;
+  const panel = dom.topicsExpandablePanel;
+  const pillsWrap = dom.topicsPillsWrap || panel?.querySelector('.topics-pills-wrap');
 
   // Toggle button listener
   dom.topicsToggleBtn?.addEventListener('click', (e) => {
@@ -1902,17 +1813,8 @@ function initTopicFilters() {
     toggleTopics();
   });
 
-  // Expandable panel selection handler - immediately shrinks back on topic click!
-  panel?.addEventListener('click', (e) => {
-    const pill = e.target.closest('.topic-pill');
-    if (!pill) return;
-    const topic = pill.dataset.topic;
-    selectTopic(topic, true);
-    collapseTopics(); // Immediately shrink back upon topic selection
-  });
-
-  // Primary bar (Top Topics + ALL) click handler
-  primaryBar?.addEventListener('click', (e) => {
+  // Expandable panel selection handler - immediately collapses upon topic selection
+  (pillsWrap || panel)?.addEventListener('click', (e) => {
     const pill = e.target.closest('.topic-pill');
     if (!pill) return;
     const topic = pill.dataset.topic;
@@ -1921,12 +1823,22 @@ function initTopicFilters() {
     } else {
       selectTopic(topic, true);
     }
+    collapseTopics(); // Immediately collapse upon topic selection
+  });
+
+  // Reset/Clear filter button inside panel header
+  dom.topicsPanelClearBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    selectTopic('all', true);
     collapseTopics();
   });
 
-  // Close when clicking outside of the topics filter section
+  // Close when clicking outside of the topics filter section and toggle button
   document.addEventListener('click', (e) => {
-    if (dom.topicsFilterSection && !dom.topicsFilterSection.contains(e.target)) {
+    if (!isTopicsExpanded()) return;
+    const isInsidePanel = dom.topicsFilterSection && dom.topicsFilterSection.contains(e.target);
+    const isInsideToggle = dom.topicsToggleBtn && dom.topicsToggleBtn.contains(e.target);
+    if (!isInsidePanel && !isInsideToggle) {
       collapseTopics();
     }
   });
@@ -1937,22 +1849,6 @@ function initTopicFilters() {
       collapseTopics();
     }
   });
-
-  // Dynamic ResizeObserver to auto-fit topics on screen resize
-  if (typeof ResizeObserver !== 'undefined' && dom.topicsBarHeader) {
-    let resizeTimer = null;
-    const ro = new ResizeObserver(() => {
-      if (resizeTimer) cancelAnimationFrame(resizeTimer);
-      resizeTimer = requestAnimationFrame(() => {
-        updateTopicPillsUI();
-      });
-    });
-    ro.observe(dom.topicsBarHeader);
-  } else if (typeof window !== 'undefined' && window.addEventListener) {
-    window.addEventListener('resize', () => {
-      updateTopicPillsUI();
-    }, { passive: true });
-  }
 
   // Populate admin topic select dropdown options if needed
   if (dom.adminTopic && dom.adminTopic.options.length <= 1) {
@@ -2016,77 +1912,74 @@ function selectTopic(topicName, updateHash = false) {
 }
 
 /**
- * Syncs active state and counts across the top primary bar and expandable more drawer
+ * Syncs active state and counts across the Filter button and expanding drawer
  */
 function updateTopicPillsUI() {
   const { total, byTopic } = getTopicCounts();
-  const { topTopics, remainingTopics, showToggle } = getTopTopics(total, byTopic);
+  const isFiltered = Boolean(selectedTopic && selectedTopic !== 'all');
 
-  // 1. Update the primary bar (ALL + Topics that fit on the line)
-  const primaryBar = dom.topicsPrimaryBar || dom.topicsActiveGroup;
-  if (primaryBar) {
-    let html = `
-      <button type="button" class="topic-pill ${selectedTopic === 'all' ? 'active' : ''}" data-topic="all" role="tab" aria-selected="${selectedTopic === 'all'}">
+  // 1. Update Filter button state and active topic indicator badge
+  if (dom.topicsToggleBtn) {
+    if (isFiltered) {
+      dom.topicsToggleBtn.classList.add('has-filter');
+    } else {
+      dom.topicsToggleBtn.classList.remove('has-filter');
+    }
+  }
+
+  if (dom.topicsToggleLabel) {
+    dom.topicsToggleLabel.textContent = 'Filter';
+  }
+
+  if (dom.filterActivePill) {
+    if (isFiltered) {
+      dom.filterActivePill.textContent = selectedTopic;
+      dom.filterActivePill.classList.remove('hidden');
+    } else {
+      dom.filterActivePill.textContent = '';
+      dom.filterActivePill.classList.add('hidden');
+    }
+  }
+
+  // 2. Update Reset Filter button in panel header
+  if (dom.topicsPanelClearBtn) {
+    if (isFiltered) {
+      dom.topicsPanelClearBtn.classList.remove('hidden');
+    } else {
+      dom.topicsPanelClearBtn.classList.add('hidden');
+    }
+  }
+
+  // 3. Render all topics inside the expanding box drawer
+  const pillsContainer = dom.topicsPillsWrap || dom.topicsExpandablePanel?.querySelector('.topics-pills-wrap') || dom.topicsExpandablePanel;
+  if (pillsContainer) {
+    // Sort topics by most published posts to least published posts
+    const sortedTopics = [...POST_TOPICS].sort((a, b) => {
+      const countA = (byTopic && byTopic[a.toLowerCase()]) || 0;
+      const countB = (byTopic && byTopic[b.toLowerCase()]) || 0;
+      if (countB !== countA) return countB - countA;
+      return POST_TOPICS.indexOf(a) - POST_TOPICS.indexOf(b);
+    });
+
+    const isAllActive = !isFiltered;
+    let pillsHtml = `
+      <button type="button" class="topic-pill ${isAllActive ? 'active' : ''}" data-topic="all" role="tab" aria-selected="${isAllActive}">
         <span class="topic-name">ALL</span><span class="topic-count"> (${total})</span>
       </button>
     `;
 
-    topTopics.forEach(topic => {
-      const isActive = selectedTopic !== 'all' && selectedTopic.toLowerCase() === topic.toLowerCase();
-      const count = byTopic[topic.toLowerCase()] || 0;
-      html += `
-        <button type="button" class="topic-pill ${isActive ? 'active' : ''}" data-topic="${escapeHtml(topic)}" role="tab" aria-selected="${isActive}">
+    sortedTopics.forEach(topic => {
+      const isActive = isFiltered && selectedTopic.toLowerCase() === topic.toLowerCase();
+      const count = (byTopic && byTopic[topic.toLowerCase()]) || 0;
+      pillsHtml += `
+        <button type="button" class="topic-pill ${isActive ? 'active' : ''}" data-topic="${escapeHtml(topic)}" role="tab" aria-selected="${isActive}" title="${isActive ? 'Click to clear filter' : `Filter by ${escapeHtml(topic)}`}">
           <span class="topic-name">${escapeHtml(topic)}</span><span class="topic-count"> (${count})</span>
           ${isActive ? '<span class="topic-clear-icon" aria-hidden="true">✕</span>' : ''}
         </button>
       `;
     });
 
-    // If selectedTopic is active and not in topTopics (i.e. chosen from More drawer or card badge)
-    const isSelectedInTop = selectedTopic === 'all' || topTopics.some(t => t.toLowerCase() === selectedTopic.toLowerCase());
-    if (!isSelectedInTop) {
-      const activeCount = byTopic[selectedTopic.toLowerCase()] || 0;
-      html += `
-        <button type="button" class="topic-pill active" data-topic="${escapeHtml(selectedTopic)}" role="tab" aria-selected="true" title="Click to clear filter">
-          <span class="topic-name">${escapeHtml(selectedTopic)}</span><span class="topic-count"> (${activeCount})</span>
-          <span class="topic-clear-icon" aria-hidden="true">✕</span>
-        </button>
-      `;
-    }
-
-    primaryBar.innerHTML = html;
-  }
-
-  // 2. Update the expandable drawer panel (Remaining topics that didn't fit)
-  const panel = dom.topicsExpandablePanel || dom.topicsPillsBar;
-  if (panel) {
-    let panelHtml = '';
-    remainingTopics.forEach(topic => {
-      const isActive = selectedTopic !== 'all' && selectedTopic.toLowerCase() === topic.toLowerCase();
-      const count = byTopic[topic.toLowerCase()] || 0;
-      panelHtml += `
-        <button type="button" class="topic-pill ${isActive ? 'active' : ''}" data-topic="${escapeHtml(topic)}" role="tab" aria-selected="${isActive}">
-          <span class="topic-name">${escapeHtml(topic)}</span><span class="topic-count"> (${count})</span>
-        </button>
-      `;
-    });
-    panel.innerHTML = panelHtml;
-  }
-
-  // 3. Update the toggle button visibility and label
-  if (dom.topicsToggleBtn) {
-    if (!showToggle || remainingTopics.length === 0) {
-      dom.topicsToggleBtn.classList.add('hidden');
-    } else {
-      dom.topicsToggleBtn.classList.remove('hidden');
-      if (dom.topicsToggleLabel) {
-        if (isTopicsExpanded()) {
-          dom.topicsToggleLabel.textContent = 'Close Topics';
-        } else {
-          dom.topicsToggleLabel.textContent = `Explore More (${remainingTopics.length})`;
-        }
-      }
-    }
+    pillsContainer.innerHTML = pillsHtml;
   }
 }
 
