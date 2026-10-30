@@ -1787,9 +1787,12 @@ img {
   margin-bottom: 1.25rem;
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  flex: 1;
+  text-overflow: ellipsis;
+  max-height: calc(1.65em * 3);
+  flex: none;
 }
 
 .card-footer {
@@ -2881,6 +2884,14 @@ img {
   letter-spacing: 0 !important;
   line-height: 1.75;
   font-size: 0.95rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: calc(1.75em * 3);
+  flex: none;
 }
 
 /* Article View (Single Post Page) */
