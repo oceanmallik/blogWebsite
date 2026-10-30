@@ -5928,6 +5928,22 @@ input[type="datetime-local"] {
   border-color: #E1306C;
 }
 
+.footer-btn-facebook {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.footer-btn-facebook:hover {
+  background: #1877F2;
+  color: #FFFFFF;
+  border-color: #0A0A0A;
+}
+
+[data-theme="dark"] .footer-btn-facebook:hover,
+[data-theme="cyberpunk"] .footer-btn-facebook:hover {
+  border-color: #1877F2;
+}
+
 .footer-btn-contact {
   background: var(--accent-yellow);
   color: #0A0A0A;
@@ -9176,6 +9192,23 @@ input[type="datetime-local"] {
   object-fit: cover;
   object-position: center;
   display: block;
+}
+
+/* ==========================================================================
+   Public Profile Posts Grid — 2 Posts Per Row (After Full-Width Pinned Post)
+   ========================================================================== */
+#public-posts-grid,
+.public-profile-main-col .posts-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 1.35rem;
+}
+
+@media (max-width: 640px) {
+  #public-posts-grid,
+  .public-profile-main-col .posts-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.15rem;
+  }
 }
 
 /* Mobile Responsive */
