@@ -1,5 +1,5 @@
 /**
- * OceanVerse — Application Logic
+ * BartaWire — Application Logic
  * Pure Vanilla JavaScript connecting to Supabase v2.
  */
 
@@ -1618,7 +1618,7 @@ async function handleSignUp(e) {
     }
 
     if (data.session) {
-      showAuthSuccess(dom.signupStatusMsg, 'Account created! Welcome to OceanVerse.');
+      showAuthSuccess(dom.signupStatusMsg, 'Account created! Welcome to BartaWire.');
       await handleUserSession(data.user, displayName);
 
       setTimeout(() => {
@@ -2908,7 +2908,7 @@ function resolveOgImageUrl(coverImage) {
 /**
  * Updates the browser's document head dynamically when viewing a post
  * so social media crawlers and bots see the article's actual details:
- * 1. document.title = `${post.title} | Ocean Verse`;
+ * 1. document.title = `${post.title} | BartaWire`;
  * 2. Updates DOM meta tags directly (OpenGraph & Twitter Card tags).
  *
  * @param {object} post - The post being viewed
@@ -2917,7 +2917,7 @@ function updateArticleMetaTags(post) {
   if (!post) return;
 
   // 1. Update document.title
-  document.title = `${post.title} | Ocean Verse`;
+  document.title = `${post.title} | BartaWire`;
 
   // 2. Resolve absolute cover image URL
   const absoluteCoverImage = resolveOgImageUrl(post.cover_image);
@@ -2953,7 +2953,7 @@ function updateArticleMetaTags(post) {
  * when returning to the home view.
  */
 function resetArticleMetaTags() {
-  const defaultTitle = 'Ocean Verse — Deep Dive Thoughts';
+  const defaultTitle = 'BartaWire — Deep Dive Thoughts';
   const defaultDesc = 'A personal blogging backend and community space.';
   const defaultImage = DEFAULT_OG_IMAGE;
   const homeUrl = (typeof window !== 'undefined' && window.location) ? (window.location.origin + window.location.pathname) : '';
@@ -2971,7 +2971,7 @@ function resetArticleMetaTags() {
   if (ogUrl) ogUrl.setAttribute('content', homeUrl);
 
   const twitterTitle = document.getElementById('meta-twitter-title');
-  if (twitterTitle) twitterTitle.setAttribute('content', 'Ocean Verse');
+  if (twitterTitle) twitterTitle.setAttribute('content', 'BartaWire');
 
   const twitterDesc = document.getElementById('meta-twitter-desc');
   if (twitterDesc) twitterDesc.setAttribute('content', defaultDesc);
@@ -3256,7 +3256,7 @@ function returnToHomeView() {
     window.location.hash = '';
   }
 
-  document.title = 'OceanVerse - A Blog Site';
+  document.title = 'BartaWire - A Blog Site';
   currentPage = 1;
   window.currentPage = currentPage;
   resetArticleMetaTags();
@@ -3721,7 +3721,7 @@ function openAdminView() {
   } catch (e) {
     window.location.hash = '#/create';
   }
-  document.title = 'Create a post — OceanVerse';
+  document.title = 'Create a post — BartaWire';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
   loadAdminPosts();
@@ -4479,7 +4479,7 @@ function updateAdminPreview() {
   // Update author card in the editor's live preview pane (photo, name, username, email on left)
   const authorName = currentProfile?.display_name || currentUser?.user_metadata?.display_name || (currentUser?.email ? currentUser.email.split('@')[0] : 'Publisher');
   const authorUsername = currentProfile?.username || currentUser?.user_metadata?.username || (currentUser?.email ? currentUser.email.split('@')[0] : 'publisher');
-  const authorEmail = currentUser?.email || currentProfile?.email || 'publisher@oceanverse.dev';
+  const authorEmail = currentUser?.email || currentProfile?.email || 'publisher@bartawire.dev';
   const authorAvatarUrl = currentProfile?.avatar_url || currentUser?.user_metadata?.avatar_url || '';
 
   if (dom.adminPreviewAuthorName) {
@@ -4984,7 +4984,7 @@ function showErrorState(message) {
 // ============================================================================
 
 function initTheme() {
-  const savedTheme = localStorage.getItem('ocean_verse_theme');
+  const savedTheme = localStorage.getItem('bartawire_theme') || localStorage.getItem('ocean_verse_theme');
   const validThemes = ['light', 'dark', 'cyberpunk'];
   const activeTheme = validThemes.includes(savedTheme) ? savedTheme : 'light';
 
@@ -4996,7 +4996,7 @@ function setTheme(theme) {
   const activeTheme = validThemes.includes(theme) ? theme : 'light';
 
   document.documentElement.setAttribute('data-theme', activeTheme);
-  localStorage.setItem('ocean_verse_theme', activeTheme);
+  localStorage.setItem('bartawire_theme', activeTheme);
 
   // Hide all theme icons
   dom.sunIcon?.classList.add('hidden');
@@ -5071,7 +5071,7 @@ async function openProfileView() {
   } catch (e) {
     window.location.hash = '#/profile';
   }
-  document.title = 'Account Profile — OceanVerse';
+  document.title = 'Account Profile — BartaWire';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
   await populateProfileView();
@@ -6525,8 +6525,8 @@ async function loadAndRenderPublicProfile(userIdentifier, fallbackUsername, fall
       created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(),
       bio: isDemo ? 'Engineering resilient, ultra-fast web architectures and systems.' : '',
       location: isDemo ? 'Global Web' : '',
-      institution: isDemo ? 'OceanVerse Core' : '',
-      website_url: isDemo ? 'https://oceanverse.dev' : '',
+      institution: isDemo ? 'BartaWire Core' : '',
+      website_url: isDemo ? 'https://bartawire.dev' : '',
       cover_url: null,
       skills: isDemo ? [{ name: 'Architecture', percentage: 95 }, { name: 'JavaScript', percentage: 90 }, { name: 'PostgreSQL', percentage: 85 }] : [],
       social_links: isDemo ? { github: 'https://github.com', x: 'https://x.com' } : {},
@@ -6563,7 +6563,7 @@ async function loadAndRenderPublicProfile(userIdentifier, fallbackUsername, fall
     }
   }
 
-  document.title = `${profile.display_name} (@${profile.username || 'user'}) — OceanVerse`;
+  document.title = `${profile.display_name} (@${profile.username || 'user'}) — BartaWire`;
 
   // Render hero section
   renderPublicProfileHero(profile);
@@ -7142,15 +7142,15 @@ let photocardBlueIndices = new Set();
 let currentHeadlineAccentColor = '#0018A8'; // Basic colors palette selection
 let currentPhotocardAuthorUsername = '';
 let currentPhotocardTopic = '';
-let currentPhotocardImageSource = 'Ocean Verse';
+let currentPhotocardImageSource = 'BartaWire';
 
 /**
  * Updates the attribution display line on the photocard
  */
 function updatePhotocardAttribution() {
-  const author = currentPhotocardAuthorUsername || '@oceanverse';
+  const author = currentPhotocardAuthorUsername || '@bartawire';
   const topic = currentPhotocardTopic || 'General';
-  const source = currentPhotocardImageSource || 'Ocean Verse';
+  const source = currentPhotocardImageSource || 'BartaWire';
   if (dom.photocardAttributionDisplay) {
     dom.photocardAttributionDisplay.textContent = `${author} | Topic: ${topic} | Image: ${source}`;
   }
@@ -7383,7 +7383,7 @@ function getDefaultPhotocardPlaceholder() {
         <path d="M0 350 Q 270 200, 540 350 T 1080 350"/>
         <path d="M0 450 Q 270 300, 540 450 T 1080 450"/>
       </g>
-      <text x="540" y="340" font-family="'Space Grotesk', sans-serif" font-size="48" font-weight="800" fill="#FFE600" text-anchor="middle">🌊 OceanVerse News</text>
+      <text x="540" y="340" font-family="'Space Grotesk', sans-serif" font-size="48" font-weight="800" fill="#FFE600" text-anchor="middle">🌊 BartaWire News</text>
       <text x="540" y="400" font-family="'Space Grotesk', sans-serif" font-size="22" font-weight="500" fill="#E2E8F0" text-anchor="middle">Digital Stories &amp; Daily Perspectives</text>
     </svg>
   `);
@@ -7520,19 +7520,19 @@ async function openPhotocardStudio(post) {
   if (!authorUsername && author.display_name) {
     authorUsername = author.display_name.replace(/\s+/g, '').toLowerCase();
   }
-  if (!authorUsername) authorUsername = 'oceanverse';
+  if (!authorUsername) authorUsername = 'bartawire';
   if (!authorUsername.startsWith('@')) authorUsername = '@' + authorUsername;
 
   // 2. Fixed & post-driven text
-  const defaultBrand = 'OceanVerse';
+  const defaultBrand = 'BartaWire';
   const defaultTopic = post.topic || 'General';
   const defaultDateEn = formatPhotocardDate(post.created_at, 'en');
   const defaultDateBn = formatPhotocardDate(post.created_at, 'bn');
-  const defaultSummary = post.summary || post.title || 'Read the full story on Ocean Verse.';
+  const defaultSummary = post.summary || post.title || 'Read the full story on BartaWire.';
 
   currentPhotocardAuthorUsername = authorUsername;
   currentPhotocardTopic = defaultTopic;
-  currentPhotocardImageSource = 'Ocean Verse';
+  currentPhotocardImageSource = 'BartaWire';
   if (dom.pcImageSourceInput) dom.pcImageSourceInput.value = currentPhotocardImageSource;
 
   if (isPostBangla) {
@@ -7584,8 +7584,8 @@ async function openPhotocardStudio(post) {
   // 5. Fixed Bottom Footer
   if (dom.photocardFooter) dom.photocardFooter.classList.remove('hidden');
   if (dom.photocardFooterBadgeDisplay) dom.photocardFooterBadgeDisplay.innerHTML = '<span>TRENDING</span>';
-  if (dom.photocardFooterCalloutDisplay) dom.photocardFooterCalloutDisplay.innerHTML = '<span>Read the full article on Ocean Verse</span>';
-  if (dom.photocardFooterDomainDisplay) dom.photocardFooterDomainDisplay.innerHTML = '<span>oceanverse.com.bd</span>';
+  if (dom.photocardFooterCalloutDisplay) dom.photocardFooterCalloutDisplay.innerHTML = '<span>Read the full article on BartaWire</span>';
+  if (dom.photocardFooterDomainDisplay) dom.photocardFooterDomainDisplay.innerHTML = '<span>bartawire.com.bd</span>';
 
   // 6. Load cover image CORS-proof
   loadCorsProofCoverImage(post.cover_image);
@@ -8299,7 +8299,7 @@ function initEventListeners() {
 
   // Photocard Image Source / Credit Input
   dom.pcImageSourceInput?.addEventListener('input', () => {
-    currentPhotocardImageSource = dom.pcImageSourceInput.value.trim() || 'Ocean Verse';
+    currentPhotocardImageSource = dom.pcImageSourceInput.value.trim() || 'BartaWire';
     updatePhotocardAttribution();
     adjustPhotocardPreviewScale();
   });
