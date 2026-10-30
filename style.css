@@ -10478,5 +10478,35 @@ input[type="datetime-local"] {
   }
 }
 
+/* ==========================================================================
+   14. SOCIAL SHARING & OPEN GRAPH ENHANCEMENTS
+   ========================================================================== */
+.article-share-btn,
+.sidebar-share-btn {
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.article-share-btn:focus-visible,
+.sidebar-share-btn:focus-visible {
+  outline: 3px solid var(--accent-yellow);
+  outline-offset: 2px;
+}
+
+.copy-feedback {
+  animation: copyFeedbackPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes copyFeedbackPop {
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
 
 

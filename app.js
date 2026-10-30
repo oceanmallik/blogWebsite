@@ -52,6 +52,9 @@ let currentPhotocardTheme = 'navy';
 let currentPhotocardLang = 'en';
 let currentPhotocardFitMode = 'fit-width';
 
+// Default OpenGraph & Twitter Card Image Fallback
+const DEFAULT_OG_IMAGE = 'https://yourdomain.com/default-cover.png';
+
 // Expose state globally on window for convenient debugging
 window.supabaseClient = null;
 window.currentUser = null;
@@ -2706,6 +2709,134 @@ function renderArticleAuthor(author) {
 }
 
 /**
+ * Resolves a post's cover image into an absolute https:// URL suitable for OpenGraph / Twitter cards.
+ * If the image is empty, relative, a local blob/data URL, or not starting with https://,
+ * falls back to the default project banner (https://yourdomain.com/default-cover.png).
+ *
+ * @param {string} coverImage - Post cover image URL or path
+ * @returns {string} Absolute HTTPS URL
+ */
+function resolveOgImageUrl(coverImage) {
+  const fallbackBanner = DEFAULT_OG_IMAGE;
+
+  if (!coverImage || typeof coverImage !== 'string') {
+    return fallbackBanner;
+  }
+
+  const trimmed = coverImage.trim();
+  if (!trimmed) {
+    return fallbackBanner;
+  }
+
+  // Reject local blob object URLs, data URIs, or local file schemes
+  if (trimmed.startsWith('blob:') || trimmed.startsWith('data:') || trimmed.startsWith('file:')) {
+    return fallbackBanner;
+  }
+
+  // Already an absolute HTTPS URL
+  if (trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+
+  // Protocol-relative URL
+  if (trimmed.startsWith('//')) {
+    return 'https:' + trimmed;
+  }
+
+  // If HTTP, upgrade to HTTPS
+  if (trimmed.startsWith('http://')) {
+    return 'https://' + trimmed.slice('http://'.length);
+  }
+
+  // Relative path: if current origin is https://, resolve it against origin; otherwise fallback to default banner
+  if (typeof window !== 'undefined' && window.location && window.location.origin && window.location.origin.startsWith('https://')) {
+    try {
+      const resolved = new URL(trimmed, window.location.origin).href;
+      if (resolved.startsWith('https://')) {
+        return resolved;
+      }
+    } catch (_) {}
+  }
+
+  return fallbackBanner;
+}
+
+/**
+ * Updates the browser's document head dynamically when viewing a post
+ * so social media crawlers and bots see the article's actual details:
+ * 1. document.title = `${post.title} | Ocean Verse`;
+ * 2. Updates DOM meta tags directly (OpenGraph & Twitter Card tags).
+ *
+ * @param {object} post - The post being viewed
+ */
+function updateArticleMetaTags(post) {
+  if (!post) return;
+
+  // 1. Update document.title
+  document.title = `${post.title} | Ocean Verse`;
+
+  // 2. Resolve absolute cover image URL
+  const absoluteCoverImage = resolveOgImageUrl(post.cover_image);
+  const postDescription = post.summary || post.title || 'A personal blogging backend and community space.';
+  const currentUrl = (typeof window !== 'undefined' && window.location) ? window.location.href : '';
+
+  // 3. Update DOM OpenGraph meta tags directly
+  const ogTitle = document.getElementById('meta-og-title');
+  if (ogTitle) ogTitle.setAttribute('content', post.title);
+
+  const ogDesc = document.getElementById('meta-og-desc');
+  if (ogDesc) ogDesc.setAttribute('content', postDescription);
+
+  const ogImage = document.getElementById('meta-og-image');
+  if (ogImage) ogImage.setAttribute('content', absoluteCoverImage);
+
+  const ogUrl = document.getElementById('meta-og-url');
+  if (ogUrl) ogUrl.setAttribute('content', currentUrl);
+
+  // 4. Update DOM Twitter meta tags directly
+  const twitterTitle = document.getElementById('meta-twitter-title');
+  if (twitterTitle) twitterTitle.setAttribute('content', post.title);
+
+  const twitterDesc = document.getElementById('meta-twitter-desc');
+  if (twitterDesc) twitterDesc.setAttribute('content', postDescription);
+
+  const twitterImage = document.getElementById('meta-twitter-image');
+  if (twitterImage) twitterImage.setAttribute('content', absoluteCoverImage);
+}
+
+/**
+ * Resets OpenGraph and Twitter meta tags to default fallback values
+ * when returning to the home view.
+ */
+function resetArticleMetaTags() {
+  const defaultTitle = 'Ocean Verse — Deep Dive Thoughts';
+  const defaultDesc = 'A personal blogging backend and community space.';
+  const defaultImage = DEFAULT_OG_IMAGE;
+  const homeUrl = (typeof window !== 'undefined' && window.location) ? (window.location.origin + window.location.pathname) : '';
+
+  const ogTitle = document.getElementById('meta-og-title');
+  if (ogTitle) ogTitle.setAttribute('content', defaultTitle);
+
+  const ogDesc = document.getElementById('meta-og-desc');
+  if (ogDesc) ogDesc.setAttribute('content', defaultDesc);
+
+  const ogImage = document.getElementById('meta-og-image');
+  if (ogImage) ogImage.setAttribute('content', defaultImage);
+
+  const ogUrl = document.getElementById('meta-og-url');
+  if (ogUrl) ogUrl.setAttribute('content', homeUrl);
+
+  const twitterTitle = document.getElementById('meta-twitter-title');
+  if (twitterTitle) twitterTitle.setAttribute('content', 'Ocean Verse');
+
+  const twitterDesc = document.getElementById('meta-twitter-desc');
+  if (twitterDesc) twitterDesc.setAttribute('content', defaultDesc);
+
+  const twitterImage = document.getElementById('meta-twitter-image');
+  if (twitterImage) twitterImage.setAttribute('content', defaultImage);
+}
+
+/**
  * Displays full article view and hides home grid
  * @param {object} post - Post object to display
  * @param {boolean} updateHash - Whether to update window.location.hash
@@ -2873,7 +3004,8 @@ async function openArticleView(post, updateHash = true) {
     }
   }
 
-  document.title = `${post.title || 'Article'} — OceanVerse`;
+  // Dynamic OpenGraph and Twitter meta tags injection for social media sharing
+  updateArticleMetaTags(post);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -2981,6 +3113,7 @@ function returnToHomeView() {
   }
 
   document.title = 'OceanVerse - A Blog Site';
+  resetArticleMetaTags();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -3080,6 +3213,7 @@ function handleAppNavigation() {
     const identifier = decodeURIComponent(hash.replace('#/post/', '')).trim();
     if (identifier) {
       if (activePost && (String(activePost.id) === identifier || activePost.slug === identifier) && !dom.articleView?.classList.contains('hidden')) {
+        updateArticleMetaTags(activePost);
         return;
       }
       openPostByIdOrSlug(identifier, identifier, null, false);
@@ -8385,6 +8519,9 @@ window.expandTopics = expandTopics;
 window.collapseTopics = collapseTopics;
 window.toggleTopics = toggleTopics;
 window.isTopicsExpanded = isTopicsExpanded;
+window.updateArticleMetaTags = updateArticleMetaTags;
+window.resetArticleMetaTags = resetArticleMetaTags;
+window.resolveOgImageUrl = resolveOgImageUrl;
 
 // ============================================================================
 // 15. DOM READY EXECUTION
@@ -8395,6 +8532,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initEventListeners();
   initTopicFilters();
   initSupabase();
+  handleHashNavigation();
   await initAuth();
   await loadPosts();
 });
