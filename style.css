@@ -8795,9 +8795,10 @@ input[type="datetime-local"] {
 
 /* Modal Card Structure */
 .photocard-modal-card {
-  max-width: 1240px;
-  width: 95vw;
-  max-height: 94vh;
+  max-width: 1200px;
+  width: 96vw;
+  height: 92vh;
+  max-height: 850px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -8807,12 +8808,13 @@ input[type="datetime-local"] {
 }
 
 .photocard-modal-header {
-  padding: 0.85rem 1.25rem;
+  padding: 0.65rem 1.25rem;
   background: var(--bg-elevated);
   border-bottom: var(--border-width) solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 
 .photocard-modal-header-info {
@@ -8858,33 +8860,40 @@ input[type="datetime-local"] {
 }
 
 .photocard-modal-body {
-  padding: 1.25rem;
-  overflow-y: auto;
+  padding: 0.85rem 1.15rem;
+  overflow: hidden !important;
   flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
   background: var(--bg-primary, #FFFEF0) !important;
 }
 
-/* Studio Layout (2-Column Grid) */
+/* Studio Layout (2-Column Grid: Left Preview, Right Controls) */
 .photocard-studio-layout {
   display: grid;
-  grid-template-columns: 460px 1fr;
-  gap: 1.5rem;
-  align-items: start;
+  grid-template-columns: minmax(380px, 460px) 1fr;
+  gap: 1.15rem;
+  align-items: stretch;
+  height: 100%;
+  flex: 1;
+  min-height: 0;
 }
 
-/* Left Column: Controls Pane */
+/* Right Column: Controls Pane */
 .photocard-controls-pane {
   display: flex;
   flex-direction: column;
-  gap: 1.15rem;
-  max-height: calc(88vh - 120px);
+  gap: 0.65rem;
   overflow-y: auto;
-  padding-right: 0.4rem;
+  max-height: 100%;
+  padding-right: 0.25rem;
+  justify-content: flex-start;
+  min-height: 0;
 }
 
 .photocard-controls-pane::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 
 .photocard-controls-pane::-webkit-scrollbar-thumb {
@@ -8896,37 +8905,37 @@ input[type="datetime-local"] {
   background: var(--bg-surface);
   border: var(--border-width) solid var(--border-color);
   box-shadow: var(--shadow-sm);
-  padding: 1rem 1.15rem;
+  padding: 0.65rem 0.85rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.45rem;
 }
 
 .pc-group-title-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.2rem;
+  gap: 0.45rem;
+  margin-bottom: 0.1rem;
 }
 
 .pc-step-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: var(--accent-yellow);
   color: #0A0A0A;
   border: 1.5px solid var(--border-color);
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 800;
   flex-shrink: 0;
 }
 
 .pc-group-title {
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -8936,24 +8945,26 @@ input[type="datetime-local"] {
 /* Theme Switcher Chips */
 .pc-theme-switcher {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
 }
 
 .pc-theme-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.45rem 0.65rem;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.45rem;
   background: var(--bg-elevated);
   border: 1.5px solid var(--border-color);
   border-radius: 4px;
   cursor: pointer;
   font-family: var(--font-body);
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--text-primary);
   transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
 .pc-theme-chip:hover {
@@ -8968,10 +8979,18 @@ input[type="datetime-local"] {
 }
 
 .pc-theme-dot {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+
+.pc-compact-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+  align-items: end;
 }
 
 /* Inputs & Form Fields */
@@ -9144,25 +9163,26 @@ input[type="datetime-local"] {
 /* Headline Highlight Color Palette Swatches */
 .pc-color-picker-row {
   display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  margin-bottom: 0.85rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.15rem;
 }
 
 .pc-color-swatches {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.45rem;
   flex-wrap: wrap;
-  padding: 0.35rem 0.2rem;
+  padding: 0.1rem 0;
 }
 
 .pc-color-swatch {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background-color: var(--swatch-color);
-  border: 2.5px solid #FFFFFF;
+  border: 2px solid #FFFFFF;
   box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.25);
   cursor: pointer;
   padding: 0;
@@ -9178,29 +9198,29 @@ input[type="datetime-local"] {
 
 .pc-color-swatch.active {
   transform: scale(1.22);
-  box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4.5px var(--ocean-primary) !important;
+  box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px var(--ocean-primary) !important;
   z-index: 2;
 }
 
 .pc-words-picker {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
-  padding: 0.65rem;
+  gap: 0.35rem;
+  padding: 0.4rem;
   background: var(--bg-elevated);
   border: 1.5px solid var(--border-color);
   border-radius: 4px;
-  max-height: 180px;
+  max-height: 75px;
   overflow-y: auto;
 }
 
 .pc-word-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.32rem 0.65rem;
+  gap: 0.3rem;
+  padding: 0.22rem 0.55rem;
   font-family: 'Hind Siliguri', 'Noto Serif Bengali', var(--font-body);
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   font-weight: 700;
   border-radius: 9999px;
   cursor: pointer;
@@ -9224,15 +9244,17 @@ input[type="datetime-local"] {
   transform: translateY(-1px);
 }
 
-/* When word is tagged Black */
+/* When word is tagged regular/default (not highlighted) */
 .pc-word-chip.is-dark {
   background: var(--bg-surface);
-  color: #111111;
+  color: var(--text-primary);
   border-color: var(--border-color);
 }
 
 .pc-word-chip.is-dark:hover {
-  background: #E2E8F0;
+  background: var(--bg-elevated);
+  border-color: var(--ocean-primary);
+  color: var(--text-primary);
   transform: translateY(-1px);
 }
 
@@ -9249,7 +9271,32 @@ input[type="datetime-local"] {
 }
 
 .pc-word-chip.is-dark .pc-word-chip-dot {
-  background: #111111;
+  background: var(--text-muted);
+}
+
+/* Explicit Dark & Cyberpunk Mode High-Contrast Rules for Photocard Studio */
+[data-theme="dark"] .pc-word-chip.is-dark,
+[data-theme="cyberpunk"] .pc-word-chip.is-dark {
+  background: var(--bg-surface);
+  color: var(--text-primary) !important;
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .pc-word-chip.is-dark:hover,
+[data-theme="cyberpunk"] .pc-word-chip.is-dark:hover {
+  background: var(--bg-elevated);
+  border-color: var(--ocean-primary);
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .pc-word-chip.is-dark .pc-word-chip-dot,
+[data-theme="cyberpunk"] .pc-word-chip.is-dark .pc-word-chip-dot {
+  background: var(--text-secondary);
+}
+
+[data-theme="dark"] .pc-word-chip.is-active,
+[data-theme="cyberpunk"] .pc-word-chip.is-active {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
 
 /* Sliders */
@@ -9321,19 +9368,21 @@ input[type="datetime-local"] {
   justify-content: center;
 }
 
-/* Right Column: Live Card Preview Pane */
+/* Left Column: Live Card Preview Pane */
 .photocard-preview-pane {
   background: var(--bg-elevated);
   border: var(--border-width) solid var(--border-color);
   box-shadow: var(--shadow-md);
-  padding: 1.15rem;
+  padding: 0.75rem 0.85rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  gap: 1rem;
-  position: sticky;
-  top: 0;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 0;
+  overflow: hidden;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .photocard-preview-header {
@@ -9341,8 +9390,9 @@ input[type="datetime-local"] {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 0.65rem;
+  padding-bottom: 0.4rem;
   border-bottom: 1.5px solid var(--border-color);
+  flex-shrink: 0;
 }
 
 .photocard-preview-label-group {
@@ -9377,17 +9427,18 @@ input[type="datetime-local"] {
 /* Viewport & Scaler */
 .photocard-viewport-container {
   width: 100%;
+  flex: 1;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  overflow: visible;
-  padding: 4px 0;
-  min-height: 480px;
+  align-items: center;
+  overflow: hidden;
+  padding: 2px 0;
+  min-height: 0 !important;
 }
 
 .photocard-canvas-scaler {
   width: 540px;
-  transform-origin: top center;
+  transform-origin: center center;
   display: block;
   margin: 0 auto;
   flex-shrink: 0;
@@ -9740,7 +9791,8 @@ input[type="datetime-local"] {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.4rem;
+  flex-shrink: 0;
 }
 
 .photocard-download-btn {
@@ -9749,8 +9801,8 @@ input[type="datetime-local"] {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  font-size: 0.92rem;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.88rem;
   font-weight: 700;
   background: var(--ocean-primary);
   color: #FFFFFF;
@@ -9773,7 +9825,7 @@ input[type="datetime-local"] {
 
 .pc-secondary-actions {
   display: flex;
-  gap: 0.55rem;
+  gap: 0.4rem;
   width: 100%;
 }
 
@@ -9782,9 +9834,9 @@ input[type="datetime-local"] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
-  padding: 0.55rem 0.85rem;
-  font-size: 0.8rem;
+  gap: 0.35rem;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.78rem;
   font-weight: 700;
 }
 
@@ -9793,19 +9845,33 @@ input[type="datetime-local"] {
 }
 
 /* Responsive Rules for Photocard Studio */
-@media (max-width: 1080px) {
+@media (max-width: 1024px) {
+  .photocard-modal-card {
+    height: auto;
+    max-height: 96vh;
+  }
+
+  .photocard-modal-body {
+    overflow-y: auto !important;
+  }
+
   .photocard-studio-layout {
     grid-template-columns: 1fr;
+    height: auto;
   }
   
   .photocard-controls-pane {
     max-height: none;
-    order: 2;
+    overflow-y: visible;
   }
   
   .photocard-preview-pane {
     position: static;
-    order: 1;
+    height: auto;
+  }
+
+  .photocard-viewport-container {
+    min-height: 420px !important;
   }
 }
 
@@ -9820,6 +9886,10 @@ input[type="datetime-local"] {
   }
 
   .pc-theme-switcher {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pc-compact-two-col {
     grid-template-columns: 1fr;
   }
 

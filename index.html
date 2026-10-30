@@ -26,7 +26,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=6.0">
+  <link rel="stylesheet" href="style.css?v=6.2">
 </head>
 <body>
   <!-- Header / Navigation -->
@@ -1969,110 +1969,8 @@
 
       <div class="modal-body photocard-modal-body">
         <div class="photocard-studio-layout">
-          <!-- Left Column: Live Customization Controls -->
-          <div class="photocard-controls-pane">
-            
-            <!-- Section 1: Header Theme -->
-            <div class="pc-control-group">
-              <div class="pc-group-title-row">
-                <span class="pc-step-badge">1</span>
-                <span class="pc-group-title">Brand Header Theme</span>
-              </div>
-              
-              <!-- Theme Preset Switcher -->
-              <div class="pc-theme-switcher" role="group" aria-label="Header Theme">
-                <button type="button" class="pc-theme-chip active" data-theme="navy" title="Navy Blue (#123c69)">
-                  <span class="pc-theme-dot" style="background:#123c69;"></span>
-                  <span>Navy Blue</span>
-                </button>
-                <button type="button" class="pc-theme-chip" data-theme="yellow" title="Ocean Verse Yellow (#ffe600)">
-                  <span class="pc-theme-dot" style="background:#ffe600; border:1px solid #111;"></span>
-                  <span>Yellow/Black</span>
-                </button>
-                <button type="button" class="pc-theme-chip" data-theme="dark" title="Dark Slate (#0f172a)">
-                  <span class="pc-theme-dot" style="background:#0f172a;"></span>
-                  <span>Dark Slate</span>
-                </button>
-                <button type="button" class="pc-theme-chip" data-theme="crimson" title="Crimson Red (#b91c1c)">
-                  <span class="pc-theme-dot" style="background:#b91c1c;"></span>
-                  <span>Crimson</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Section 2: Date Language & Headline Word Color Tagger -->
-            <div class="pc-control-group">
-              <div class="pc-group-title-row">
-                <span class="pc-step-badge">2</span>
-                <span class="pc-group-title">Date &amp; Headline Color</span>
-              </div>
-
-              <!-- Date Controls (Language toggle only) -->
-              <div class="pc-date-toolbar">
-                <label class="pc-label">Date Format</label>
-                <div class="pc-lang-toggle" role="group" aria-label="Date Language Toggle">
-                  <button type="button" id="pc-date-toggle-en" class="pc-lang-btn active">English</button>
-                  <button type="button" id="pc-date-toggle-bn" class="pc-lang-btn">বাংলা</button>
-                </div>
-              </div>
-
-              <!-- Headline Word Tagger & Highlight Color Palette -->
-              <div class="pc-headline-tagger-section">
-                <!-- Color Palette Swatches -->
-                <div class="pc-color-picker-row">
-                  <label class="pc-label">Highlight Accent Color</label>
-                  <div class="pc-color-swatches" id="pc-color-swatches" role="group" aria-label="Headline Highlight Color">
-                    <button type="button" class="pc-color-swatch active" data-color="#0018A8" title="Royal Blue (#0018A8)" style="--swatch-color: #0018A8;"></button>
-                    <button type="button" class="pc-color-swatch" data-color="#DC2626" title="Crimson Red (#DC2626)" style="--swatch-color: #DC2626;"></button>
-                    <button type="button" class="pc-color-swatch" data-color="#16A34A" title="Emerald Green (#16A34A)" style="--swatch-color: #16A34A;"></button>
-                    <button type="button" class="pc-color-swatch" data-color="#EA580C" title="Sunset Orange (#EA580C)" style="--swatch-color: #EA580C;"></button>
-                    <button type="button" class="pc-color-swatch" data-color="#9333EA" title="Vivid Purple (#9333EA)" style="--swatch-color: #9333EA;"></button>
-                    <button type="button" class="pc-color-swatch" data-color="#E11D48" title="Hot Pink (#E11D48)" style="--swatch-color: #E11D48;"></button>
-                    <button type="button" class="pc-color-swatch" data-color="#0284C7" title="Ocean Cyan (#0284C7)" style="--swatch-color: #0284C7;"></button>
-                    <button type="button" class="pc-color-swatch" data-color="#111111" title="Bold Black (#111111)" style="--swatch-color: #111111;"></button>
-                  </div>
-                </div>
-
-                <div class="pc-tagger-header">
-                  <label class="pc-label">Tag Words in Headline</label>
-                  <div class="pc-tagger-presets">
-                    <button type="button" id="pc-btn-half-blue" class="pc-mini-btn" title="First half in highlight color, second half Black">Auto 50/50</button>
-                    <button type="button" id="pc-btn-all-blue" class="pc-mini-btn" title="Color all words in highlight color">Highlight All</button>
-                    <button type="button" id="pc-btn-all-black" class="pc-mini-btn" title="Reset all words to Black">Reset All</button>
-                  </div>
-                </div>
-                <p class="pc-hint-text">Choose an accent color above, then click words below to toggle highlighting:</p>
-                <div id="pc-headline-words-picker" class="pc-words-picker" aria-label="Headline words color picker">
-                  <!-- Word chips generated dynamically from article title -->
-                </div>
-              </div>
-
-              <!-- Headline Font Size Slider -->
-              <div class="pc-slider-row">
-                <div class="pc-slider-header">
-                  <label for="pc-slider-headline-size" class="pc-sublabel">Headline Font Size</label>
-                  <span id="pc-headline-size-val" class="pc-slider-val">28px</span>
-                </div>
-                <input type="range" id="pc-slider-headline-size" min="20" max="36" step="1" value="28" class="pc-range-slider">
-              </div>
-            </div>
-
-            <!-- Section 3: Photo Credit / Image Source -->
-            <div class="pc-control-group">
-              <div class="pc-group-title-row">
-                <span class="pc-step-badge">3</span>
-                <span class="pc-group-title">Photo Credit / Image Source</span>
-              </div>
-              <p class="pc-hint-text">Customize the image credit displayed in the attribution line:</p>
-              <div class="pc-field">
-                <label for="pc-image-source-input" class="pc-label">Image Source Credit</label>
-                <input type="text" id="pc-image-source-input" class="pc-input" value="Ocean Verse" placeholder="e.g. Ocean Verse, Reuters, Pexels" maxlength="60">
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Right Column: Live Card Preview & Download Action -->
+          
+          <!-- Left Column: Live Card Preview & Download Action -->
           <div class="photocard-preview-pane">
             <div class="photocard-preview-header">
               <div class="photocard-preview-label-group">
@@ -2183,6 +2081,105 @@
             </div>
 
           </div>
+
+          <!-- Right Column: Live Customization Controls (Fit-To-Screen, No-Scroll) -->
+          <div class="photocard-controls-pane">
+            
+            <!-- Section 1: Header Theme -->
+            <div class="pc-control-group">
+              <div class="pc-group-title-row">
+                <span class="pc-step-badge">1</span>
+                <span class="pc-group-title">Brand Header Theme</span>
+              </div>
+              
+              <!-- Theme Preset Switcher (Compact 4-column row) -->
+              <div class="pc-theme-switcher" role="group" aria-label="Header Theme">
+                <button type="button" class="pc-theme-chip active" data-theme="navy" title="Navy Blue (#123c69)">
+                  <span class="pc-theme-dot" style="background:#123c69;"></span>
+                  <span>Navy Blue</span>
+                </button>
+                <button type="button" class="pc-theme-chip" data-theme="yellow" title="Ocean Verse Yellow (#ffe600)">
+                  <span class="pc-theme-dot" style="background:#ffe600; border:1px solid #111;"></span>
+                  <span>Yellow/Black</span>
+                </button>
+                <button type="button" class="pc-theme-chip" data-theme="dark" title="Dark Slate (#0f172a)">
+                  <span class="pc-theme-dot" style="background:#0f172a;"></span>
+                  <span>Dark Slate</span>
+                </button>
+                <button type="button" class="pc-theme-chip" data-theme="crimson" title="Crimson Red (#b91c1c)">
+                  <span class="pc-theme-dot" style="background:#b91c1c;"></span>
+                  <span>Crimson</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Section 2: Date Format & Photo Credit (Compact 2-Column Row) -->
+            <div class="pc-control-group">
+              <div class="pc-group-title-row">
+                <span class="pc-step-badge">2</span>
+                <span class="pc-group-title">Date &amp; Photo Credit</span>
+              </div>
+              <div class="pc-compact-two-col">
+                <div class="pc-date-toolbar">
+                  <label class="pc-label">Date Format</label>
+                  <div class="pc-lang-toggle" role="group" aria-label="Date Language Toggle">
+                    <button type="button" id="pc-date-toggle-en" class="pc-lang-btn active">English</button>
+                    <button type="button" id="pc-date-toggle-bn" class="pc-lang-btn">বাংলা</button>
+                  </div>
+                </div>
+                <div class="pc-field">
+                  <label for="pc-image-source-input" class="pc-label">Image Source Credit</label>
+                  <input type="text" id="pc-image-source-input" class="pc-input" value="Ocean Verse" placeholder="e.g. Ocean Verse, Reuters, Pexels" maxlength="60">
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 3: Headline Typography & Word Color Tagger -->
+            <div class="pc-control-group">
+              <div class="pc-group-title-row">
+                <span class="pc-step-badge">3</span>
+                <span class="pc-group-title">Headline Words &amp; Highlight Color</span>
+              </div>
+
+              <!-- Color Palette Swatches -->
+              <div class="pc-color-picker-row">
+                <label class="pc-label">Accent Color</label>
+                <div class="pc-color-swatches" id="pc-color-swatches" role="group" aria-label="Headline Highlight Color">
+                  <button type="button" class="pc-color-swatch active" data-color="#0018A8" title="Royal Blue (#0018A8)" style="--swatch-color: #0018A8;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#DC2626" title="Crimson Red (#DC2626)" style="--swatch-color: #DC2626;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#16A34A" title="Emerald Green (#16A34A)" style="--swatch-color: #16A34A;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#EA580C" title="Sunset Orange (#EA580C)" style="--swatch-color: #EA580C;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#9333EA" title="Vivid Purple (#9333EA)" style="--swatch-color: #9333EA;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#E11D48" title="Hot Pink (#E11D48)" style="--swatch-color: #E11D48;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#0284C7" title="Ocean Cyan (#0284C7)" style="--swatch-color: #0284C7;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#111111" title="Bold Black (#111111)" style="--swatch-color: #111111;"></button>
+                </div>
+              </div>
+
+              <div class="pc-tagger-header">
+                <label class="pc-label">Tag Words in Headline</label>
+                <div class="pc-tagger-presets">
+                  <button type="button" id="pc-btn-half-blue" class="pc-mini-btn" title="First half in highlight color, second half Black">Auto 50/50</button>
+                  <button type="button" id="pc-btn-all-blue" class="pc-mini-btn" title="Color all words in highlight color">Highlight All</button>
+                  <button type="button" id="pc-btn-all-black" class="pc-mini-btn" title="Reset all words to Black">Reset All</button>
+                </div>
+              </div>
+              <div id="pc-headline-words-picker" class="pc-words-picker" aria-label="Headline words color picker">
+                <!-- Word chips generated dynamically from article title -->
+              </div>
+
+              <!-- Headline Font Size Slider -->
+              <div class="pc-slider-row">
+                <div class="pc-slider-header">
+                  <label for="pc-slider-headline-size" class="pc-sublabel">Headline Font Size</label>
+                  <span id="pc-headline-size-val" class="pc-slider-val">28px</span>
+                </div>
+                <input type="range" id="pc-slider-headline-size" min="20" max="36" step="1" value="28" class="pc-range-slider">
+              </div>
+            </div>
+
+          </div>
+
         </div>
       </div>
     </div>
@@ -2213,7 +2210,7 @@
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
   <!-- Application Logic -->
-  <script src="app.js?v=7.0"></script>
+  <script src="app.js?v=7.3"></script>
 </body>
 </html>
 

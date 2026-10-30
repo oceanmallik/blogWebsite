@@ -6778,7 +6778,7 @@ function renderHeadlineWordChips() {
     
     if (isHighlighted) {
       chip.style.backgroundColor = currentHeadlineAccentColor;
-      chip.style.borderColor = currentHeadlineAccentColor;
+      chip.style.borderColor = currentHeadlineAccentColor === '#111111' ? 'rgba(255, 255, 255, 0.45)' : currentHeadlineAccentColor;
       chip.style.color = '#FFFFFF';
     } else {
       chip.style.backgroundColor = '';
@@ -6861,20 +6861,16 @@ function adjustPhotocardPreviewScale() {
   const naturalHeight = card.scrollHeight || card.offsetHeight;
   if (!naturalHeight || naturalHeight < 100) return;
 
-  const containerWidth = container.clientWidth || 540;
-  const viewportHeight = window.innerHeight || 800;
-  // Available height inside modal pane
-  const maxCardH = Math.max(380, viewportHeight - 270);
+  const containerWidth = container.clientWidth || 450;
+  const containerHeight = container.clientHeight || 480;
 
-  const scaleW = Math.min(1, (containerWidth - 24) / 540);
-  const scaleH = Math.min(1, maxCardH / naturalHeight);
+  const scaleW = Math.min(1, containerWidth / 540);
+  const scaleH = Math.min(1, containerHeight / naturalHeight);
   const scale = Math.max(0.35, Math.min(scaleW, scaleH));
 
   scaler.style.width = '540px';
   scaler.style.height = `${naturalHeight}px`;
   scaler.style.transform = `scale(${scale})`;
-  // Update container height to match scaled card height exactly, avoiding extra whitespace
-  container.style.height = `${Math.round(naturalHeight * scale)}px`;
 }
 
 /**
@@ -7189,7 +7185,7 @@ async function generatePhotocardExportCanvas() {
       const topic = clonedDoc.querySelector('.photocard-topic-pill span');
       if (topic) {
         topic.style.position = 'relative';
-        topic.style.top = '-10px';
+        topic.style.top = '-8px';
         topic.style.display = 'inline-block';
         topic.style.verticalAlign = 'middle';
       }
