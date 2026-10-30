@@ -2189,7 +2189,9 @@ function renderPostsGrid(posts) {
  */
 function createCardElement(post, options = {}) {
   const card = document.createElement('article');
-  card.className = 'post-card';
+  const isBangla = isBanglaPost(post);
+  card.className = 'post-card' + (isBangla ? ' is-bangla-post' : '');
+  if (isBangla) card.setAttribute('lang', 'bn');
   card.tabIndex = 0;
   card.setAttribute('role', 'button');
   card.setAttribute('aria-label', `Read ${post.title || 'post'}`);
@@ -2353,13 +2355,17 @@ function createCardElement(post, options = {}) {
   meta.appendChild(timeSpan);
 
   // Title
+  const isTitleBangla = isBanglaText(post.title);
   const title = document.createElement('h2');
-  title.className = 'card-title';
+  title.className = 'card-title' + (isTitleBangla ? ' is-bangla' : '');
+  if (isTitleBangla) title.setAttribute('lang', 'bn');
   title.textContent = post.title || 'Untitled Post';
 
   // Summary
+  const isSummaryBangla = isBanglaText(post.summary);
   const summary = document.createElement('p');
-  summary.className = 'card-summary';
+  summary.className = 'card-summary' + (isSummaryBangla ? ' is-bangla' : '');
+  if (isSummaryBangla) summary.setAttribute('lang', 'bn');
   summary.textContent = post.summary || 'Click to read full article.';
 
   // Footer / Author Profile & Read More
@@ -2701,7 +2707,24 @@ async function openArticleView(post, updateHash = true) {
   activePost = post;
   currentPublicProfileUser = null;
 
+  const isPostBangla = isBanglaPost(post);
+  if (isPostBangla) {
+    dom.articleView?.classList.add('is-bangla-post');
+    dom.articleView?.setAttribute('lang', 'bn');
+  } else {
+    dom.articleView?.classList.remove('is-bangla-post');
+    dom.articleView?.removeAttribute('lang');
+  }
+
   dom.articleTitle.textContent = post.title || 'Untitled';
+  if (isBanglaText(post.title)) {
+    dom.articleTitle.classList.add('is-bangla');
+    dom.articleTitle.setAttribute('lang', 'bn');
+  } else {
+    dom.articleTitle.classList.remove('is-bangla');
+    dom.articleTitle.removeAttribute('lang');
+  }
+
   const formattedDate = formatDate(post.created_at);
   const timeAgo = formatTimeAgo(post.created_at);
   dom.articleDate.textContent = formattedDate || '';
@@ -2730,9 +2753,18 @@ async function openArticleView(post, updateHash = true) {
   // Summary
   if (post.summary && post.summary.trim() !== '') {
     dom.articleSummary.textContent = post.summary;
+    if (isBanglaText(post.summary)) {
+      dom.articleSummary.classList.add('is-bangla');
+      dom.articleSummary.setAttribute('lang', 'bn');
+    } else {
+      dom.articleSummary.classList.remove('is-bangla');
+      dom.articleSummary.removeAttribute('lang');
+    }
     dom.articleSummary.classList.remove('hidden');
   } else {
     dom.articleSummary.classList.add('hidden');
+    dom.articleSummary.classList.remove('is-bangla');
+    dom.articleSummary.removeAttribute('lang');
   }
 
   // Cover image
@@ -2749,6 +2781,13 @@ async function openArticleView(post, updateHash = true) {
 
   // Content
   dom.articleContent.innerHTML = renderMarkdown(post.content || 'No content provided.');
+  if (isBanglaText(post.content)) {
+    dom.articleContent.classList.add('is-bangla');
+    dom.articleContent.setAttribute('lang', 'bn');
+  } else {
+    dom.articleContent.classList.remove('is-bangla');
+    dom.articleContent.removeAttribute('lang');
+  }
 
   // Toggle views
   dom.homeView?.classList.add('hidden');
@@ -3237,8 +3276,15 @@ function createCommentCardElement(comment) {
     header.appendChild(actions);
   }
 
+  const isBangla = isBanglaText(comment.content);
+  if (isBangla) {
+    card.classList.add('is-bangla-comment');
+    card.setAttribute('lang', 'bn');
+  }
+
   const body = document.createElement('div');
-  body.className = 'comment-body';
+  body.className = 'comment-body' + (isBangla ? ' is-bangla' : '');
+  if (isBangla) body.setAttribute('lang', 'bn');
   body.textContent = comment.content || '';
 
   card.appendChild(header);
@@ -3475,8 +3521,10 @@ function renderAdminPostsList(posts) {
   const fragment = document.createDocumentFragment();
 
   pagePosts.forEach(post => {
+    const isBangla = isBanglaPost(post);
     const card = document.createElement('article');
-    card.className = 'post-card admin-post-card';
+    card.className = `post-card admin-post-card${isBangla ? ' is-bangla-post' : ''}`;
+    if (isBangla) card.setAttribute('lang', 'bn');
     card.dataset.id = post.id;
 
     const isPublished = Boolean(post.is_published);
@@ -3517,7 +3565,7 @@ function renderAdminPostsList(posts) {
     const isPinned = Boolean(currentProfile?.pinned_post_id && String(currentProfile.pinned_post_id) === String(post.id));
 
     body.innerHTML = `
-      <h3 class="card-title admin-card-title">${escapeHtml(post.title || 'Untitled Post')}</h3>
+      <h3 class="card-title admin-card-title ${isBanglaText(post.title) ? 'is-bangla' : ''}">${escapeHtml(post.title || 'Untitled Post')}</h3>
       <div class="card-meta">
         ${post.topic ? `<span class="admin-topic-tag">${escapeHtml(post.topic)}</span><span class="card-dot">•</span>` : ''}
         <span class="card-date">${dateFormatted}</span>
@@ -3526,7 +3574,7 @@ function renderAdminPostsList(posts) {
         <span class="card-dot">•</span>
         <code class="admin-slug-chip" title="/${escapeHtml(post.slug || 'no-slug')}">/${escapeHtml(post.slug || 'no-slug')}</code>
       </div>
-      <p class="card-summary admin-card-summary">${escapeHtml(post.summary || 'No summary excerpt provided.')}</p>
+      <p class="card-summary admin-card-summary ${isBanglaText(post.summary) ? 'is-bangla' : ''}">${escapeHtml(post.summary || 'No summary excerpt provided.')}</p>
       <div class="card-footer admin-card-footer admin-card-actions-row">
         <div class="admin-card-actions-group admin-post-actions">
           ${isAuthor ? `
@@ -3791,6 +3839,9 @@ function editPost(postId) {
   }
 
   dom.adminEditorTitle.textContent = `Edit Post: ${post.title || 'Untitled'}`;
+  dom.adminTitle?.classList.toggle('is-bangla', isBanglaText(post.title));
+  dom.adminSummary?.classList.toggle('is-bangla', isBanglaText(post.summary));
+  dom.adminContent?.classList.toggle('is-bangla', isBanglaText(post.content));
   const submitText = dom.adminSubmitBtn?.querySelector('.btn-text');
   if (submitText) submitText.textContent = 'Save Changes';
   const bottomSubmitText = dom.adminBottomSubmitBtn?.querySelector('.btn-text');
@@ -3818,6 +3869,9 @@ function resetAdminEditor() {
     dom.adminCustomDate.value = '';
   }
   clearCoverImage();
+  dom.adminTitle?.classList.remove('is-bangla');
+  dom.adminSummary?.classList.remove('is-bangla');
+  dom.adminContent?.classList.remove('is-bangla');
   dom.adminEditorTitle.textContent = 'Create New Post';
   const submitText = dom.adminSubmitBtn?.querySelector('.btn-text');
   if (submitText) submitText.textContent = 'Publish Post';
@@ -3926,12 +3980,14 @@ function showToast(message, type = 'info') {
 window.showToast = showToast;
 
 function generateSlugFromText(text) {
-  return text
+  if (!text) return '';
+  const cleaned = text
     .toLowerCase()
     .trim()
-    .replace(/[^\w\s-]/g, '')
+    .replace(/[^\w\u0980-\u09FF\s-]/g, '')
     .replace(/[\s_-]+/g, '-')
     .replace(/^-+|-+$/g, '');
+  return cleaned || `post-${Date.now()}`;
 }
 
 function escapeHtml(str) {
@@ -4114,6 +4170,17 @@ function updateAdminPreview() {
 
   if (!dom.adminContent || !dom.adminContentPreview) return;
   const raw = dom.adminContent.value.trim();
+  const isPreviewBangla = isBanglaText(raw) || isBanglaText(dom.adminTitle?.value);
+  if (isPreviewBangla) {
+    dom.adminContentPreview.classList.add('is-bangla');
+    dom.adminContentPreview.setAttribute('lang', 'bn');
+    dom.editorPreviewPane?.classList.add('is-bangla-post');
+  } else {
+    dom.adminContentPreview.classList.remove('is-bangla');
+    dom.adminContentPreview.removeAttribute('lang');
+    dom.editorPreviewPane?.classList.remove('is-bangla-post');
+  }
+
   if (!raw) {
     dom.adminContentPreview.innerHTML = '<p class="preview-empty-hint">Type in the editor to see live Markdown preview...</p>';
     return;
@@ -4437,6 +4504,26 @@ function formatFileSize(bytes) {
   if (i === 0) return `${bytes} B`;
   const val = bytes / Math.pow(k, i);
   return `${val < 10 ? val.toFixed(1) : Math.round(val)} ${sizes[i]}`;
+}
+
+/**
+ * Detects if a text string contains Bengali characters (Unicode range U+0980 to U+09FF)
+ * @param {string} text
+ * @returns {boolean}
+ */
+function isBanglaText(text) {
+  if (!text || typeof text !== 'string') return false;
+  return /[\u0980-\u09FF]/.test(text);
+}
+
+/**
+ * Checks if a post contains Bengali text in its title, summary, or content
+ * @param {object} post
+ * @returns {boolean}
+ */
+function isBanglaPost(post) {
+  if (!post || typeof post !== 'object') return false;
+  return isBanglaText(post.title) || isBanglaText(post.summary) || isBanglaText(post.content);
 }
 
 function formatDate(isoString) {
@@ -7037,7 +7124,8 @@ async function openPhotocardStudio(post) {
 
   currentPhotocardPost = post;
   currentPhotocardTheme = 'navy';
-  currentPhotocardLang = 'en';
+  const isPostBangla = isBanglaPost(post);
+  currentPhotocardLang = isPostBangla ? 'bn' : 'en';
 
   // 1. Author details
   const author = await getPostAuthorProfile(post);
@@ -7052,6 +7140,7 @@ async function openPhotocardStudio(post) {
   const defaultBrand = 'OceanVerse';
   const defaultTopic = post.topic || 'General';
   const defaultDateEn = formatPhotocardDate(post.created_at, 'en');
+  const defaultDateBn = formatPhotocardDate(post.created_at, 'bn');
   const defaultSummary = post.summary || post.title || 'Read the full story on Ocean Verse.';
 
   currentPhotocardAuthorUsername = authorUsername;
@@ -7059,8 +7148,13 @@ async function openPhotocardStudio(post) {
   currentPhotocardImageSource = 'Ocean Verse';
   if (dom.pcImageSourceInput) dom.pcImageSourceInput.value = currentPhotocardImageSource;
 
-  if (dom.pcDateToggleEn) dom.pcDateToggleEn.classList.add('active');
-  if (dom.pcDateToggleBn) dom.pcDateToggleBn.classList.remove('active');
+  if (isPostBangla) {
+    if (dom.pcDateToggleBn) dom.pcDateToggleBn.classList.add('active');
+    if (dom.pcDateToggleEn) dom.pcDateToggleEn.classList.remove('active');
+  } else {
+    if (dom.pcDateToggleEn) dom.pcDateToggleEn.classList.add('active');
+    if (dom.pcDateToggleBn) dom.pcDateToggleBn.classList.remove('active');
+  }
 
   if (dom.pcSliderHeadlineSize) dom.pcSliderHeadlineSize.value = 28;
   if (dom.pcHeadlineSizeVal) dom.pcHeadlineSizeVal.textContent = '28px';
@@ -7068,9 +7162,18 @@ async function openPhotocardStudio(post) {
   // 3. Update preview displays
   updatePhotocardTheme('navy');
   setHeadlineAccentColor('#0018A8');
+  if (dom.photocardCanvas) {
+    if (isPostBangla) {
+      dom.photocardCanvas.classList.add('is-bangla');
+      dom.photocardCanvas.setAttribute('lang', 'bn');
+    } else {
+      dom.photocardCanvas.classList.remove('is-bangla');
+      dom.photocardCanvas.removeAttribute('lang');
+    }
+  }
   if (dom.photocardBrandDisplay) dom.photocardBrandDisplay.textContent = defaultBrand;
   if (dom.photocardTopicDisplay) dom.photocardTopicDisplay.textContent = defaultTopic;
-  if (dom.photocardDateDisplay) dom.photocardDateDisplay.textContent = defaultDateEn;
+  if (dom.photocardDateDisplay) dom.photocardDateDisplay.textContent = isPostBangla ? defaultDateBn : defaultDateEn;
   updatePhotocardAttribution();
   if (dom.photocardSummaryDisplay) dom.photocardSummaryDisplay.textContent = defaultSummary;
 
@@ -7884,9 +7987,16 @@ function initEventListeners() {
     }
   });
   dom.adminTitle?.addEventListener('input', () => {
+    dom.adminTitle.classList.toggle('is-bangla', isBanglaText(dom.adminTitle.value));
     if (!editingPostId && dom.adminSlug && !dom.adminSlug.value) {
       dom.adminSlug.value = generateSlugFromText(dom.adminTitle.value);
     }
+    if (dom.editorViewContainer?.classList.contains('split-view') || currentEditorTab === 'preview') {
+      updateAdminPreview();
+    }
+  });
+  dom.adminSummary?.addEventListener('input', () => {
+    dom.adminSummary.classList.toggle('is-bangla', isBanglaText(dom.adminSummary.value));
   });
 
   // Admin Custom Date Presets & Clear
@@ -7963,6 +8073,7 @@ function initEventListeners() {
   dom.editorTabPreview?.addEventListener('click', () => setEditorTab('preview'));
   dom.editorToggleSplit?.addEventListener('click', toggleEditorSplit);
   dom.adminContent?.addEventListener('input', () => {
+    dom.adminContent.classList.toggle('is-bangla', isBanglaText(dom.adminContent.value));
     if (currentEditorTab === 'preview' || dom.editorViewContainer?.classList.contains('split-view')) {
       updateAdminPreview();
     }

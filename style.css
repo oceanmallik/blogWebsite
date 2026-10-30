@@ -60,9 +60,13 @@
   --radius-lg: 6px;
   --radius-full: 4px;
 
-  /* Typography */
-  --font-sans: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: 'Space Mono', ui-monospace, monospace;
+  /* Typography — Space Grotesk for English, Anek Bangla & Hind Siliguri for Bengali */
+  --font-sans: 'Space Grotesk', 'Anek Bangla', 'Hind Siliguri', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'Space Mono', 'Hind Siliguri', ui-monospace, monospace;
+  --font-body: var(--font-sans);
+  --font-bangla-heading: 'Anek Bangla', 'Hind Siliguri', 'Noto Serif Bengali', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-bangla-body: 'Hind Siliguri', 'Anek Bangla', 'Noto Sans Bengali', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-bangla-serif: 'Noto Serif Bengali', 'SolaimanLipi', Georgia, serif;
 
   /* Transitions */
   --transition-fast: 0.12s ease;
@@ -2814,6 +2818,125 @@ img {
   border: none;
   border-top: var(--border-width) solid var(--border-color);
   margin: 2.5rem 0;
+}
+
+/* --------------------------------------------------------------------------
+   Bangla Posts & Typography Optimizations
+   Uses Anek Bangla (Modern Bold Sans) for Headlines & Hind Siliguri for Body
+   -------------------------------------------------------------------------- */
+.is-bangla,
+:lang(bn),
+.is-bangla-post {
+  font-family: var(--font-bangla-body);
+  letter-spacing: 0 !important;
+  word-spacing: 0.04em;
+  font-feature-settings: "kern" 1, "liga" 1;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Post Cards (Feed, Filter & Profile views) */
+.post-card.is-bangla-post .card-title,
+.card-title.is-bangla {
+  font-family: var(--font-bangla-heading);
+  letter-spacing: 0 !important;
+  line-height: 1.4;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.post-card.is-bangla-post .card-summary,
+.card-summary.is-bangla {
+  font-family: var(--font-bangla-body);
+  letter-spacing: 0 !important;
+  line-height: 1.75;
+  font-size: 0.95rem;
+}
+
+/* Article View (Single Post Page) */
+#article-view.is-bangla-post .article-title,
+.article-title.is-bangla {
+  font-family: var(--font-bangla-heading);
+  letter-spacing: 0 !important;
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+#article-view.is-bangla-post .article-summary-lead,
+.article-summary-lead.is-bangla {
+  font-family: var(--font-bangla-body);
+  letter-spacing: 0 !important;
+  line-height: 1.85;
+  font-size: 1.18rem;
+}
+
+#article-view.is-bangla-post .article-body,
+.article-body.is-bangla,
+.admin-markdown-preview.is-bangla {
+  font-family: var(--font-bangla-body);
+  letter-spacing: 0 !important;
+  line-height: 2;
+  font-size: 1.15rem;
+}
+
+#article-view.is-bangla-post .article-body h1,
+#article-view.is-bangla-post .article-body h2,
+#article-view.is-bangla-post .article-body h3,
+#article-view.is-bangla-post .article-body h4,
+#article-view.is-bangla-post .article-body h5,
+#article-view.is-bangla-post .article-body h6,
+.article-body.is-bangla h1,
+.article-body.is-bangla h2,
+.article-body.is-bangla h3,
+.article-body.is-bangla h4,
+.admin-markdown-preview.is-bangla h1,
+.admin-markdown-preview.is-bangla h2,
+.admin-markdown-preview.is-bangla h3,
+.admin-markdown-preview.is-bangla h4 {
+  font-family: var(--font-bangla-heading);
+  letter-spacing: 0 !important;
+  line-height: 1.38;
+  font-weight: 700;
+}
+
+#article-view.is-bangla-post .article-body blockquote,
+.article-body.is-bangla blockquote {
+  font-family: var(--font-bangla-serif);
+  font-style: normal;
+  letter-spacing: 0 !important;
+  line-height: 1.85;
+  font-size: 1.2rem;
+}
+
+#article-view.is-bangla-post .article-body ul,
+#article-view.is-bangla-post .article-body ol,
+.article-body.is-bangla ul,
+.article-body.is-bangla ol {
+  line-height: 1.9;
+}
+
+#article-view.is-bangla-post .article-body li,
+.article-body.is-bangla li {
+  line-height: 1.9;
+  margin-bottom: 0.65rem;
+}
+
+/* Admin Editor & Preview */
+.editor-write-pane textarea.is-bangla,
+#admin-title.is-bangla,
+#admin-summary.is-bangla {
+  font-family: var(--font-bangla-body);
+  letter-spacing: 0 !important;
+  line-height: 1.65;
+}
+
+/* Comments Section Bangla */
+.comment-card.is-bangla-comment .comment-body,
+.comment-body.is-bangla {
+  font-family: var(--font-bangla-body);
+  letter-spacing: 0 !important;
+  line-height: 1.8;
+  font-size: 0.96rem;
 }
 
 /* --------------------------------------------------------------------------
@@ -9460,7 +9583,7 @@ input[type="datetime-local"] {
   background: #0F172A !important;
   overflow: hidden !important;
   position: relative !important;
-  font-family: 'Hind Siliguri', 'Space Grotesk', -apple-system, sans-serif !important;
+  font-family: 'Anek Bangla', 'Hind Siliguri', 'Space Grotesk', -apple-system, sans-serif !important;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
   border: 1px solid rgba(0, 0, 0, 0.12);
   text-align: left;
@@ -9602,10 +9725,10 @@ input[type="datetime-local"] {
 }
 
 .photocard-headline {
-  font-family: 'Hind Siliguri', 'Noto Serif Bengali', 'Space Grotesk', sans-serif !important;
+  font-family: 'Anek Bangla', 'Hind Siliguri', 'Noto Serif Bengali', 'Space Grotesk', sans-serif !important;
   font-size: 28px;
   font-weight: 700 !important;
-  line-height: 1.28 !important;
+  line-height: 1.32 !important;
   letter-spacing: 0 !important;
   margin: 0 0 10px 0 !important;
   word-break: break-word !important;
@@ -9636,7 +9759,7 @@ input[type="datetime-local"] {
 }
 
 .photocard-summary {
-  font-family: 'Hind Siliguri', 'Space Grotesk', -apple-system, sans-serif !important;
+  font-family: 'Anek Bangla', 'Hind Siliguri', 'Space Grotesk', -apple-system, sans-serif !important;
   font-size: 14px !important;
   font-weight: 400 !important;
   line-height: 1.44 !important;
