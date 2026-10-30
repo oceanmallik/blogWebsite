@@ -3990,7 +3990,6 @@ async function handleAdminPostSubmit(e) {
   }
 
   const title = dom.adminTitle.value.trim();
-  let slug = dom.adminSlug.value.trim();
   const summary = dom.adminSummary.value.trim();
   const cover_image = dom.adminCoverImage.value.trim() || null;
   const content = dom.adminContent.value.trim();
@@ -4003,15 +4002,13 @@ async function handleAdminPostSubmit(e) {
     return;
   }
 
-  if (!slug) {
-    slug = generateSlugFromText(title);
-    if (dom.adminSlug) dom.adminSlug.value = slug;
-  }
+  // Auto-generate slug from title on create post, no manual entry needed
+  let slug = (!editingPostId || !dom.adminSlug || !dom.adminSlug.value.trim())
+    ? generateSlugFromText(title)
+    : dom.adminSlug.value.trim();
 
-  if (!slug) {
-    showAdminMsg('Article slug (URL identifier) is required.', 'error');
-    if (dom.adminSlug && typeof dom.adminSlug.focus === 'function') dom.adminSlug.focus();
-    return;
+  if (dom.adminSlug) {
+    dom.adminSlug.value = slug;
   }
 
   if (!summary) {
@@ -4108,10 +4105,22 @@ async function handleAdminPostSubmit(e) {
         insertPayload.created_at = customCreatedAt;
       }
 
-      const { data, error } = await supabaseClient
+      let finalSlug = slug;
+      let { data, error } = await supabaseClient
         .from('posts')
-        .insert(insertPayload)
+        .insert({ ...insertPayload, slug: finalSlug })
         .select();
+
+      // If duplicate slug constraint, append unique short suffix and retry
+      if (error && (error.code === '23505' || String(error.message).includes('slug') || String(error.message).includes('duplicate'))) {
+        finalSlug = `${slug}-${Date.now().toString(36).slice(-4)}`;
+        const retryResult = await supabaseClient
+          .from('posts')
+          .insert({ ...insertPayload, slug: finalSlug })
+          .select();
+        data = retryResult.data;
+        error = retryResult.error;
+      }
 
       if (error) throw error;
 
@@ -4146,7 +4155,10 @@ function editPost(postId) {
   editingPostId = post.id;
   dom.adminPostId.value = post.id;
   dom.adminTitle.value = post.title || '';
-  dom.adminSlug.value = post.slug || '';
+  if (dom.adminSlug) {
+    dom.adminSlug.value = post.slug || generateSlugFromText(post.title || '');
+    dom.adminSlug.readOnly = true;
+  }
   dom.adminSummary.value = post.summary || '';
   dom.adminCoverImage.value = post.cover_image || '';
   updateCoverPreview(post.cover_image || '');
@@ -4183,6 +4195,10 @@ function resetAdminEditor() {
   editingPostId = null;
   dom.adminPostId.value = '';
   dom.adminPostForm.reset();
+  if (dom.adminSlug) {
+    dom.adminSlug.value = '';
+    dom.adminSlug.readOnly = true;
+  }
   dom.adminIsPublished.checked = true;
   if (dom.adminTopic) {
     dom.adminTopic.value = '';
@@ -8478,7 +8494,7 @@ function initEventListeners() {
   });
   dom.adminTitle?.addEventListener('input', () => {
     dom.adminTitle.classList.toggle('is-bangla', isBanglaText(dom.adminTitle.value));
-    if (!editingPostId && dom.adminSlug && !dom.adminSlug.value) {
+    if (!editingPostId && dom.adminSlug) {
       dom.adminSlug.value = generateSlugFromText(dom.adminTitle.value);
     }
     if (dom.editorViewContainer?.classList.contains('split-view') || currentEditorTab === 'preview') {

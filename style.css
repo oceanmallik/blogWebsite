@@ -603,6 +603,29 @@ img {
   border-color: var(--border-color);
 }
 
+.badge-auto {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.12rem 0.45rem;
+  background: var(--accent-lime);
+  color: #0A0A0A;
+  border: 1.5px solid var(--border-color);
+  box-shadow: 1px 1px 0px var(--border-color);
+  margin-left: 0.45rem;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+[data-theme="dark"] .badge-auto,
+[data-theme="cyberpunk"] .badge-auto {
+  background: var(--accent-lime);
+  color: #0A0A0A;
+  border-color: var(--border-color);
+}
+
 [data-theme="dark"] .role-badge.role-admin,
 [data-theme="cyberpunk"] .role-badge.role-admin {
   background: var(--accent-yellow);
