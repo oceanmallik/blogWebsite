@@ -46,6 +46,12 @@ const COMMENT_GRADE_POINTS = 1;
 let cachedComments = [];
 const authorProfilesCache = new Map();
 
+// Photocard Studio State (1080x1350 News Card Generator)
+let currentPhotocardPost = null;
+let currentPhotocardTheme = 'navy';
+let currentPhotocardLang = 'en';
+let currentPhotocardFitMode = 'fit-width';
+
 // Expose state globally on window for convenient debugging
 window.supabaseClient = null;
 window.currentUser = null;
@@ -179,6 +185,45 @@ function initDOM() {
   dom.copyLinkBtn = document.getElementById('copy-link-btn');
   dom.sidebarShareBtn = document.getElementById('sidebar-share-btn');
   dom.copyFeedback = document.getElementById('copy-feedback');
+  dom.articlePhotocardBtn = document.getElementById('article-photocard-btn');
+  dom.sidebarPhotocardBtn = document.getElementById('sidebar-photocard-btn');
+
+  // Photocard Studio Elements
+  dom.photocardModal = document.getElementById('photocard-modal');
+  dom.photocardModalCloseBtn = document.getElementById('photocard-modal-close-btn');
+  dom.photocardDoneBtn = document.getElementById('pc-modal-done-btn');
+  dom.photocardDownloadBtn = document.getElementById('photocard-download-btn');
+  dom.photocardCopyClipboardBtn = document.getElementById('pc-copy-clipboard-btn');
+  dom.photocardCanvas = document.getElementById('photocard-canvas');
+  dom.photocardCanvasScaler = document.getElementById('photocard-canvas-scaler');
+  dom.photocardViewportContainer = document.getElementById('photocard-viewport-container');
+  dom.photocardHeader = document.getElementById('photocard-header');
+  dom.photocardBrandDisplay = document.getElementById('photocard-brand-display');
+  dom.photocardTopicDisplay = document.getElementById('photocard-topic-display');
+  dom.photocardTopicPill = document.getElementById('photocard-topic-pill');
+  dom.photocardDateDisplay = document.getElementById('photocard-date-display');
+  dom.photocardHeadlineDisplay = document.getElementById('photocard-headline-display');
+  dom.photocardAttributionDisplay = document.getElementById('photocard-attribution-display');
+  dom.photocardSummaryDisplay = document.getElementById('photocard-summary-display');
+  dom.photocardImageFrame = document.getElementById('photocard-image-frame');
+  dom.photocardBgBlurImg = document.getElementById('photocard-bg-blur-img');
+  dom.photocardMainImg = document.getElementById('photocard-main-img');
+  dom.photocardImgLoading = document.getElementById('photocard-img-loading');
+  dom.photocardFooter = document.getElementById('photocard-footer');
+  dom.photocardFooterBadgeDisplay = document.getElementById('photocard-footer-badge-display');
+  dom.photocardFooterCalloutDisplay = document.getElementById('photocard-footer-callout-display');
+  dom.photocardFooterDomainDisplay = document.getElementById('photocard-footer-domain-display');
+
+  // Photocard Studio Controls
+  dom.pcDateToggleEn = document.getElementById('pc-date-toggle-en');
+  dom.pcDateToggleBn = document.getElementById('pc-date-toggle-bn');
+  dom.pcBtnHalfBlue = document.getElementById('pc-btn-half-blue');
+  dom.pcBtnAllBlue = document.getElementById('pc-btn-all-blue');
+  dom.pcBtnAllBlack = document.getElementById('pc-btn-all-black');
+  dom.pcHeadlineWordsPicker = document.getElementById('pc-headline-words-picker');
+  dom.pcSliderHeadlineSize = document.getElementById('pc-slider-headline-size');
+  dom.pcHeadlineSizeVal = document.getElementById('pc-headline-size-val');
+  dom.pcImageSourceInput = document.getElementById('pc-image-source-input');
 
   // Header & Theme
   dom.brandLogo = document.getElementById('brand-logo');
@@ -3506,13 +3551,18 @@ function renderAdminPostsList(posts) {
             <span class="role-badge role-visitor" title="Only the author can edit or delete this post" style="font-size:0.68rem;opacity:0.85;">Author Only</span>
           `}
         </div>
-        <button type="button" class="admin-card-btn admin-action-btn admin-card-btn-view view-btn" data-id="${post.id}" title="Preview article in viewer">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-          </svg>
-          <span>View</span>
-        </button>
+        <div class="admin-card-actions-group">
+          <button type="button" class="admin-card-btn admin-action-btn admin-card-btn-photocard photocard-btn" data-id="${post.id}" title="📸 Generate Social Photocard (1080x1350)">
+            <span>📸 Photocard</span>
+          </button>
+          <button type="button" class="admin-card-btn admin-action-btn admin-card-btn-view view-btn" data-id="${post.id}" title="Preview article in viewer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <span>View</span>
+          </button>
+        </div>
       </div>
     `;
 
@@ -3541,6 +3591,12 @@ function renderAdminPostsList(posts) {
         deletePost(post.id);
       });
     }
+
+    body.querySelector('.photocard-btn')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openPhotocardStudio(post);
+    });
 
     body.querySelector('.view-btn')?.addEventListener('click', (e) => {
       e.preventDefault();
@@ -6620,6 +6676,692 @@ function handlePublicProfileBack() {
 }
 
 // ============================================================================
+// 12.5. PHOTOCARD STUDIO (1080x1350 SOCIAL MEDIA NEWS CARD GENERATOR)
+// ============================================================================
+
+/**
+ * Formats a post date for the Photocard in English or Bengali
+ * e.g. "Oct 30, 2026" or "৩০ অক্টোবর, ২০২৬"
+ */
+function formatPhotocardDate(isoString, lang = 'en') {
+  if (!isoString) return lang === 'bn' ? '৩০ অক্টোবর, ২০২৬' : 'Oct 30, 2026';
+  try {
+    const d = new Date(isoString);
+    if (isNaN(d.getTime())) return String(isoString);
+
+    if (lang === 'bn') {
+      const day = d.getDate();
+      const monthIdx = d.getMonth();
+      const year = d.getFullYear();
+      const monthsBn = [
+        'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
+        'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'
+      ];
+      const digitsBn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+      const toBn = (num) => String(num).replace(/[0-9]/g, (digit) => digitsBn[digit]);
+      return `${toBn(day)} ${monthsBn[monthIdx]}, ${toBn(year)}`;
+    } else {
+      return d.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    }
+  } catch {
+    return String(isoString);
+  }
+}
+
+let photocardHeadlineWords = [];
+let photocardBlueIndices = new Set();
+let currentHeadlineAccentColor = '#0018A8'; // Basic colors palette selection
+let currentPhotocardAuthorUsername = '';
+let currentPhotocardTopic = '';
+let currentPhotocardImageSource = 'Ocean Verse';
+
+/**
+ * Updates the attribution display line on the photocard
+ */
+function updatePhotocardAttribution() {
+  const author = currentPhotocardAuthorUsername || '@oceanverse';
+  const topic = currentPhotocardTopic || 'General';
+  const source = currentPhotocardImageSource || 'Ocean Verse';
+  if (dom.photocardAttributionDisplay) {
+    dom.photocardAttributionDisplay.textContent = `${author} | Topic: ${topic} | Image: ${source}`;
+  }
+}
+
+/**
+ * Changes the active accent color for headline words
+ */
+function setHeadlineAccentColor(color) {
+  if (!color) return;
+  currentHeadlineAccentColor = color;
+
+  if (dom.photocardHeadlineDisplay) {
+    dom.photocardHeadlineDisplay.style.setProperty('--pc-accent-color', color);
+  }
+  if (dom.photocardCanvas) {
+    dom.photocardCanvas.style.setProperty('--pc-accent-color', color);
+  }
+
+  // Update active state on swatches
+  document.querySelectorAll('.pc-color-swatch').forEach(swatch => {
+    if (swatch.dataset.color && swatch.dataset.color.toLowerCase() === color.toLowerCase()) {
+      swatch.classList.add('active');
+    } else {
+      swatch.classList.remove('active');
+    }
+  });
+
+  // Re-render chips and update the photocard headline display
+  renderHeadlineWordChips();
+  updatePhotocardHeadlineFromChips();
+}
+
+/**
+ * Renders the headline words as clickable color tag chips
+ */
+function renderHeadlineWordChips() {
+  const picker = dom.pcHeadlineWordsPicker || document.getElementById('pc-headline-words-picker');
+  if (!picker) return;
+
+  picker.innerHTML = '';
+  picker.style.setProperty('--pc-accent-color', currentHeadlineAccentColor);
+
+  photocardHeadlineWords.forEach((word, idx) => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    const isHighlighted = photocardBlueIndices.has(idx);
+    chip.className = `pc-word-chip ${isHighlighted ? 'is-active' : 'is-dark'}`;
+    chip.title = `Click to toggle: ${word}`;
+    
+    if (isHighlighted) {
+      chip.style.backgroundColor = currentHeadlineAccentColor;
+      chip.style.borderColor = currentHeadlineAccentColor;
+      chip.style.color = '#FFFFFF';
+    } else {
+      chip.style.backgroundColor = '';
+      chip.style.borderColor = '';
+      chip.style.color = '';
+    }
+
+    chip.innerHTML = `<span class="pc-word-chip-dot" style="${isHighlighted ? 'background:#fff;' : ''}"></span><span>${escapeHtml(word)}</span>`;
+    chip.addEventListener('click', () => {
+      if (photocardBlueIndices.has(idx)) {
+        photocardBlueIndices.delete(idx);
+      } else {
+        photocardBlueIndices.add(idx);
+      }
+      renderHeadlineWordChips();
+      updatePhotocardHeadlineFromChips();
+    });
+    picker.appendChild(chip);
+  });
+}
+
+/**
+ * Re-renders the photocard headline display from the current word color states
+ */
+function updatePhotocardHeadlineFromChips() {
+  if (!dom.photocardHeadlineDisplay) return;
+
+  if (photocardHeadlineWords.length === 0) {
+    dom.photocardHeadlineDisplay.innerHTML = '';
+    return;
+  }
+
+  let html = '';
+  let currentGroup = [];
+  let currentIsHighlighted = null;
+
+  photocardHeadlineWords.forEach((word, idx) => {
+    const isHighlighted = photocardBlueIndices.has(idx);
+    if (currentIsHighlighted === null) {
+      currentIsHighlighted = isHighlighted;
+      currentGroup.push(word);
+    } else if (currentIsHighlighted === isHighlighted) {
+      currentGroup.push(word);
+    } else {
+      const escaped = escapeHtml(currentGroup.join(' '));
+      if (currentIsHighlighted) {
+        html += `<span class="pc-accent-text" style="color: ${currentHeadlineAccentColor} !important;">${escaped}</span> `;
+      } else {
+        html += `<span class="pc-dark-text">${escaped}</span> `;
+      }
+      currentIsHighlighted = isHighlighted;
+      currentGroup = [word];
+    }
+  });
+
+  if (currentGroup.length > 0) {
+    const escaped = escapeHtml(currentGroup.join(' '));
+    if (currentIsHighlighted) {
+      html += `<span class="pc-accent-text" style="color: ${currentHeadlineAccentColor} !important;">${escaped}</span>`;
+    } else {
+      html += `<span class="pc-dark-text">${escaped}</span>`;
+    }
+  }
+
+  dom.photocardHeadlineDisplay.innerHTML = html;
+  adjustPhotocardPreviewScale();
+}
+
+/**
+ * Calculates and adjusts the scale of the photocard preview
+ * to fit cleanly inside the modal viewport with dynamic card height
+ */
+function adjustPhotocardPreviewScale() {
+  const container = dom.photocardViewportContainer;
+  const scaler = dom.photocardCanvasScaler;
+  const card = dom.photocardCanvas;
+  if (!container || !scaler || !card) return;
+
+  // Measure card's exact natural height in block flow
+  const naturalHeight = card.scrollHeight || card.offsetHeight;
+  if (!naturalHeight || naturalHeight < 100) return;
+
+  const containerWidth = container.clientWidth || 540;
+  const viewportHeight = window.innerHeight || 800;
+  // Available height inside modal pane
+  const maxCardH = Math.max(380, viewportHeight - 270);
+
+  const scaleW = Math.min(1, (containerWidth - 24) / 540);
+  const scaleH = Math.min(1, maxCardH / naturalHeight);
+  const scale = Math.max(0.35, Math.min(scaleW, scaleH));
+
+  scaler.style.width = '540px';
+  scaler.style.height = `${naturalHeight}px`;
+  scaler.style.transform = `scale(${scale})`;
+  // Update container height to match scaled card height exactly, avoiding extra whitespace
+  container.style.height = `${Math.round(naturalHeight * scale)}px`;
+}
+
+/**
+ * Sets the image src on the photocard with loading state handling
+ */
+function setPhotocardImage(src) {
+  if (!dom.photocardMainImg) return;
+  dom.photocardImgLoading?.classList.remove('hidden');
+
+  const onLoaded = () => {
+    dom.photocardImgLoading?.classList.add('hidden');
+    requestAnimationFrame(() => {
+      adjustPhotocardPreviewScale();
+      setTimeout(adjustPhotocardPreviewScale, 60);
+    });
+  };
+
+  dom.photocardMainImg.onload = onLoaded;
+  dom.photocardMainImg.onerror = () => {
+    dom.photocardImgLoading?.classList.add('hidden');
+    const placeholder = getDefaultPhotocardPlaceholder();
+    dom.photocardMainImg.src = placeholder;
+    requestAnimationFrame(() => {
+      adjustPhotocardPreviewScale();
+    });
+  };
+  dom.photocardMainImg.src = src;
+
+  // If already complete (e.g. data URI or cached image), update scale immediately
+  if (dom.photocardMainImg.complete && dom.photocardMainImg.naturalHeight > 0) {
+    onLoaded();
+  }
+}
+
+/**
+ * Returns a fallback vector placeholder image for the photocard
+ */
+function getDefaultPhotocardPlaceholder() {
+  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="1080" height="700" viewBox="0 0 1080 700">
+      <defs>
+        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#0F172A"/>
+          <stop offset="50%" stop-color="#1E293B"/>
+          <stop offset="100%" stop-color="#0284C7"/>
+        </linearGradient>
+      </defs>
+      <rect width="1080" height="700" fill="url(#grad)"/>
+      <g fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="4">
+        <path d="M0 350 Q 270 200, 540 350 T 1080 350"/>
+        <path d="M0 450 Q 270 300, 540 450 T 1080 450"/>
+      </g>
+      <text x="540" y="340" font-family="'Space Grotesk', sans-serif" font-size="48" font-weight="800" fill="#FFE600" text-anchor="middle">🌊 OceanVerse News</text>
+      <text x="540" y="400" font-family="'Space Grotesk', sans-serif" font-size="22" font-weight="500" fill="#E2E8F0" text-anchor="middle">Digital Stories &amp; Daily Perspectives</text>
+    </svg>
+  `);
+}
+
+/**
+ * Loads a cover image into the photocard CORS-proof:
+ * Fetches via fetch() -> converts response Blob to Base64 data: URL using FileReader.
+ * This prevents html2canvas canvas tainting.
+ */
+async function loadCorsProofCoverImage(coverUrl) {
+  if (!coverUrl || typeof coverUrl !== 'string' || coverUrl.trim() === '') {
+    setPhotocardImage(getDefaultPhotocardPlaceholder());
+    return;
+  }
+
+  const url = coverUrl.trim();
+  // If already a Base64 data URL or local blob, assign directly
+  if (url.startsWith('data:') || url.startsWith('blob:')) {
+    setPhotocardImage(url);
+    return;
+  }
+
+  dom.photocardImgLoading?.classList.remove('hidden');
+
+  try {
+    const res = await fetch(url, { mode: 'cors' });
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    const blob = await res.blob();
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (reader.result) {
+        setPhotocardImage(reader.result);
+      } else {
+        fallbackDirectImage(url);
+      }
+    };
+    reader.onerror = () => {
+      fallbackDirectImage(url);
+    };
+    reader.readAsDataURL(blob);
+  } catch (err) {
+    console.warn('Cover image CORS fetch blocked, using direct image with crossOrigin anonymous:', err);
+    fallbackDirectImage(url);
+  }
+}
+
+function fallbackDirectImage(url) {
+  if (!dom.photocardMainImg) return;
+  dom.photocardMainImg.crossOrigin = 'anonymous';
+  setPhotocardImage(url);
+}
+
+/**
+ * Handles uploading a custom local image from the user's PC
+ * Converts to Base64 data: URI to guarantee 100% CORS-proof export.
+ */
+function handlePhotocardLocalImageUpload(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    showToast('Please select a valid image file (PNG, JPG, WebP).', 'error');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    if (event.target?.result) {
+      setPhotocardImage(event.target.result);
+      showToast('Custom photo loaded into card frame!', 'success');
+    }
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+/**
+ * Switches the theme of the photocard header
+ */
+function updatePhotocardTheme(themeName) {
+  currentPhotocardTheme = themeName;
+  const card = dom.photocardCanvas;
+  if (card) {
+    card.classList.remove('theme-navy', 'theme-yellow', 'theme-dark', 'theme-crimson');
+    card.classList.add(`theme-${themeName}`);
+  }
+
+  // Update theme chips active state
+  document.querySelectorAll('.pc-theme-chip').forEach(chip => {
+    if (chip.dataset.theme === themeName) {
+      chip.classList.add('active');
+    } else {
+      chip.classList.remove('active');
+    }
+  });
+}
+
+/**
+ * Opens the Photocard Studio modal pre-filled with the given post data
+ * @param {object} post - The post object
+ */
+async function openPhotocardStudio(post) {
+  if (!post) {
+    post = activePost || (allPosts && allPosts[0]);
+    if (!post) {
+      showToast('No post available to generate photocard.', 'error');
+      return;
+    }
+  }
+
+  currentPhotocardPost = post;
+  currentPhotocardTheme = 'navy';
+  currentPhotocardLang = 'en';
+
+  // 1. Author details
+  const author = await getPostAuthorProfile(post);
+  let authorUsername = author.username || '';
+  if (!authorUsername && author.display_name) {
+    authorUsername = author.display_name.replace(/\s+/g, '').toLowerCase();
+  }
+  if (!authorUsername) authorUsername = 'oceanverse';
+  if (!authorUsername.startsWith('@')) authorUsername = '@' + authorUsername;
+
+  // 2. Fixed & post-driven text
+  const defaultBrand = 'OceanVerse';
+  const defaultTopic = post.topic || 'General';
+  const defaultDateEn = formatPhotocardDate(post.created_at, 'en');
+  const defaultSummary = post.summary || post.title || 'Read the full story on Ocean Verse.';
+
+  currentPhotocardAuthorUsername = authorUsername;
+  currentPhotocardTopic = defaultTopic;
+  currentPhotocardImageSource = 'Ocean Verse';
+  if (dom.pcImageSourceInput) dom.pcImageSourceInput.value = currentPhotocardImageSource;
+
+  if (dom.pcDateToggleEn) dom.pcDateToggleEn.classList.add('active');
+  if (dom.pcDateToggleBn) dom.pcDateToggleBn.classList.remove('active');
+
+  if (dom.pcSliderHeadlineSize) dom.pcSliderHeadlineSize.value = 28;
+  if (dom.pcHeadlineSizeVal) dom.pcHeadlineSizeVal.textContent = '28px';
+
+  // 3. Update preview displays
+  updatePhotocardTheme('navy');
+  setHeadlineAccentColor('#0018A8');
+  if (dom.photocardBrandDisplay) dom.photocardBrandDisplay.textContent = defaultBrand;
+  if (dom.photocardTopicDisplay) dom.photocardTopicDisplay.textContent = defaultTopic;
+  if (dom.photocardDateDisplay) dom.photocardDateDisplay.textContent = defaultDateEn;
+  updatePhotocardAttribution();
+  if (dom.photocardSummaryDisplay) dom.photocardSummaryDisplay.textContent = defaultSummary;
+
+  // 4. Headline word tagging setup
+  photocardHeadlineWords = (post.title || 'Untitled Article').trim().split(/\s+/).filter(Boolean);
+  if (photocardHeadlineWords.length === 0) photocardHeadlineWords = ['Untitled', 'Article'];
+
+  // Default: first half Royal Blue, remainder Black
+  const mid = Math.ceil(photocardHeadlineWords.length / 2);
+  photocardBlueIndices = new Set();
+  for (let i = 0; i < mid; i++) {
+    photocardBlueIndices.add(i);
+  }
+
+  if (dom.photocardHeadlineDisplay) {
+    dom.photocardHeadlineDisplay.style.fontSize = '28px';
+  }
+  renderHeadlineWordChips();
+  updatePhotocardHeadlineFromChips();
+
+  // 5. Fixed Bottom Footer
+  if (dom.photocardFooter) dom.photocardFooter.classList.remove('hidden');
+  if (dom.photocardFooterBadgeDisplay) dom.photocardFooterBadgeDisplay.innerHTML = '<span>TRENDING</span>';
+  if (dom.photocardFooterCalloutDisplay) dom.photocardFooterCalloutDisplay.innerHTML = '<span>Read the full article on Ocean Verse</span>';
+  if (dom.photocardFooterDomainDisplay) dom.photocardFooterDomainDisplay.innerHTML = '<span>oceanverse.com.bd</span>';
+
+  // 6. Load cover image CORS-proof
+  loadCorsProofCoverImage(post.cover_image);
+
+  // 7. Open Modal
+  dom.photocardModal?.classList.remove('hidden');
+  document.body.classList.add('modal-open');
+
+  // Adjust preview scaling after render
+  requestAnimationFrame(() => {
+    adjustPhotocardPreviewScale();
+  });
+}
+
+/**
+ * Closes the Photocard Studio modal
+ */
+function closePhotocardStudio() {
+  dom.photocardModal?.classList.add('hidden');
+  document.body.classList.remove('modal-open');
+}
+
+/**
+ * Renders the photocard to a crisp HD 1080px canvas via html2canvas
+ * using onclone typography baseline compensations so exported text is
+ * perfectly centered and exactly matches the live preview
+ */
+async function generatePhotocardExportCanvas() {
+  const card = document.getElementById('photocard-canvas');
+  if (!card) return null;
+
+  if (typeof html2canvas === 'undefined') {
+    showToast('html2canvas library is still loading. Please try again in a moment.', 'error');
+    return null;
+  }
+
+  // Ensure all custom fonts (Bengali, Space Grotesk) are fully loaded before rendering
+  if (document.fonts && document.fonts.ready) {
+    try {
+      await document.fonts.ready;
+    } catch (_) {}
+  }
+
+  const canvas = await html2canvas(card, {
+    scale: 2, // 540px width at 2x scale = 1080px crisp HD export
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: '#0F172A',
+    scrollX: 0,
+    scrollY: 0,
+    logging: false,
+    onclone: (clonedDoc) => {
+      // 1. Reset container & scaler transforms in cloned DOM
+      const clonedScaler = clonedDoc.getElementById('photocard-canvas-scaler');
+      if (clonedScaler) {
+        clonedScaler.style.transform = 'none';
+        clonedScaler.style.width = '540px';
+        clonedScaler.style.height = 'auto';
+        clonedScaler.style.padding = '0';
+        clonedScaler.style.margin = '0';
+      }
+      const clonedContainer = clonedDoc.getElementById('photocard-viewport-container');
+      if (clonedContainer) {
+        clonedContainer.style.overflow = 'visible';
+        clonedContainer.style.width = '540px';
+        clonedContainer.style.height = 'auto';
+      }
+      const clonedCard = clonedDoc.getElementById('photocard-canvas');
+      if (clonedCard) {
+        clonedCard.style.boxShadow = 'none';
+        clonedCard.style.border = 'none';
+        clonedCard.style.margin = '0';
+      }
+
+      // 2. Compensate for html2canvas font baseline overestimation on each text element
+      const brand = clonedDoc.querySelector('.photocard-brand-name');
+      if (brand) {
+        brand.style.position = 'relative';
+        brand.style.top = '-12px';
+      }
+      const topicPill = clonedDoc.querySelector('.photocard-topic-pill');
+      if (topicPill) {
+        topicPill.style.display = 'inline-flex';
+        topicPill.style.alignItems = 'center';
+        topicPill.style.justifyContent = 'center';
+      }
+      const topic = clonedDoc.querySelector('.photocard-topic-pill span');
+      if (topic) {
+        topic.style.position = 'relative';
+        topic.style.top = '-10px';
+        topic.style.display = 'inline-block';
+        topic.style.verticalAlign = 'middle';
+      }
+      const topicIcon = clonedDoc.querySelector('.photocard-topic-pill svg');
+      if (topicIcon) {
+        topicIcon.style.display = 'inline-block';
+        topicIcon.style.verticalAlign = 'middle';
+      }
+      const dateLine = clonedDoc.querySelector('.photocard-date-line');
+      if (dateLine) {
+        dateLine.style.position = 'relative';
+        dateLine.style.top = '-9px';
+      }
+      const headline = clonedDoc.querySelector('.photocard-headline');
+      if (headline) {
+        const fontSize = parseFloat(window.getComputedStyle(headline).fontSize) || 28;
+        headline.style.position = 'relative';
+        headline.style.top = '-' + Math.round(fontSize * 0.64) + 'px';
+      }
+      const attr = clonedDoc.querySelector('.photocard-attribution');
+      if (attr) {
+        attr.style.position = 'relative';
+        attr.style.top = '-9px';
+      }
+      const summary = clonedDoc.querySelector('.photocard-summary');
+      if (summary) {
+        summary.style.position = 'relative';
+        summary.style.top = '-9px';
+      }
+      // 3. Footer Banner elements (Pink badge, Callout text, Domain) - lifted to -8px
+      const badge = clonedDoc.getElementById('photocard-footer-badge-display') || clonedDoc.querySelector('.photocard-footer-badge');
+      if (badge) {
+        badge.style.position = 'static';
+        badge.style.top = '0';
+        const badgeSpan = badge.querySelector('span');
+        if (badgeSpan) {
+          badgeSpan.style.position = 'relative';
+          badgeSpan.style.top = '-8px';
+          badgeSpan.style.display = 'inline-block';
+        } else {
+          badge.innerHTML = `<span style="position:relative; top:-8px; display:inline-block;">${escapeHtml(badge.textContent.trim())}</span>`;
+        }
+      }
+
+      const callout = clonedDoc.getElementById('photocard-footer-callout-display') || clonedDoc.querySelector('.photocard-footer-callout');
+      if (callout) {
+        callout.style.position = 'static';
+        callout.style.top = '0';
+        callout.style.overflow = 'visible';
+        callout.style.textOverflow = 'clip';
+        const calloutSpan = callout.querySelector('span');
+        if (calloutSpan) {
+          calloutSpan.style.position = 'relative';
+          calloutSpan.style.top = '-8px';
+          calloutSpan.style.display = 'inline-block';
+        } else {
+          callout.innerHTML = `<span style="position:relative; top:-8px; display:inline-block;">${escapeHtml(callout.textContent.trim())}</span>`;
+        }
+      }
+
+      const domain = clonedDoc.getElementById('photocard-footer-domain-display') || clonedDoc.querySelector('.photocard-footer-domain');
+      if (domain) {
+        domain.style.position = 'static';
+        domain.style.top = '0';
+        domain.style.overflow = 'visible';
+        const domainSpan = domain.querySelector('span');
+        if (domainSpan) {
+          domainSpan.style.position = 'relative';
+          domainSpan.style.top = '-8px';
+          domainSpan.style.display = 'inline-block';
+        } else {
+          domain.innerHTML = `<span style="position:relative; top:-8px; display:inline-block;">${escapeHtml(domain.textContent.trim())}</span>`;
+        }
+      }
+    }
+  });
+
+  return canvas;
+}
+
+/**
+ * Downloads the photocard as a crisp 1080px wide HD PNG (540px canvas at scale: 2)
+ */
+async function downloadPhotocardHD() {
+  const downloadBtn = dom.photocardDownloadBtn;
+  const originalHtml = downloadBtn ? downloadBtn.innerHTML : '';
+
+  try {
+    if (downloadBtn) {
+      downloadBtn.disabled = true;
+      downloadBtn.innerHTML = `
+        <svg class="pc-spinner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+          <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+          <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"></path>
+        </svg>
+        <span>Exporting HD PNG...</span>
+      `;
+    }
+
+    const canvas = await generatePhotocardExportCanvas();
+    if (!canvas) return;
+
+    const dataUrl = canvas.toDataURL('image/png');
+    const safeTitle = (currentPhotocardPost?.slug || currentPhotocardPost?.title || 'news-card')
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, '-')
+      .slice(0, 40);
+    const filename = `photocard-${safeTitle}-${Date.now()}.png`;
+
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    showToast('🎉 HD Photocard downloaded!', 'success');
+  } catch (err) {
+    console.error('Failed to generate photocard canvas:', err);
+    showToast('Failed to export photocard. If the image is blocked, click "Replace Card Image" to select a photo from your PC.', 'error');
+  } finally {
+    if (downloadBtn) {
+      downloadBtn.disabled = false;
+      downloadBtn.innerHTML = originalHtml;
+    }
+  }
+}
+
+/**
+ * Copies the photocard image directly to the system clipboard
+ */
+async function copyPhotocardToClipboard() {
+  const copyBtn = dom.photocardCopyClipboardBtn;
+  const originalHtml = copyBtn ? copyBtn.innerHTML : '';
+
+  try {
+    if (copyBtn) {
+      copyBtn.disabled = true;
+      copyBtn.innerHTML = `<span>Copying...</span>`;
+    }
+
+    const canvas = await generatePhotocardExportCanvas();
+    if (!canvas) return;
+
+    canvas.toBlob(async (blob) => {
+      if (!blob) throw new Error('Could not create image blob');
+      if (navigator.clipboard && window.ClipboardItem) {
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': blob })
+          ]);
+          showToast('📋 Photocard copied to clipboard!', 'success');
+        } catch (clipErr) {
+          console.warn('Clipboard write error:', clipErr);
+          showToast('Direct image clipboard copy is restricted in this environment. Please use Download HD.', 'info');
+        }
+      } else {
+        showToast('Direct image clipboard copy is not supported in this browser. Please use Download HD.', 'info');
+      }
+    }, 'image/png');
+  } catch (err) {
+    console.error('Clipboard copy error:', err);
+    showToast('Could not copy image to clipboard. Please download instead.', 'error');
+  } finally {
+    if (copyBtn) {
+      copyBtn.disabled = false;
+      copyBtn.innerHTML = originalHtml;
+    }
+  }
+}
+
+// ============================================================================
 // 13. EVENT LISTENERS
 // ============================================================================
 
@@ -6936,6 +7678,95 @@ function initEventListeners() {
     dom.copyLinkBtn?.click();
   });
 
+  // Photocard Studio Triggers
+  dom.articlePhotocardBtn?.addEventListener('click', () => {
+    if (activePost) openPhotocardStudio(activePost);
+  });
+  dom.sidebarPhotocardBtn?.addEventListener('click', () => {
+    if (activePost) openPhotocardStudio(activePost);
+  });
+
+  // Photocard Studio Modal Actions
+  dom.photocardModalCloseBtn?.addEventListener('click', closePhotocardStudio);
+  dom.photocardDoneBtn?.addEventListener('click', closePhotocardStudio);
+  dom.photocardModal?.addEventListener('click', (e) => {
+    if (e.target === dom.photocardModal) closePhotocardStudio();
+  });
+  dom.photocardDownloadBtn?.addEventListener('click', downloadPhotocardHD);
+  dom.photocardCopyClipboardBtn?.addEventListener('click', copyPhotocardToClipboard);
+
+  // Photocard Image Source / Credit Input
+  dom.pcImageSourceInput?.addEventListener('input', () => {
+    currentPhotocardImageSource = dom.pcImageSourceInput.value.trim() || 'Ocean Verse';
+    updatePhotocardAttribution();
+    adjustPhotocardPreviewScale();
+  });
+
+  // Photocard Theme Switcher Chips
+  document.querySelectorAll('.pc-theme-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const theme = chip.dataset.theme || 'navy';
+      updatePhotocardTheme(theme);
+    });
+  });
+
+  // Photocard Date Language Toggles
+  dom.pcDateToggleEn?.addEventListener('click', () => {
+    currentPhotocardLang = 'en';
+    dom.pcDateToggleEn.classList.add('active');
+    dom.pcDateToggleBn?.classList.remove('active');
+    const formatted = formatPhotocardDate(currentPhotocardPost?.created_at, 'en');
+    if (dom.photocardDateDisplay) dom.photocardDateDisplay.textContent = formatted;
+  });
+
+  dom.pcDateToggleBn?.addEventListener('click', () => {
+    currentPhotocardLang = 'bn';
+    dom.pcDateToggleBn.classList.add('active');
+    dom.pcDateToggleEn?.classList.remove('active');
+    const formatted = formatPhotocardDate(currentPhotocardPost?.created_at, 'bn');
+    if (dom.photocardDateDisplay) dom.photocardDateDisplay.textContent = formatted;
+  });
+
+  // Headline Highlight Color Swatches
+  document.querySelectorAll('.pc-color-swatch[data-color]').forEach(swatch => {
+    swatch.addEventListener('click', () => {
+      const color = swatch.getAttribute('data-color');
+      if (color) setHeadlineAccentColor(color);
+    });
+  });
+
+  // Headline Word Color Tagger Presets
+  dom.pcBtnHalfBlue?.addEventListener('click', () => {
+    photocardBlueIndices = new Set();
+    const mid = Math.ceil(photocardHeadlineWords.length / 2);
+    for (let i = 0; i < mid; i++) photocardBlueIndices.add(i);
+    renderHeadlineWordChips();
+    updatePhotocardHeadlineFromChips();
+  });
+
+  dom.pcBtnAllBlue?.addEventListener('click', () => {
+    photocardBlueIndices = new Set(photocardHeadlineWords.map((_, i) => i));
+    renderHeadlineWordChips();
+    updatePhotocardHeadlineFromChips();
+  });
+
+  dom.pcBtnAllBlack?.addEventListener('click', () => {
+    photocardBlueIndices = new Set();
+    renderHeadlineWordChips();
+    updatePhotocardHeadlineFromChips();
+  });
+
+  // Headline Font Size Slider
+  dom.pcSliderHeadlineSize?.addEventListener('input', () => {
+    const size = dom.pcSliderHeadlineSize.value;
+    if (dom.pcHeadlineSizeVal) dom.pcHeadlineSizeVal.textContent = `${size}px`;
+    if (dom.photocardHeadlineDisplay) dom.photocardHeadlineDisplay.style.fontSize = `${size}px`;
+    adjustPhotocardPreviewScale();
+  });
+
+  // Resize Photocard preview dynamically
+  window.addEventListener('resize', adjustPhotocardPreviewScale);
+
   // Article Admin Action Buttons
   dom.articleAdminEditBtn?.addEventListener('click', () => {
     if (activePost) {
@@ -7235,6 +8066,8 @@ function initEventListeners() {
         closeWriterModal();
       } else if (dom.topWritersModal && !dom.topWritersModal.classList.contains('hidden')) {
         closeTopWritersModal();
+      } else if (dom.photocardModal && !dom.photocardModal.classList.contains('hidden')) {
+        closePhotocardStudio();
       }
     }
   });
@@ -7246,6 +8079,9 @@ window.openPublicProfileView = openPublicProfileView;
 window.openProfileView = openProfileView;
 window.openArticleView = openArticleView;
 window.openPostByIdOrSlug = openPostByIdOrSlug;
+window.openPhotocardStudio = openPhotocardStudio;
+window.closePhotocardStudio = closePhotocardStudio;
+window.downloadPhotocardHD = downloadPhotocardHD;
 window.selectTopic = selectTopic;
 window.filterByTopic = filterByTopic;
 window.expandTopics = expandTopics;
