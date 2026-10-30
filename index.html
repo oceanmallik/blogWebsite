@@ -41,7 +41,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=7.4">
+  <link rel="stylesheet" href="style.css?v=7.5">
 </head>
 <body>
   <!-- Header / Navigation -->
@@ -2282,15 +2282,47 @@
     <span>Top</span>
   </button>
 
-  <!-- Site Footer -->
-  <footer class="site-footer">
+  <!-- Site Footer (Simple & Clean) -->
+  <footer class="site-footer" id="site-footer">
     <div class="footer-container">
-      <div class="footer-brand">
-        <span class="footer-logo">🌊 BartaWire</span>
-        <span class="footer-desc">Stories, perspectives, and reflections from the digital tide.</span>
+      <div class="footer-main">
+        <div class="footer-brand">
+          <a href="#" class="brand-logo footer-logo" id="footer-brand-logo" aria-label="BartaWire Home">
+            <div class="logo-icon-wrap">
+              <svg class="ocean-wave-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12c2.5-3 5-3 7.5 0s5 3 7.5 0 5-3 5-3"></path>
+                <path d="M2 17c2.5-3 5-3 7.5 0s5 3 7.5 0 5-3 5-3"></path>
+              </svg>
+            </div>
+            <div class="brand-text">
+              <span class="brand-name"><span class="brand-title">Barta<span class="brand-highlight">Wire</span></span></span>
+            </div>
+          </a>
+          <p class="footer-tagline">Stories, ideas, and perspectives from the digital tide.</p>
+        </div>
+
+        <div class="footer-actions">
+          <a href="https://instagram.com/oceanmallik" target="_blank" rel="noopener noreferrer" class="footer-btn footer-btn-instagram" title="Follow on Instagram" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+            </svg>
+            <span>Instagram</span>
+          </a>
+
+          <a href="mailto:oceanmallik@oceanmallik.com?subject=Hello%20BartaWire" class="footer-btn footer-btn-contact" title="Contact Now" aria-label="Contact Now">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16" aria-hidden="true">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+            <span>Contact Now</span>
+          </a>
+        </div>
       </div>
-      <div class="footer-links">
-        <span>&copy; 2026 BartaWire. All rights reserved.</span>
+
+      <div class="footer-bottom">
+        <span class="footer-copy">&copy; 2026 BartaWire. All rights reserved.</span>
       </div>
     </div>
   </footer>
@@ -2299,7 +2331,7 @@
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
   <!-- Application Logic -->
-  <script src="app.js?v=7.4"></script>
+  <script src="app.js?v=7.5"></script>
 </body>
 </html>
 

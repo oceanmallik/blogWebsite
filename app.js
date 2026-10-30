@@ -257,6 +257,9 @@ function initDOM() {
   dom.zapIcon = document.querySelector('.zap-icon');
   dom.themeToggleLabel = document.querySelector('.theme-toggle-label');
 
+  // Footer Elements
+  dom.footerBrandLogo = document.getElementById('footer-brand-logo');
+
   // Auth & Profile Navbar Elements
   dom.navAuthContainer = document.getElementById('nav-auth-container');
   dom.navLoginBtn = document.getElementById('nav-login-btn');
@@ -8662,6 +8665,12 @@ function initEventListeners() {
       console.warn('Clipboard write error:', err);
       showToast('Failed to copy email address', 'error');
     }
+  });
+
+  // Footer Brand Link
+  dom.footerBrandLogo?.addEventListener('click', (e) => {
+    e.preventDefault();
+    returnToHomeView();
   });
 
   // Escape key closes open modals
