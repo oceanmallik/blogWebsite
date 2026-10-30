@@ -198,8 +198,11 @@ function initDOM() {
   dom.photocardModal = document.getElementById('photocard-modal');
   dom.photocardModalCloseBtn = document.getElementById('photocard-modal-close-btn');
   dom.photocardDoneBtn = document.getElementById('pc-modal-done-btn');
+  dom.photocardDoneBtnBottom = document.getElementById('pc-modal-done-btn-bottom');
   dom.photocardDownloadBtn = document.getElementById('photocard-download-btn');
+  dom.photocardDownloadBtnBottom = document.getElementById('photocard-download-btn-bottom');
   dom.photocardCopyClipboardBtn = document.getElementById('pc-copy-clipboard-btn');
+  dom.photocardCopyClipboardBtnBottom = document.getElementById('pc-copy-clipboard-btn-bottom');
   dom.photocardCanvas = document.getElementById('photocard-canvas');
   dom.photocardCanvasScaler = document.getElementById('photocard-canvas-scaler');
   dom.photocardViewportContainer = document.getElementById('photocard-viewport-container');
@@ -6975,7 +6978,9 @@ function updatePhotocardHeadlineFromChips() {
 
 /**
  * Calculates and adjusts the scale of the photocard preview
- * to fit cleanly inside the modal viewport with dynamic card height
+ * to fit cleanly inside the modal viewport with dynamic card height.
+ * On mobile, fits to available preview pane width with top-center origin
+ * and dynamically sizes container height to eliminate clipping and dead space.
  */
 function adjustPhotocardPreviewScale() {
   const container = dom.photocardViewportContainer;
@@ -6987,16 +6992,49 @@ function adjustPhotocardPreviewScale() {
   const naturalHeight = card.scrollHeight || card.offsetHeight;
   if (!naturalHeight || naturalHeight < 100) return;
 
-  const containerWidth = container.clientWidth || 450;
-  const containerHeight = container.clientHeight || 480;
+  const isMobile = window.innerWidth <= 1024;
 
-  const scaleW = Math.min(1, containerWidth / 540);
-  const scaleH = Math.min(1, containerHeight / naturalHeight);
-  const scale = Math.max(0.35, Math.min(scaleW, scaleH));
+  if (isMobile) {
+    const previewPane = container.closest('.photocard-preview-pane');
+    const paneWidth = previewPane ? previewPane.clientWidth : container.clientWidth;
+    // Available width subtracts padding (typically 12px on each side = 24px)
+    const availableWidth = Math.max(260, Math.min(540, (paneWidth || window.innerWidth - 32) - 20));
 
-  scaler.style.width = '540px';
-  scaler.style.height = `${naturalHeight}px`;
-  scaler.style.transform = `scale(${scale})`;
+    const scale = Math.max(0.35, Math.min(1, availableWidth / 540));
+    const scaledWidth = Math.round(540 * scale);
+    const scaledHeight = Math.round(naturalHeight * scale);
+
+    scaler.style.width = '540px';
+    scaler.style.height = `${naturalHeight}px`;
+    scaler.style.transformOrigin = 'top center';
+    scaler.style.transform = `scale(${scale})`;
+    scaler.style.margin = '0 auto';
+
+    // Container hugs the exact scaled card height so actions bar sits directly below
+    container.style.width = `${scaledWidth}px`;
+    container.style.maxWidth = '100%';
+    container.style.height = `${scaledHeight + 4}px`;
+    container.style.minHeight = `${scaledHeight + 4}px`;
+  } else {
+    // Desktop layout fits both width and height within fixed modal height
+    const containerWidth = container.clientWidth || 450;
+    const containerHeight = container.clientHeight || 480;
+
+    const scaleW = Math.min(1, (containerWidth - 10) / 540);
+    const scaleH = Math.min(1, (containerHeight - 10) / naturalHeight);
+    const scale = Math.max(0.35, Math.min(scaleW, scaleH));
+
+    scaler.style.width = '540px';
+    scaler.style.height = `${naturalHeight}px`;
+    scaler.style.transformOrigin = 'center center';
+    scaler.style.transform = `scale(${scale})`;
+    scaler.style.margin = '0 auto';
+
+    container.style.width = '100%';
+    container.style.maxWidth = '';
+    container.style.height = '';
+    container.style.minHeight = '0';
+  }
 }
 
 /**
@@ -7100,6 +7138,20 @@ async function loadCorsProofCoverImage(coverUrl) {
 function fallbackDirectImage(url) {
   if (!dom.photocardMainImg) return;
   dom.photocardMainImg.crossOrigin = 'anonymous';
+  
+  // If crossOrigin anonymous fails on third-party servers, retry directly without crossOrigin
+  // so the photo still displays cleanly in the card preview
+  dom.photocardMainImg.onerror = () => {
+    console.warn('Image blocked with crossOrigin anonymous, retrying direct load without crossOrigin');
+    dom.photocardMainImg.removeAttribute('crossorigin');
+    dom.photocardMainImg.onerror = () => {
+      dom.photocardImgLoading?.classList.add('hidden');
+      dom.photocardMainImg.src = getDefaultPhotocardPlaceholder();
+      requestAnimationFrame(adjustPhotocardPreviewScale);
+    };
+    dom.photocardMainImg.src = url;
+  };
+
   setPhotocardImage(url);
 }
 
@@ -7249,6 +7301,7 @@ async function openPhotocardStudio(post) {
   // Adjust preview scaling after render
   requestAnimationFrame(() => {
     adjustPhotocardPreviewScale();
+    setTimeout(adjustPhotocardPreviewScale, 60);
   });
 }
 
@@ -7263,7 +7316,9 @@ function closePhotocardStudio() {
 /**
  * Renders the photocard to a crisp HD 1080px canvas via html2canvas
  * using onclone typography baseline compensations so exported text is
- * perfectly centered and exactly matches the live preview
+ * perfectly centered and exactly matches the live preview.
+ * Renders in a fixed 1200px desktop-width virtual viewport so mobile constraints
+ * never cut off or distort the exported HD card.
  */
 async function generatePhotocardExportCanvas() {
   const card = document.getElementById('photocard-canvas');
@@ -7295,6 +7350,8 @@ async function generatePhotocardExportCanvas() {
       if (clonedScaler) {
         clonedScaler.style.transform = 'none';
         clonedScaler.style.width = '540px';
+        clonedScaler.style.minWidth = '540px';
+        clonedScaler.style.maxWidth = 'none';
         clonedScaler.style.height = 'auto';
         clonedScaler.style.padding = '0';
         clonedScaler.style.margin = '0';
@@ -7303,6 +7360,8 @@ async function generatePhotocardExportCanvas() {
       if (clonedContainer) {
         clonedContainer.style.overflow = 'visible';
         clonedContainer.style.width = '540px';
+        clonedContainer.style.minWidth = '540px';
+        clonedContainer.style.maxWidth = 'none';
         clonedContainer.style.height = 'auto';
       }
       const clonedCard = clonedDoc.getElementById('photocard-canvas');
@@ -7310,6 +7369,30 @@ async function generatePhotocardExportCanvas() {
         clonedCard.style.boxShadow = 'none';
         clonedCard.style.border = 'none';
         clonedCard.style.margin = '0';
+        clonedCard.style.width = '540px';
+        clonedCard.style.minWidth = '540px';
+        clonedCard.style.maxWidth = '540px';
+      }
+
+      // Ensure modal parents don't clip cloned card on mobile
+      const clonedPane = clonedDoc.querySelector('.photocard-preview-pane');
+      if (clonedPane) {
+        clonedPane.style.overflow = 'visible';
+        clonedPane.style.width = '600px';
+        clonedPane.style.maxWidth = 'none';
+      }
+      const clonedModalBody = clonedDoc.querySelector('.photocard-modal-body');
+      if (clonedModalBody) {
+        clonedModalBody.style.overflow = 'visible';
+        clonedModalBody.style.width = '600px';
+        clonedModalBody.style.maxWidth = 'none';
+        clonedModalBody.scrollTop = 0;
+      }
+      const clonedModalCard = clonedDoc.querySelector('.photocard-modal-card');
+      if (clonedModalCard) {
+        clonedModalCard.style.overflow = 'visible';
+        clonedModalCard.style.width = '600px';
+        clonedModalCard.style.maxWidth = 'none';
       }
 
       // 2. Compensate for html2canvas font baseline overestimation on each text element
@@ -7409,50 +7492,90 @@ async function generatePhotocardExportCanvas() {
 }
 
 /**
- * Downloads the photocard as a crisp 1080px wide HD PNG (540px canvas at scale: 2)
+ * Downloads the photocard as a crisp 1080px wide HD PNG (540px canvas at scale: 2).
+ * Works reliably on mobile and desktop using Blob downloads with DataURL fallback.
  */
 async function downloadPhotocardHD() {
-  const downloadBtn = dom.photocardDownloadBtn;
-  const originalHtml = downloadBtn ? downloadBtn.innerHTML : '';
+  const downloadBtns = [
+    dom.photocardDownloadBtn,
+    dom.photocardDownloadBtnBottom
+  ].filter(Boolean);
+
+  const originalStates = downloadBtns.map(btn => ({ btn, html: btn.innerHTML }));
 
   try {
-    if (downloadBtn) {
-      downloadBtn.disabled = true;
-      downloadBtn.innerHTML = `
+    downloadBtns.forEach(btn => {
+      btn.disabled = true;
+      btn.innerHTML = `
         <svg class="pc-spinner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
           <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
           <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"></path>
         </svg>
         <span>Exporting HD PNG...</span>
       `;
-    }
+    });
 
     const canvas = await generatePhotocardExportCanvas();
     if (!canvas) return;
 
-    const dataUrl = canvas.toDataURL('image/png');
     const safeTitle = (currentPhotocardPost?.slug || currentPhotocardPost?.title || 'news-card')
       .toLowerCase()
       .replace(/[^a-z0-9_-]+/g, '-')
       .slice(0, 40);
     const filename = `photocard-${safeTitle}-${Date.now()}.png`;
 
-    const a = document.createElement('a');
-    a.href = dataUrl;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    let downloaded = false;
+
+    // 1. Try modern Blob download (optimal for mobile & desktop)
+    if (canvas.toBlob) {
+      try {
+        await new Promise((resolve) => {
+          canvas.toBlob(blob => {
+            if (!blob) {
+              resolve();
+              return;
+            }
+            try {
+              const blobUrl = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = blobUrl;
+              a.download = filename;
+              document.body.appendChild(a);
+              a.click();
+              setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(blobUrl);
+              }, 2000);
+              downloaded = true;
+            } catch (_) {}
+            resolve();
+          }, 'image/png');
+        });
+      } catch (blobErr) {
+        console.warn('Blob download failed, using dataURL fallback:', blobErr);
+      }
+    }
+
+    // 2. Direct dataURL fallback if blob download was blocked
+    if (!downloaded) {
+      const dataUrl = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => document.body.removeChild(a), 500);
+    }
 
     showToast('🎉 HD Photocard downloaded!', 'success');
   } catch (err) {
     console.error('Failed to generate photocard canvas:', err);
     showToast('Failed to export photocard. If the image is blocked, click "Replace Card Image" to select a photo from your PC.', 'error');
   } finally {
-    if (downloadBtn) {
-      downloadBtn.disabled = false;
-      downloadBtn.innerHTML = originalHtml;
-    }
+    originalStates.forEach(({ btn, html }) => {
+      btn.disabled = false;
+      btn.innerHTML = html;
+    });
   }
 }
 
@@ -7460,14 +7583,18 @@ async function downloadPhotocardHD() {
  * Copies the photocard image directly to the system clipboard
  */
 async function copyPhotocardToClipboard() {
-  const copyBtn = dom.photocardCopyClipboardBtn;
-  const originalHtml = copyBtn ? copyBtn.innerHTML : '';
+  const copyBtns = [
+    dom.photocardCopyClipboardBtn,
+    dom.photocardCopyClipboardBtnBottom
+  ].filter(Boolean);
+
+  const originalStates = copyBtns.map(btn => ({ btn, html: btn.innerHTML }));
 
   try {
-    if (copyBtn) {
-      copyBtn.disabled = true;
-      copyBtn.innerHTML = `<span>Copying...</span>`;
-    }
+    copyBtns.forEach(btn => {
+      btn.disabled = true;
+      btn.innerHTML = `<span>Copying...</span>`;
+    });
 
     const canvas = await generatePhotocardExportCanvas();
     if (!canvas) return;
@@ -7492,10 +7619,10 @@ async function copyPhotocardToClipboard() {
     console.error('Clipboard copy error:', err);
     showToast('Could not copy image to clipboard. Please download instead.', 'error');
   } finally {
-    if (copyBtn) {
-      copyBtn.disabled = false;
-      copyBtn.innerHTML = originalHtml;
-    }
+    originalStates.forEach(({ btn, html }) => {
+      btn.disabled = false;
+      btn.innerHTML = html;
+    });
   }
 }
 
@@ -7845,11 +7972,14 @@ function initEventListeners() {
   // Photocard Studio Modal Actions
   dom.photocardModalCloseBtn?.addEventListener('click', closePhotocardStudio);
   dom.photocardDoneBtn?.addEventListener('click', closePhotocardStudio);
+  dom.photocardDoneBtnBottom?.addEventListener('click', closePhotocardStudio);
   dom.photocardModal?.addEventListener('click', (e) => {
     if (e.target === dom.photocardModal) closePhotocardStudio();
   });
   dom.photocardDownloadBtn?.addEventListener('click', downloadPhotocardHD);
+  dom.photocardDownloadBtnBottom?.addEventListener('click', downloadPhotocardHD);
   dom.photocardCopyClipboardBtn?.addEventListener('click', copyPhotocardToClipboard);
+  dom.photocardCopyClipboardBtnBottom?.addEventListener('click', copyPhotocardToClipboard);
 
   // Photocard Image Source / Credit Input
   dom.pcImageSourceInput?.addEventListener('input', () => {
@@ -7922,6 +8052,9 @@ function initEventListeners() {
 
   // Resize Photocard preview dynamically
   window.addEventListener('resize', adjustPhotocardPreviewScale);
+  window.addEventListener('orientationchange', () => {
+    setTimeout(adjustPhotocardPreviewScale, 150);
+  });
 
   // Article Admin Action Buttons
   dom.articleAdminEditBtn?.addEventListener('click', () => {
