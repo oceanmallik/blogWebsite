@@ -41,7 +41,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=7.0">
+  <link rel="stylesheet" href="style.css?v=7.2">
 </head>
 <body>
   <!-- Header / Navigation -->
@@ -307,6 +307,31 @@
 
       <!-- Live Post Cards Grid -->
       <div id="posts-grid" class="posts-grid hidden"></div>
+
+      <!-- Posts Pagination (9 posts per page) -->
+      <nav id="posts-pagination" class="posts-pagination hidden" aria-label="Posts pagination">
+        <div class="pagination-container">
+          <button type="button" id="pagination-prev-btn" class="pagination-btn pagination-nav-btn" aria-label="Previous page">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" aria-hidden="true">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            <span>Previous</span>
+          </button>
+          
+          <div id="pagination-pages" class="pagination-pages" role="navigation" aria-label="Page navigation">
+            <!-- Dynamic page numbers injected here -->
+          </div>
+
+          <button type="button" id="pagination-next-btn" class="pagination-btn pagination-nav-btn" aria-label="Next page">
+            <span>Next</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+
+        <div class="pagination-info" id="pagination-info"></div>
+      </nav>
 
       <!-- Empty State -->
       <div id="empty-state" class="state-container hidden">

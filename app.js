@@ -30,6 +30,13 @@ let selectedTopic = 'all';
 window.selectedTopic = selectedTopic;
 let activePost = null;
 
+// Pagination State (9 Posts per Page)
+const POSTS_PER_PAGE = 9;
+let currentPage = 1;
+let currentFilteredCount = 0;
+window.currentPage = currentPage;
+window.POSTS_PER_PAGE = POSTS_PER_PAGE;
+
 // User Authentication & Role State
 let currentUser = null;
 let currentUserRole = null; // 'visitor' | 'admin' | null
@@ -117,6 +124,11 @@ function initDOM() {
 
   // Home View elements
   dom.postsGrid = document.getElementById('posts-grid');
+  dom.postsPagination = document.getElementById('posts-pagination');
+  dom.paginationPrevBtn = document.getElementById('pagination-prev-btn');
+  dom.paginationNextBtn = document.getElementById('pagination-next-btn');
+  dom.paginationPages = document.getElementById('pagination-pages');
+  dom.paginationInfo = document.getElementById('pagination-info');
   dom.postsSkeleton = document.getElementById('posts-skeleton');
   dom.emptyState = document.getElementById('empty-state');
   dom.errorState = document.getElementById('error-state');
@@ -1951,6 +1963,8 @@ function selectTopic(topicName, updateHash = false) {
 
   selectedTopic = normalized;
   window.selectedTopic = selectedTopic;
+  currentPage = 1;
+  window.currentPage = currentPage;
 
   updateTopicPillsUI();
   renderPostsGrid(allPosts);
@@ -2094,7 +2108,7 @@ function scrollToPostsToolbar(focusSearch = false) {
 // ============================================================================
 
 /**
- * Renders the responsive post cards grid with topic and search filters
+ * Renders the responsive post cards grid with topic, search filters, and 9-posts-per-page pagination
  */
 function renderPostsGrid(posts) {
   const query = currentFilter.trim().toLowerCase();
@@ -2113,12 +2127,13 @@ function renderPostsGrid(posts) {
     return matchesQuery && matchesTopic;
   });
 
+  currentFilteredCount = filtered.length;
+
   if (dom.postsGrid) dom.postsGrid.innerHTML = '';
 
-  // Update post count indicator
-  if (dom.postsCountText) {
-    const topicLabel = hasTopicFilter ? selectedTopic : '';
-    if (filtered.length === 0) {
+  if (filtered.length === 0) {
+    if (dom.postsCountText) {
+      const topicLabel = hasTopicFilter ? selectedTopic : '';
       if (query && hasTopicFilter) {
         dom.postsCountText.textContent = `No posts match "${query}" in ${topicLabel}`;
       } else if (hasTopicFilter) {
@@ -2128,23 +2143,12 @@ function renderPostsGrid(posts) {
       } else {
         dom.postsCountText.textContent = '0 published posts';
       }
-    } else if (query || hasTopicFilter) {
-      if (hasTopicFilter && query) {
-        dom.postsCountText.textContent = `Showing ${filtered.length} of ${posts.length} posts in ${topicLabel}`;
-      } else if (hasTopicFilter) {
-        dom.postsCountText.textContent = `Showing ${filtered.length} ${filtered.length === 1 ? 'post' : 'posts'} in ${topicLabel}`;
-      } else {
-        dom.postsCountText.textContent = `Showing ${filtered.length} of ${posts.length} posts`;
-      }
-    } else {
-      dom.postsCountText.textContent = `Showing all ${filtered.length} published ${filtered.length === 1 ? 'post' : 'posts'}`;
     }
-  }
 
-  if (filtered.length === 0) {
     dom.postsSkeleton?.classList.add('hidden');
     dom.errorState?.classList.add('hidden');
     dom.postsGrid?.classList.add('hidden');
+    dom.postsPagination?.classList.add('hidden');
     dom.emptyState?.classList.remove('hidden');
 
     const emptyTitle = dom.emptyState?.querySelector('.state-title');
@@ -2177,13 +2181,39 @@ function renderPostsGrid(posts) {
     return;
   }
 
+  // Calculate pagination bounds (9 posts per page)
+  const totalPages = Math.ceil(filtered.length / POSTS_PER_PAGE) || 1;
+  if (currentPage > totalPages) {
+    currentPage = totalPages;
+  }
+  if (currentPage < 1) {
+    currentPage = 1;
+  }
+  window.currentPage = currentPage;
+
+  const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
+  const endIndex = Math.min(startIndex + POSTS_PER_PAGE, filtered.length);
+  const pagePosts = filtered.slice(startIndex, endIndex);
+
+  // Update post count indicator
+  if (dom.postsCountText) {
+    const topicLabel = hasTopicFilter ? ` in ${selectedTopic}` : '';
+    if (totalPages > 1) {
+      dom.postsCountText.textContent = `Showing ${startIndex + 1}–${endIndex} of ${filtered.length} posts${topicLabel} • Page ${currentPage} of ${totalPages}`;
+    } else if (query || hasTopicFilter) {
+      dom.postsCountText.textContent = `Showing ${filtered.length} of ${posts.length} posts${topicLabel}`;
+    } else {
+      dom.postsCountText.textContent = `Showing all ${filtered.length} published ${filtered.length === 1 ? 'post' : 'posts'}`;
+    }
+  }
+
   const emptyTitle = dom.emptyState?.querySelector('.state-title');
   if (emptyTitle) emptyTitle.textContent = 'No published posts found';
   const resetBtn = dom.emptyResetBtn || dom.emptyState?.querySelector('#empty-reset-btn');
   if (resetBtn) resetBtn.textContent = 'View All Posts';
 
   const fragment = document.createDocumentFragment();
-  filtered.forEach(post => {
+  pagePosts.forEach(post => {
     const card = createCardElement(post);
     fragment.appendChild(card);
   });
@@ -2194,6 +2224,120 @@ function renderPostsGrid(posts) {
   dom.emptyState?.classList.add('hidden');
   dom.errorState?.classList.add('hidden');
   dom.postsGrid?.classList.remove('hidden');
+
+  renderPagination(totalPages, filtered.length, startIndex, endIndex);
+}
+
+/**
+ * Renders the pagination controls (Previous, Next, Numbered page buttons, page info)
+ * @param {number} totalPages
+ * @param {number} totalCount
+ * @param {number} startIndex
+ * @param {number} endIndex
+ */
+function renderPagination(totalPages, totalCount, startIndex, endIndex) {
+  if (!dom.postsPagination) return;
+
+  if (totalPages <= 1) {
+    dom.postsPagination.classList.add('hidden');
+    return;
+  }
+
+  dom.postsPagination.classList.remove('hidden');
+
+  // 1. Previous button state
+  if (dom.paginationPrevBtn) {
+    const hasPrev = currentPage > 1;
+    dom.paginationPrevBtn.disabled = !hasPrev;
+    dom.paginationPrevBtn.setAttribute('aria-disabled', String(!hasPrev));
+  }
+
+  // 2. Next button state
+  if (dom.paginationNextBtn) {
+    const hasNext = currentPage < totalPages;
+    dom.paginationNextBtn.disabled = !hasNext;
+    dom.paginationNextBtn.setAttribute('aria-disabled', String(!hasNext));
+  }
+
+  // 3. Generate page number buttons with smart ellipsis
+  if (dom.paginationPages) {
+    dom.paginationPages.innerHTML = '';
+    const pages = getPaginationPageNumbers(currentPage, totalPages);
+
+    pages.forEach(item => {
+      if (item === '...') {
+        const ellipsis = document.createElement('span');
+        ellipsis.className = 'pagination-ellipsis';
+        ellipsis.innerHTML = '&hellip;';
+        ellipsis.setAttribute('aria-hidden', 'true');
+        dom.paginationPages.appendChild(ellipsis);
+      } else {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pagination-btn pagination-num' + (item === currentPage ? ' active' : '');
+        btn.textContent = String(item);
+        btn.setAttribute('data-page', String(item));
+        btn.setAttribute('aria-label', `Go to page ${item}`);
+        if (item === currentPage) {
+          btn.setAttribute('aria-current', 'page');
+        }
+        btn.addEventListener('click', () => {
+          goToPage(item);
+        });
+        dom.paginationPages.appendChild(btn);
+      }
+    });
+  }
+
+  // 4. Update pagination info
+  if (dom.paginationInfo) {
+    dom.paginationInfo.textContent = `Showing articles ${startIndex + 1}–${endIndex} of ${totalCount} (Page ${currentPage} of ${totalPages})`;
+  }
+}
+
+/**
+ * Computes the page numbers array with ellipses for pagination navigation
+ * @param {number} current
+ * @param {number} total
+ * @returns {Array<number|string>}
+ */
+function getPaginationPageNumbers(current, total) {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  if (current <= 4) {
+    return [1, 2, 3, 4, 5, '...', total];
+  }
+
+  if (current >= total - 3) {
+    return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+  }
+
+  return [1, '...', current - 1, current, current + 1, '...', total];
+}
+
+/**
+ * Transitions to a target page, re-renders the grid, and scrolls to top of posts
+ * @param {number} targetPage
+ */
+function goToPage(targetPage) {
+  if (targetPage === currentPage || targetPage < 1) return;
+  currentPage = targetPage;
+  window.currentPage = currentPage;
+
+  renderPostsGrid(allPosts);
+
+  // Smoothly scroll up to the top of the posts section
+  if (dom.postsToolbar) {
+    const headerOffset = 80;
+    const elementPosition = dom.postsToolbar.getBoundingClientRect().top;
+    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+    window.scrollTo({
+      top: Math.max(0, offsetPosition),
+      behavior: 'smooth'
+    });
+  }
 }
 
 /**
@@ -3113,6 +3257,8 @@ function returnToHomeView() {
   }
 
   document.title = 'OceanVerse - A Blog Site';
+  currentPage = 1;
+  window.currentPage = currentPage;
   resetArticleMetaTags();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -7987,6 +8133,8 @@ function initEventListeners() {
   // Search input live filtering
   dom.searchInput?.addEventListener('input', (e) => {
     currentFilter = e.target.value;
+    currentPage = 1;
+    window.currentPage = currentPage;
     if (currentFilter.length > 0) {
       dom.searchClearBtn?.classList.remove('hidden');
     } else {
@@ -7998,6 +8146,8 @@ function initEventListeners() {
   dom.searchClearBtn?.addEventListener('click', () => {
     dom.searchInput.value = '';
     currentFilter = '';
+    currentPage = 1;
+    window.currentPage = currentPage;
     dom.searchClearBtn?.classList.add('hidden');
     renderPostsGrid(allPosts);
   });
@@ -8010,12 +8160,28 @@ function initEventListeners() {
   dom.emptyResetBtn?.addEventListener('click', () => {
     if (dom.searchInput) dom.searchInput.value = '';
     currentFilter = '';
+    currentPage = 1;
+    window.currentPage = currentPage;
     dom.searchClearBtn?.classList.add('hidden');
     selectTopic('all', true);
   });
 
   dom.errorRetryBtn?.addEventListener('click', async () => {
     await loadPosts();
+  });
+
+  // Posts Pagination Navigation (Previous & Next)
+  dom.paginationPrevBtn?.addEventListener('click', () => {
+    if (currentPage > 1) {
+      goToPage(currentPage - 1);
+    }
+  });
+
+  dom.paginationNextBtn?.addEventListener('click', () => {
+    const totalPages = Math.ceil(currentFilteredCount / POSTS_PER_PAGE) || 1;
+    if (currentPage < totalPages) {
+      goToPage(currentPage + 1);
+    }
   });
 
   // Hero Action Buttons (Apply for Writer Access & Sign Up)
@@ -8522,6 +8688,8 @@ window.isTopicsExpanded = isTopicsExpanded;
 window.updateArticleMetaTags = updateArticleMetaTags;
 window.resetArticleMetaTags = resetArticleMetaTags;
 window.resolveOgImageUrl = resolveOgImageUrl;
+window.goToPage = goToPage;
+window.renderPagination = renderPagination;
 
 // ============================================================================
 // 15. DOM READY EXECUTION
