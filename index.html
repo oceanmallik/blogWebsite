@@ -26,7 +26,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=6.3">
+  <link rel="stylesheet" href="style.css?v=6.5">
 </head>
 <body>
   <!-- Header / Navigation -->
@@ -323,7 +323,7 @@
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
           </svg>
-          <span>Back to Posts</span>
+          <span>Back <span class="back-btn-extra">to Posts</span></span>
         </button>
 
         <div class="article-actions">
@@ -448,6 +448,30 @@
             </div>
             <h1 id="article-title" class="article-title"></h1>
             <p id="article-summary" class="article-summary-lead"></p>
+
+            <!-- Mobile-only compact author info (visible strictly on mobile screens after post summary) -->
+            <div id="article-mobile-author" class="article-mobile-author" aria-label="Author Information">
+              <div class="mobile-author-chip" id="article-mobile-author-chip" role="button" tabindex="0" title="View author's public profile">
+                <div class="mobile-author-left">
+                  <div class="mobile-author-avatar-wrap">
+                    <img id="article-mobile-author-avatar-img" class="mobile-author-avatar-img hidden" src="" alt="Author Photo">
+                    <div id="article-mobile-author-avatar-fallback" class="mobile-author-avatar-fallback">A</div>
+                  </div>
+                  <div class="mobile-author-info">
+                    <div class="mobile-author-name-row">
+                      <span class="mobile-author-by">by</span>
+                      <span id="article-mobile-author-name" class="mobile-author-name">Ocean Author</span>
+                    </div>
+                    <span id="article-mobile-author-username" class="mobile-author-handle hidden">@author</span>
+                  </div>
+                </div>
+                <div class="mobile-author-arrow" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="15" height="15">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </div>
+              </div>
+            </div>
           </header>
 
           <!-- Full Article Content Body -->

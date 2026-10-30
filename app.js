@@ -163,6 +163,12 @@ function initDOM() {
   dom.articleAuthorName = document.getElementById('article-author-name');
   dom.articleAuthorUsername = document.getElementById('article-author-username');
   dom.articleAuthorEmail = document.getElementById('article-author-email');
+  dom.articleMobileAuthor = document.getElementById('article-mobile-author');
+  dom.articleMobileAuthorChip = document.getElementById('article-mobile-author-chip');
+  dom.articleMobileAuthorAvatarImg = document.getElementById('article-mobile-author-avatar-img');
+  dom.articleMobileAuthorAvatarFallback = document.getElementById('article-mobile-author-avatar-fallback');
+  dom.articleMobileAuthorName = document.getElementById('article-mobile-author-name');
+  dom.articleMobileAuthorUsername = document.getElementById('article-mobile-author-username');
   dom.articleTitle = document.getElementById('article-title');
   dom.articleSummary = document.getElementById('article-summary');
   dom.articleDate = document.getElementById('article-date');
@@ -2661,6 +2667,39 @@ function renderArticleAuthor(author) {
   }
 
   setAuthorAvatar(dom.articleAuthorAvatarImg, dom.articleAuthorAvatarFallback, avatarUrl, name);
+
+  // Mobile-only author byline (visible after post summary on mobile)
+  if (dom.articleMobileAuthorName) {
+    dom.articleMobileAuthorName.innerHTML = escapeHtml(name);
+    if (isBanglaText(name)) {
+      dom.articleMobileAuthorName.classList.add('is-bangla');
+      dom.articleMobileAuthorName.setAttribute('lang', 'bn');
+    } else {
+      dom.articleMobileAuthorName.classList.remove('is-bangla');
+      dom.articleMobileAuthorName.removeAttribute('lang');
+    }
+    if (author?.is_verified) {
+      const vBtn = createVerifiedBadge(name, username, 15);
+      vBtn.style.marginLeft = '0.3rem';
+      dom.articleMobileAuthorName.appendChild(vBtn);
+    }
+  }
+
+  if (dom.articleMobileAuthorUsername) {
+    if (username) {
+      dom.articleMobileAuthorUsername.textContent = `@${username}`;
+      dom.articleMobileAuthorUsername.classList.remove('hidden');
+    } else {
+      dom.articleMobileAuthorUsername.textContent = '';
+      dom.articleMobileAuthorUsername.classList.add('hidden');
+    }
+  }
+
+  if (dom.articleMobileAuthorChip) {
+    dom.articleMobileAuthorChip.title = `View ${name}'s public profile`;
+  }
+
+  setAuthorAvatar(dom.articleMobileAuthorAvatarImg, dom.articleMobileAuthorAvatarFallback, avatarUrl, name);
 }
 
 /**
@@ -7509,6 +7548,24 @@ function initEventListeners() {
   dom.articleAuthorProfileBtn?.addEventListener('click', () => {
     if (currentArticleAuthor) {
       openPublicProfileView(currentArticleAuthor.id || currentArticleAuthor.username, currentArticleAuthor.username, currentArticleAuthor.display_name);
+    }
+  });
+
+  const handleMobileAuthorClick = (e) => {
+    e?.stopPropagation?.();
+    const authorId = currentArticleAuthor?.id || activePost?.author_id;
+    const authorUsername = currentArticleAuthor?.username || activePost?.author_username;
+    const authorName = currentArticleAuthor?.display_name || activePost?.author_name;
+    if (authorId || authorUsername || authorName) {
+      openPublicProfileView(authorId || authorUsername, authorUsername, authorName);
+    }
+  };
+
+  dom.articleMobileAuthorChip?.addEventListener('click', handleMobileAuthorClick);
+  dom.articleMobileAuthorChip?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleMobileAuthorClick(e);
     }
   });
   dom.profileViewPublicBtn?.addEventListener('click', () => {
