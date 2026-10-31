@@ -374,6 +374,8 @@ function initDOM() {
   dom.editorViewContainer = document.getElementById('editor-view-container');
   dom.editorWritePane = document.getElementById('editor-write-pane');
   dom.editorPreviewPane = document.getElementById('editor-preview-pane');
+  dom.editorToolbar = document.getElementById('editor-toolbar');
+  dom.editorWordCount = document.getElementById('editor-word-count');
   dom.adminPreviewAuthorCard = document.getElementById('admin-preview-author-card');
   dom.adminPreviewAvatarImg = document.getElementById('admin-preview-avatar-img');
   dom.adminPreviewAvatarFallback = document.getElementById('admin-preview-avatar-fallback');
@@ -4190,6 +4192,7 @@ function editPost(postId) {
   if (dom.adminBottomResetBtn) dom.adminBottomResetBtn.textContent = 'Cancel Edit';
 
   updateAdminPreview();
+  updateEditorWordCount();
 
   dom.adminPostForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -4224,6 +4227,7 @@ function resetAdminEditor() {
   dom.adminBottomDeleteBtn?.classList.add('hidden');
   if (dom.adminBottomResetBtn) dom.adminBottomResetBtn.textContent = 'Clear Form';
   updateAdminPreview();
+  updateEditorWordCount();
   setEditorTab('write');
 }
 
@@ -4591,6 +4595,691 @@ function toggleEditorSplit() {
   } else {
     setEditorTab('split');
   }
+}
+
+// ============================================================================
+// 10B-2. EASY MARKDOWN EDITOR TOOLBAR & FORMATTING HELPERS
+// ============================================================================
+
+let lastEditorSelection = { start: 0, end: 0 };
+
+/**
+ * Tracks the latest selection offsets inside the admin write textarea
+ */
+function trackEditorSelection() {
+  const textarea = dom.adminContent;
+  if (textarea && typeof textarea.selectionStart === 'number') {
+    lastEditorSelection.start = textarea.selectionStart;
+    lastEditorSelection.end = textarea.selectionEnd;
+  }
+}
+
+/**
+ * Retrieves the current or last known selection range in the textarea
+ * @param {HTMLTextAreaElement} textarea
+ * @returns {{ start: number, end: number }}
+ */
+function getActiveSelection(textarea) {
+  let start = textarea.selectionStart;
+  let end = textarea.selectionEnd;
+  if (document.activeElement !== textarea && typeof lastEditorSelection.start === 'number') {
+    start = lastEditorSelection.start;
+    end = lastEditorSelection.end;
+  }
+  if (typeof start !== 'number' || isNaN(start)) start = 0;
+  if (typeof end !== 'number' || isNaN(end)) end = 0;
+  return { start, end };
+}
+
+/**
+ * Trims leading and trailing whitespace from a selection range
+ * @param {string} text
+ * @param {number} start
+ * @param {number} end
+ * @returns {{ start: number, end: number, text: string }}
+ */
+function trimSelectionSpaces(text, start, end) {
+  let s = start;
+  let e = end;
+  while (s < e && /\s/.test(text[s])) s++;
+  while (e > s && /\s/.test(text[e - 1])) e--;
+  return { start: s, end: e, text: text.slice(s, e) };
+}
+
+/**
+ * Finds the boundaries of a complete word (English, Bangla, numbers) around cursor position
+ * @param {string} text
+ * @param {number} pos
+ * @returns {{ start: number, end: number, word: string }}
+ */
+function getWordBoundaries(text, pos) {
+  if (!text || pos < 0 || pos > text.length) {
+    return { start: pos, end: pos, word: '' };
+  }
+  const isWordChar = (char) => Boolean(char && /[\p{L}\p{M}\p{N}_]/u.test(char));
+  let start = pos;
+  let end = pos;
+
+  if (isWordChar(text[pos])) {
+    while (start > 0 && isWordChar(text[start - 1])) {
+      start--;
+    }
+    while (end < text.length && isWordChar(text[end])) {
+      end++;
+    }
+  } else if (pos > 0 && isWordChar(text[pos - 1])) {
+    end = pos;
+    start = pos - 1;
+    while (start > 0 && isWordChar(text[start - 1])) {
+      start--;
+    }
+  } else {
+    return { start: pos, end: pos, word: '' };
+  }
+  return { start, end, word: text.slice(start, end) };
+}
+
+/**
+ * Computes the line start and end offsets spanning the current selection
+ * @param {string} text
+ * @param {number} selStart
+ * @param {number} selEnd
+ * @returns {{ lineStart: number, lineEnd: number, linesText: string }}
+ */
+function getSelectedLineRange(text, selStart, selEnd) {
+  let lineStart = text.lastIndexOf('\n', selStart - 1);
+  lineStart = lineStart === -1 ? 0 : lineStart + 1;
+
+  let lineEnd = text.indexOf('\n', selEnd);
+  lineEnd = lineEnd === -1 ? text.length : lineEnd;
+
+  return { lineStart, lineEnd, linesText: text.slice(lineStart, lineEnd) };
+}
+
+/**
+ * Applies a text replacement to the textarea while preserving browser undo history (Ctrl+Z)
+ * @param {HTMLTextAreaElement} textarea
+ * @param {string} replacement
+ * @param {number} replaceStart
+ * @param {number} replaceEnd
+ * @param {number} [finalSelStart]
+ * @param {number} [finalSelEnd]
+ */
+function applyTextareaEdit(textarea, replacement, replaceStart, replaceEnd, finalSelStart, finalSelEnd) {
+  if (!textarea) return;
+  textarea.focus();
+
+  const rStart = typeof replaceStart === 'number' ? replaceStart : textarea.selectionStart;
+  const rEnd = typeof replaceEnd === 'number' ? replaceEnd : textarea.selectionEnd;
+
+  textarea.setSelectionRange(rStart, rEnd);
+
+  let inserted = false;
+  try {
+    inserted = document.execCommand('insertText', false, replacement);
+  } catch (err) {
+    inserted = false;
+  }
+
+  if (!inserted) {
+    textarea.setRangeText(replacement, rStart, rEnd, 'end');
+  }
+
+  const newSelStart = typeof finalSelStart === 'number' ? finalSelStart : rStart;
+  const newSelEnd = typeof finalSelEnd === 'number' ? finalSelEnd : rStart + replacement.length;
+
+  textarea.setSelectionRange(newSelStart, newSelEnd);
+  lastEditorSelection.start = newSelStart;
+  lastEditorSelection.end = newSelEnd;
+
+  textarea.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+/**
+ * Toggles bold formatting on selection, word under cursor, or inserts a placeholder
+ */
+function toggleBold() {
+  const textarea = dom.adminContent;
+  if (!textarea) return;
+  const val = textarea.value;
+  let { start, end } = getActiveSelection(textarea);
+
+  if (start !== end) {
+    const trimmed = trimSelectionSpaces(val, start, end);
+    const selText = trimmed.text;
+    const tStart = trimmed.start;
+    const tEnd = trimmed.end;
+
+    if (!selText) {
+      applyTextareaEdit(textarea, '**bold text**', start, end, start + 2, start + 11);
+      return;
+    }
+
+    // Case 1: Trimmed selection is already bold e.g. **hello**
+    if (selText.startsWith('**') && selText.endsWith('**') && selText.length >= 4) {
+      const unbolded = selText.slice(2, -2);
+      applyTextareaEdit(textarea, unbolded, tStart, tEnd, tStart, tStart + unbolded.length);
+      return;
+    }
+
+    // Case 2: Surrounding characters are ** e.g. **|hello|**
+    if (tStart >= 2 && val.slice(tStart - 2, tStart) === '**' && val.slice(tEnd, tEnd + 2) === '**') {
+      applyTextareaEdit(textarea, selText, tStart - 2, tEnd + 2, tStart - 2, tStart - 2 + selText.length);
+      return;
+    }
+
+    // Case 3: Wrap trimmed selection in **
+    const bolded = `**${selText}**`;
+    applyTextareaEdit(textarea, bolded, tStart, tEnd, tStart, tStart + bolded.length);
+    return;
+  }
+
+  // No selection: check word under cursor
+  const { start: wStart, end: wEnd, word } = getWordBoundaries(val, start);
+  if (word) {
+    // Check if word is already surrounded by **: **word**
+    if (wStart >= 2 && val.slice(wStart - 2, wStart) === '**' && val.slice(wEnd, wEnd + 2) === '**') {
+      applyTextareaEdit(textarea, word, wStart - 2, wEnd + 2, wStart - 2, wStart - 2 + word.length);
+      return;
+    }
+    if (word.startsWith('**') && word.endsWith('**') && word.length >= 4) {
+      const unbolded = word.slice(2, -2);
+      applyTextareaEdit(textarea, unbolded, wStart, wEnd, wStart, wStart + unbolded.length);
+      return;
+    }
+    const bolded = `**${word}**`;
+    applyTextareaEdit(textarea, bolded, wStart, wEnd, wStart, wStart + bolded.length);
+    return;
+  }
+
+  // Cursor on whitespace / empty
+  applyTextareaEdit(textarea, '**bold text**', start, end, start + 2, start + 11);
+}
+
+/**
+ * Toggles italic formatting on selection, word under cursor, or inserts a placeholder
+ */
+function toggleItalic() {
+  const textarea = dom.adminContent;
+  if (!textarea) return;
+  const val = textarea.value;
+  let { start, end } = getActiveSelection(textarea);
+
+  if (start !== end) {
+    const trimmed = trimSelectionSpaces(val, start, end);
+    const selText = trimmed.text;
+    const tStart = trimmed.start;
+    const tEnd = trimmed.end;
+
+    if (!selText) {
+      applyTextareaEdit(textarea, '*italic text*', start, end, start + 1, start + 12);
+      return;
+    }
+
+    // Case 1: Trimmed selection is already italic *hello* (not bold **hello**)
+    if (selText.startsWith('*') && selText.endsWith('*') && !selText.startsWith('**') && selText.length >= 2) {
+      const unitalic = selText.slice(1, -1);
+      applyTextareaEdit(textarea, unitalic, tStart, tEnd, tStart, tStart + unitalic.length);
+      return;
+    }
+
+    // Case 2: Surrounding characters are * e.g. *|hello|*
+    if (tStart >= 1 && val[tStart - 1] === '*' && val[tEnd] === '*' &&
+        (tStart < 2 || val[tStart - 2] !== '*') && (tEnd + 1 >= val.length || val[tEnd + 1] !== '*')) {
+      applyTextareaEdit(textarea, selText, tStart - 1, tEnd + 1, tStart - 1, tStart - 1 + selText.length);
+      return;
+    }
+
+    // Case 3: Wrap trimmed selection in *
+    const italicized = `*${selText}*`;
+    applyTextareaEdit(textarea, italicized, tStart, tEnd, tStart, tStart + italicized.length);
+    return;
+  }
+
+  const { start: wStart, end: wEnd, word } = getWordBoundaries(val, start);
+  if (word) {
+    if (wStart >= 1 && val[wStart - 1] === '*' && val[wEnd] === '*' &&
+        (wStart < 2 || val[wStart - 2] !== '*') && (wEnd + 1 >= val.length || val[wEnd + 1] !== '*')) {
+      applyTextareaEdit(textarea, word, wStart - 1, wEnd + 1, wStart - 1, wStart - 1 + word.length);
+      return;
+    }
+    const italicized = `*${word}*`;
+    applyTextareaEdit(textarea, italicized, wStart, wEnd, wStart, wStart + italicized.length);
+    return;
+  }
+
+  applyTextareaEdit(textarea, '*italic text*', start, end, start + 1, start + 12);
+}
+
+/**
+ * Cycles heading levels on current line(s): Normal -> ## (H2) -> ### (H3) -> Normal
+ */
+function toggleHeading() {
+  const textarea = dom.adminContent;
+  if (!textarea) return;
+  const val = textarea.value;
+  const { start: selStart, end: selEnd } = getActiveSelection(textarea);
+
+  const { lineStart, lineEnd, linesText } = getSelectedLineRange(val, selStart, selEnd);
+  const lines = linesText.split('\n');
+
+  const firstLine = lines[0] || '';
+  let targetAction = 'h2';
+  if (/^##\s+/.test(firstLine)) {
+    targetAction = 'h3';
+  } else if (/^###\s+/.test(firstLine)) {
+    targetAction = 'none';
+  } else if (/^#\s+/.test(firstLine)) {
+    targetAction = 'h2';
+  } else {
+    targetAction = 'h2';
+  }
+
+  const updatedLines = lines.map((line) => {
+    const clean = line.replace(/^#{1,6}\s+/, '');
+    if (targetAction === 'h2') {
+      return `## ${clean || 'Heading 2'}`;
+    } else if (targetAction === 'h3') {
+      return `### ${clean || 'Heading 3'}`;
+    } else {
+      return clean;
+    }
+  });
+
+  const replacement = updatedLines.join('\n');
+  applyTextareaEdit(textarea, replacement, lineStart, lineEnd, lineStart, lineStart + replacement.length);
+}
+
+/**
+ * Toggles strikethrough formatting on selection or word under cursor
+ */
+function toggleStrikethrough() {
+  const textarea = dom.adminContent;
+  if (!textarea) return;
+  const val = textarea.value;
+  let { start, end } = getActiveSelection(textarea);
+
+  if (start !== end) {
+    const trimmed = trimSelectionSpaces(val, start, end);
+    const selText = trimmed.text;
+    const tStart = trimmed.start;
+    const tEnd = trimmed.end;
+
+    if (!selText) {
+      applyTextareaEdit(textarea, '~~strikethrough text~~', start, end, start + 2, start + 20);
+      return;
+    }
+
+    if (selText.startsWith('~~') && selText.endsWith('~~') && selText.length >= 4) {
+      const unstruck = selText.slice(2, -2);
+      applyTextareaEdit(textarea, unstruck, tStart, tEnd, tStart, tStart + unstruck.length);
+      return;
+    }
+
+    if (tStart >= 2 && val.slice(tStart - 2, tStart) === '~~' && val.slice(tEnd, tEnd + 2) === '~~') {
+      applyTextareaEdit(textarea, selText, tStart - 2, tEnd + 2, tStart - 2, tStart - 2 + selText.length);
+      return;
+    }
+
+    const struck = `~~${selText}~~`;
+    applyTextareaEdit(textarea, struck, tStart, tEnd, tStart, tStart + struck.length);
+    return;
+  }
+
+  const { start: wStart, end: wEnd, word } = getWordBoundaries(val, start);
+  if (word) {
+    if (wStart >= 2 && val.slice(wStart - 2, wStart) === '~~' && val.slice(wEnd, wEnd + 2) === '~~') {
+      applyTextareaEdit(textarea, word, wStart - 2, wEnd + 2, wStart - 2, wStart - 2 + word.length);
+      return;
+    }
+    const struck = `~~${word}~~`;
+    applyTextareaEdit(textarea, struck, wStart, wEnd, wStart, wStart + struck.length);
+    return;
+  }
+
+  applyTextareaEdit(textarea, '~~strikethrough text~~', start, end, start + 2, start + 20);
+}
+
+/**
+ * Toggles blockquote prefix on selected lines
+ */
+function toggleQuote() {
+  const textarea = dom.adminContent;
+  if (!textarea) return;
+  const val = textarea.value;
+  const { start: selStart, end: selEnd } = getActiveSelection(textarea);
+
+  const { lineStart, lineEnd, linesText } = getSelectedLineRange(val, selStart, selEnd);
+  const lines = linesText.split('\n');
+
+  const allQuoted = lines.every((line) => line.trim().length === 0 || /^>\s?/.test(line));
+
+  const updatedLines = lines.map((line) => {
+    if (allQuoted) {
+      return line.replace(/^>\s?/, '');
+    } else {
+      return `> ${line.replace(/^>\s?/, '')}`;
+    }
+  });
+
+  const replacement = updatedLines.join('\n');
+  applyTextareaEdit(textarea, replacement, lineStart, lineEnd, lineStart, lineStart + replacement.length);
+}
+
+/**
+ * Toggles bullet list formatting on selected lines
+ */
+function toggleBulletList() {
+  const textarea = dom.adminContent;
+  if (!textarea) return;
+  const val = textarea.value;
+  const { start: selStart, end: selEnd } = getActiveSelection(textarea);
+
+  const { lineStart, lineEnd, linesText } = getSelectedLineRange(val, selStart, selEnd);
+  const lines = linesText.split('\n');
+
+  const allBulleted = lines.every((line) => line.trim().length === 0 || /^[-*]\s+/.test(line));
+
+  const updatedLines = lines.map((line) => {
+    if (allBulleted) {
+      return line.replace(/^[-*]\s+/, '');
+    } else {
+      const clean = line.replace(/^\d+\.\s+/, '').replace(/^[-*]\s+/, '');
+      return `- ${clean || 'List item'}`;
+    }
+  });
+
+  const replacement = updatedLines.join('\n');
+  applyTextareaEdit(textarea, replacement, lineStart, lineEnd, lineStart, lineStart + replacement.length);
+}
+
+/**
+ * Toggles numbered list formatting on selected lines
+ */
+function toggleNumberedList() {
+  const textarea = dom.adminContent;
+  if (!textarea) return;
+  const val = textarea.value;
+  const { start: selStart, end: selEnd } = getActiveSelection(textarea);
+
+  const { lineStart, lineEnd, linesText } = getSelectedLineRange(val, selStart, selEnd);
+  const lines = linesText.split('\n');
+
+  const allNumbered = lines.every((line) => line.trim().length === 0 || /^\d+\.\s+/.test(line));
+
+  let counter = 1;
+  const updatedLines = lines.map((line) => {
+    if (allNumbered) {
+      return line.replace(/^\d+\.\s+/, '');
+    } else {
+      const clean = line.replace(/^[-*]\s+/, '').replace(/^\d+\.\s+/, '');
+      const num = counter++;
+      return `${num}. ${clean || 'List item'}`;
+    }
+  });
+
+  const replacement = updatedLines.join('\n');
+  applyTextareaEdit(textarea, replacement, lineStart, lineEnd, lineStart, lineStart + replacement.length);
+}
+
+/**
+ * Prompts user for link URL/text and inserts a markdown link
+ */
+function insertLink() {
+  const textarea = dom.adminContent;
+  if (!textarea) return;
+  const val = textarea.value;
+  let { start: selStart, end: selEnd } = getActiveSelection(textarea);
+  const selectedText = val.slice(selStart, selEnd);
+
+  const isUrl = /^https?:\/\/\S+$/i.test(selectedText.trim());
+
+  if (isUrl) {
+    const label = window.prompt('Enter link text description:', 'Link');
+    if (label === null) return;
+    const replacement = `[${label || 'Link'}](${selectedText.trim()})`;
+    applyTextareaEdit(textarea, replacement, selStart, selEnd, selStart, selStart + replacement.length);
+    return;
+  }
+
+  if (selectedText.length > 0) {
+    const url = window.prompt('Enter link URL (e.g. https://...):', 'https://');
+    if (url === null) return;
+    const cleanUrl = url.trim() || 'https://';
+    const replacement = `[${selectedText}](${cleanUrl})`;
+    applyTextareaEdit(textarea, replacement, selStart, selEnd, selStart, selStart + replacement.length);
+    return;
+  }
+
+  const text = window.prompt('Enter link text:', 'Link text');
+  if (text === null) return;
+  const url = window.prompt('Enter link URL (e.g. https://...):', 'https://');
+  if (url === null) return;
+  const replacement = `[${text || 'Link text'}](${url.trim() || 'https://'})`;
+  applyTextareaEdit(textarea, replacement, selStart, selEnd, selStart, selStart + replacement.length);
+}
+
+/**
+ * Inserts a horizontal divider rule (---)
+ */
+function insertDivider() {
+  const textarea = dom.adminContent;
+  if (!textarea) return;
+  const val = textarea.value;
+  const { start: selStart, end: selEnd } = getActiveSelection(textarea);
+
+  const before = val.slice(0, selStart);
+  const after = val.slice(selEnd);
+
+  const prefix = before.length === 0 || before.endsWith('\n\n') ? '' : (before.endsWith('\n') ? '\n' : '\n\n');
+  const suffix = after.startsWith('\n\n') ? '' : (after.startsWith('\n') ? '\n' : '\n\n');
+
+  const replacement = `${prefix}---${suffix}`;
+  applyTextareaEdit(textarea, replacement, selStart, selEnd, selStart + replacement.length, selStart + replacement.length);
+}
+
+/**
+ * Strips markdown symbols from selected text or current line
+ */
+function clearFormatting() {
+  const textarea = dom.adminContent;
+  if (!textarea) return;
+  const val = textarea.value;
+  let { start: selStart, end: selEnd } = getActiveSelection(textarea);
+
+  let textToClean = '';
+  let replaceStart = selStart;
+  let replaceEnd = selEnd;
+
+  if (selStart === selEnd) {
+    const { lineStart, lineEnd, linesText } = getSelectedLineRange(val, selStart, selEnd);
+    textToClean = linesText;
+    replaceStart = lineStart;
+    replaceEnd = lineEnd;
+  } else {
+    textToClean = val.slice(selStart, selEnd);
+  }
+
+  const cleaned = textToClean
+    .replace(/\*\*\*(.*?)\*\*\*/g, '$1')
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/\*(.*?)\*/g, '$1')
+    .replace(/___(.*?)___/g, '$1')
+    .replace(/__(.*?)__/g, '$1')
+    .replace(/_(.*?)_/g, '$1')
+    .replace(/~~(.*?)~~/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .split('\n')
+    .map(line => line.replace(/^#{1,6}\s+/, '').replace(/^>\s?/, '').replace(/^([-*]|\d+\.)\s+/, ''))
+    .join('\n');
+
+  applyTextareaEdit(textarea, cleaned, replaceStart, replaceEnd, replaceStart, replaceStart + cleaned.length);
+}
+
+/**
+ * Handles Tab and Shift+Tab indentation inside the textarea
+ * @param {boolean} shiftKey
+ */
+function handleTabIndentation(shiftKey) {
+  const textarea = dom.adminContent;
+  if (!textarea) return;
+  const val = textarea.value;
+  const { start: selStart, end: selEnd } = getActiveSelection(textarea);
+
+  if (selStart === selEnd && !shiftKey) {
+    applyTextareaEdit(textarea, '  ', selStart, selEnd, selStart + 2, selStart + 2);
+    return;
+  }
+
+  const { lineStart, lineEnd, linesText } = getSelectedLineRange(val, selStart, selEnd);
+  const lines = linesText.split('\n');
+
+  const updatedLines = lines.map((line) => {
+    if (shiftKey) {
+      return line.replace(/^ {1,2}/, '');
+    } else {
+      return `  ${line}`;
+    }
+  });
+
+  const replacement = updatedLines.join('\n');
+  applyTextareaEdit(textarea, replacement, lineStart, lineEnd, lineStart, lineStart + replacement.length);
+}
+
+/**
+ * Updates the live word and character count indicator in the editor toolbar
+ */
+function updateEditorWordCount() {
+  const wordCountEl = dom.editorWordCount || document.getElementById('editor-word-count');
+  const textarea = dom.adminContent || document.getElementById('admin-content');
+  if (!wordCountEl || !textarea) return;
+
+  const text = textarea.value || '';
+  const trimmed = text.trim();
+  let wordCount = 0;
+  if (trimmed.length > 0) {
+    const words = trimmed.match(/[\p{L}\p{M}\p{N}_-]+/gu);
+    wordCount = words ? words.length : 0;
+  }
+  const charCount = text.length;
+  const wordLabel = wordCount === 1 ? '1 word' : `${wordCount} words`;
+  const charLabel = `${charCount} chars`;
+  wordCountEl.textContent = `${wordLabel} · ${charLabel}`;
+}
+
+/**
+ * Initializes the visual markdown toolbar, mobile focus retention, and PC keyboard shortcuts
+ */
+function initMarkdownEditorToolbar() {
+  const toolbar = dom.editorToolbar || document.getElementById('editor-toolbar');
+  const textarea = dom.adminContent || document.getElementById('admin-content');
+  if (!toolbar || !textarea) return;
+
+  // Track selection whenever the user interacts with the textarea
+  ['keyup', 'mouseup', 'touchend', 'select', 'input'].forEach((evt) => {
+    textarea.addEventListener(evt, trackEditorSelection, { passive: true });
+  });
+
+  // Prevent blur on pointerdown/mousedown so tapping toolbar buttons doesn't steal textarea focus
+  toolbar.addEventListener('pointerdown', (e) => {
+    const btn = e.target.closest('.editor-tool-btn');
+    if (btn) {
+      trackEditorSelection();
+      e.preventDefault();
+    }
+  });
+  toolbar.addEventListener('mousedown', (e) => {
+    const btn = e.target.closest('.editor-tool-btn');
+    if (btn) {
+      trackEditorSelection();
+      e.preventDefault();
+    }
+  });
+
+  // Handle toolbar button actions
+  toolbar.addEventListener('click', (e) => {
+    const btn = e.target.closest('.editor-tool-btn');
+    if (!btn) return;
+
+    const action = btn.dataset.action;
+    switch (action) {
+      case 'bold':
+        toggleBold();
+        break;
+      case 'italic':
+        toggleItalic();
+        break;
+      case 'heading':
+        toggleHeading();
+        break;
+      case 'strikethrough':
+        toggleStrikethrough();
+        break;
+      case 'quote':
+        toggleQuote();
+        break;
+      case 'bullet-list':
+        toggleBulletList();
+        break;
+      case 'number-list':
+        toggleNumberedList();
+        break;
+      case 'link':
+        insertLink();
+        break;
+      case 'divider':
+        insertDivider();
+        break;
+      case 'clear':
+        clearFormatting();
+        break;
+      default:
+        break;
+    }
+
+    updateEditorWordCount();
+    if (document.activeElement !== textarea) {
+      textarea.focus();
+    }
+  });
+
+  // Desktop keyboard shortcuts (Ctrl+B, Ctrl+I, Ctrl+K, Tab)
+  textarea.addEventListener('keydown', (e) => {
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    const modifier = isMac ? e.metaKey : e.ctrlKey;
+
+    if (modifier && !e.altKey) {
+      const key = e.key.toLowerCase();
+      if (key === 'b') {
+        e.preventDefault();
+        toggleBold();
+        updateEditorWordCount();
+        return;
+      }
+      if (key === 'i') {
+        e.preventDefault();
+        toggleItalic();
+        updateEditorWordCount();
+        return;
+      }
+      if (key === 'k') {
+        e.preventDefault();
+        insertLink();
+        updateEditorWordCount();
+        return;
+      }
+    }
+
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      handleTabIndentation(e.shiftKey);
+      updateEditorWordCount();
+    }
+  });
+
+  // Initial word count calculation
+  updateEditorWordCount();
 }
 
 // ============================================================================
@@ -8583,12 +9272,14 @@ function initEventListeners() {
   dom.editorToggleSplit?.addEventListener('click', toggleEditorSplit);
   dom.adminContent?.addEventListener('input', () => {
     dom.adminContent.classList.toggle('is-bangla', isBanglaText(dom.adminContent.value));
+    updateEditorWordCount();
     if (currentEditorTab === 'preview' || dom.editorViewContainer?.classList.contains('split-view')) {
       updateAdminPreview();
     }
   });
   dom.adminBottomResetBtn?.addEventListener('click', resetAdminEditor);
   initSplitViewScrollSync();
+  initMarkdownEditorToolbar();
 
   // Photo Upload Modal Listeners
   dom.photoModalCloseBtn?.addEventListener('click', closePhotoUploadModal);

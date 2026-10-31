@@ -41,7 +41,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=7.6">
+  <link rel="stylesheet" href="style.css?v=7.7">
 </head>
 <body>
   <!-- Header / Navigation -->
@@ -868,7 +868,96 @@
           <div class="standalone-content-body">
             <div id="editor-view-container" class="editor-view-container">
               <div id="editor-write-pane" class="editor-pane editor-write-pane">
-                <textarea id="admin-content" rows="18" placeholder="Write article content using Markdown (## Headings, **bold**, > Quotes, ```code```) or HTML (required)..." required></textarea>
+                <!-- Easy Markdown Formatting Toolbar for Non-Tech Writers & Mobile Users -->
+                <div class="editor-toolbar" id="editor-toolbar" role="toolbar" aria-label="Text Formatting Tools">
+                  <div class="editor-toolbar-group">
+                    <button type="button" class="editor-tool-btn" data-action="bold" title="Bold / Unbold (Ctrl+B)" aria-label="Bold">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true">
+                        <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
+                        <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
+                      </svg>
+                      <span class="tool-label">Bold</span>
+                    </button>
+                    <button type="button" class="editor-tool-btn" data-action="italic" title="Italic / Unitalic (Ctrl+I)" aria-label="Italic">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true">
+                        <line x1="19" y1="4" x2="10" y2="4"></line>
+                        <line x1="14" y1="20" x2="5" y2="20"></line>
+                        <line x1="15" y1="4" x2="9" y2="20"></line>
+                      </svg>
+                      <span class="tool-label">Italic</span>
+                    </button>
+                    <button type="button" class="editor-tool-btn" data-action="heading" title="Heading (H2 / H3 / Regular toggle)" aria-label="Heading">
+                      <span class="tool-icon-text">H</span>
+                      <span class="tool-label">Heading</span>
+                    </button>
+                    <button type="button" class="editor-tool-btn" data-action="strikethrough" title="Strikethrough" aria-label="Strikethrough">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true">
+                        <path d="M17.3 4.9c-2.3-.6-4.4-1-6.2-.9-2.7.1-5.1 1.6-4.7 4.2.4 2.3 3 3.3 5.4 3.7"></path>
+                        <path d="M4 12h16"></path>
+                        <path d="M12.5 12c1.7.3 3.6.7 4.5 1.5 1.5 1.3 1.2 3.8-1.2 4.9-2.1.9-4.8.8-7.8-.3"></path>
+                      </svg>
+                      <span class="tool-label">Strike</span>
+                    </button>
+                  </div>
+
+                  <div class="editor-toolbar-separator" aria-hidden="true"></div>
+
+                  <div class="editor-toolbar-group">
+                    <button type="button" class="editor-tool-btn" data-action="quote" title="Quote (> Quote block)" aria-label="Quote">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true">
+                        <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.75-2-2-2H4c-1.25 0-2 .75-2 2v6c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 2-1 3-2 3"></path>
+                        <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.75-2-2-2h-4c-1.25 0-2 .75-2 2v6c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 2-1 3-2 3"></path>
+                      </svg>
+                      <span class="tool-label">Quote</span>
+                    </button>
+                    <button type="button" class="editor-tool-btn" data-action="bullet-list" title="Bullet List (- item)" aria-label="Bullet List">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                      </svg>
+                      <span class="tool-label">List</span>
+                    </button>
+                    <button type="button" class="editor-tool-btn" data-action="number-list" title="Numbered List (1. item)" aria-label="Numbered List">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true">
+                        <line x1="10" y1="6" x2="21" y2="6"></line>
+                        <line x1="10" y1="12" x2="21" y2="12"></line>
+                        <line x1="10" y1="18" x2="21" y2="18"></line>
+                        <path d="M4 6h1v4"></path>
+                        <path d="M4 10h2"></path>
+                        <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path>
+                      </svg>
+                      <span class="tool-label">1. 2. 3.</span>
+                    </button>
+                    <button type="button" class="editor-tool-btn" data-action="link" title="Insert Link (Ctrl+K)" aria-label="Insert Link">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                      </svg>
+                      <span class="tool-label">Link</span>
+                    </button>
+                    <button type="button" class="editor-tool-btn" data-action="divider" title="Divider line (---)" aria-label="Divider">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                      </svg>
+                      <span class="tool-label">Line</span>
+                    </button>
+                    <button type="button" class="editor-tool-btn" data-action="clear" title="Clear Formatting (Remove symbols from selected text)" aria-label="Clear Formatting">
+                      <span class="tool-icon-text strike-tx">Tx</span>
+                      <span class="tool-label">Clear</span>
+                    </button>
+                  </div>
+
+                  <!-- Right Stats & Helper -->
+                  <div class="editor-toolbar-meta">
+                    <span id="editor-word-count" class="editor-word-count">0 words</span>
+                  </div>
+                </div>
+
+                <textarea id="admin-content" rows="18" placeholder="Start writing your story here... Tap Bold or Heading above to format easily without touching code!" required></textarea>
               </div>
               <div id="editor-preview-pane" class="editor-pane editor-preview-pane hidden">
                 <!-- Live Preview Header with Author on Left -->
@@ -2338,7 +2427,7 @@
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
   <!-- Application Logic -->
-  <script src="app.js?v=7.6"></script>
+  <script src="app.js?v=7.7"></script>
 </body>
 </html>
 
