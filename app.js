@@ -59,8 +59,8 @@ let currentPhotocardTheme = 'yellow';
 let currentPhotocardLang = 'en';
 let currentPhotocardFitMode = 'fit-width';
 
-// Default OpenGraph & Twitter Card Image Fallback
-const DEFAULT_OG_IMAGE = 'https://yourdomain.com/default-cover.png';
+// Default OpenGraph & Twitter Card Image Fallback (Official BartaWire Banner)
+const DEFAULT_OG_IMAGE = 'banner.png';
 
 // Expose state globally on window for convenient debugging
 window.supabaseClient = null;
@@ -2865,13 +2865,18 @@ function renderArticleAuthor(author) {
 /**
  * Resolves a post's cover image into an absolute https:// URL suitable for OpenGraph / Twitter cards.
  * If the image is empty, relative, a local blob/data URL, or not starting with https://,
- * falls back to the default project banner (https://yourdomain.com/default-cover.png).
+ * falls back to the default project banner (banner.png).
  *
  * @param {string} coverImage - Post cover image URL or path
  * @returns {string} Absolute HTTPS URL
  */
 function resolveOgImageUrl(coverImage) {
-  const fallbackBanner = DEFAULT_OG_IMAGE;
+  let fallbackBanner = DEFAULT_OG_IMAGE;
+  if (typeof window !== 'undefined' && window.location && window.location.origin) {
+    try {
+      fallbackBanner = new URL(DEFAULT_OG_IMAGE, window.location.origin).href;
+    } catch (_) {}
+  }
 
   if (!coverImage || typeof coverImage !== 'string') {
     return fallbackBanner;
@@ -2965,7 +2970,12 @@ function updateArticleMetaTags(post) {
 function resetArticleMetaTags() {
   const defaultTitle = 'BartaWire — Deep Dive Thoughts';
   const defaultDesc = 'A personal blogging backend and community space.';
-  const defaultImage = DEFAULT_OG_IMAGE;
+  let defaultImage = DEFAULT_OG_IMAGE;
+  if (typeof window !== 'undefined' && window.location && window.location.origin) {
+    try {
+      defaultImage = new URL(DEFAULT_OG_IMAGE, window.location.origin).href;
+    } catch (_) {}
+  }
   const homeUrl = (typeof window !== 'undefined' && window.location) ? (window.location.origin + window.location.pathname) : '';
 
   const ogTitle = document.getElementById('meta-og-title');
