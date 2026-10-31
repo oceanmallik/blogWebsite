@@ -244,6 +244,8 @@ function initDOM() {
   dom.pcBtnHalfBlue = document.getElementById('pc-btn-half-blue');
   dom.pcBtnAllBlue = document.getElementById('pc-btn-all-blue');
   dom.pcBtnAllBlack = document.getElementById('pc-btn-all-black');
+  dom.pcColorCustomInput = document.getElementById('pc-color-custom-input');
+  dom.pcColorCustomSwatch = document.getElementById('pc-color-custom-swatch');
   dom.pcHeadlineWordsPicker = document.getElementById('pc-headline-words-picker');
   dom.pcSliderHeadlineSize = document.getElementById('pc-slider-headline-size');
   dom.pcHeadlineSizeVal = document.getElementById('pc-headline-size-val');
@@ -7830,11 +7832,46 @@ function formatPhotocardDate(isoString, lang = 'en') {
 }
 
 let photocardHeadlineWords = [];
-let photocardBlueIndices = new Set();
-let currentHeadlineAccentColor = '#0018A8'; // Basic colors palette selection
+let photocardWordColors = new Map(); // wordIndex -> hex color
+let photocardBlueIndices = new Set(); // backward compatibility
+let currentHeadlineAccentColor = '#0066FF'; // Active brush color for headline words
+let selectedWordIndex = null; // Currently focused word index for color assignment
 let currentPhotocardAuthorUsername = '';
 let currentPhotocardTopic = '';
 let currentPhotocardImageSource = 'BartaWire';
+
+const PALETTE_COLOR_NAMES = {
+  '#0066ff': 'Electric Blue',
+  '#ffe500': 'BartaWire Yellow',
+  '#ff5c3a': 'Punch Coral',
+  '#c8ff00': 'Electric Lime',
+  '#00f0ff': 'Laser Cyan',
+  '#ff3dbc': 'Hot Pink',
+  '#7b00ff': 'Vivid Purple',
+  '#00e676': 'Neon Emerald',
+  '#ff9100': 'Sunset Orange',
+  '#e11d48': 'Crimson Red',
+  '#d946ef': 'Candy Fuchsia',
+  '#38bdf8': 'Sky Cyan',
+  '#14b8a6': 'Teal Mint',
+  '#f59e0b': 'Amber Gold',
+  '#0a0a0a': 'Ink Black',
+  '#ffffff': 'Crisp White'
+};
+
+/**
+ * Checks if a hex color has light perceived luminance (needs dark text for high contrast)
+ */
+function isLightColor(hex) {
+  if (!hex || typeof hex !== 'string') return false;
+  let c = hex.replace('#', '').trim();
+  if (c.length === 3) c = c.split('').map(x => x + x).join('');
+  if (c.length !== 6) return false;
+  const r = parseInt(c.substr(0, 2), 16) || 0;
+  const g = parseInt(c.substr(2, 2), 16) || 0;
+  const b = parseInt(c.substr(4, 2), 16) || 0;
+  return (r * 0.299 + g * 0.587 + b * 0.114) > 165;
+}
 
 /**
  * Updates the attribution display line on the photocard with Neo-Brutalist badge pills
@@ -7857,7 +7894,10 @@ function updatePhotocardAttribution() {
 }
 
 /**
- * Changes the active accent color for headline words
+ * Changes the active brush color for headline words.
+ * Never overrides words automatically:
+ * - If a word is currently selected, applies this color to that word.
+ * - Otherwise sets this as the active brush color ready to paint words.
  */
 function setHeadlineAccentColor(color) {
   if (!color) return;
@@ -7870,22 +7910,51 @@ function setHeadlineAccentColor(color) {
     dom.photocardCanvas.style.setProperty('--pc-accent-color', color);
   }
 
-  // Update active state on swatches
-  document.querySelectorAll('.pc-color-swatch').forEach(swatch => {
+  // Update active state on preset swatches
+  let matchedPreset = false;
+  document.querySelectorAll('.pc-color-swatch[data-color]').forEach(swatch => {
     if (swatch.dataset.color && swatch.dataset.color.toLowerCase() === color.toLowerCase()) {
       swatch.classList.add('active');
+      matchedPreset = true;
     } else {
       swatch.classList.remove('active');
     }
   });
 
-  // Re-render chips and update the photocard headline display
-  renderHeadlineWordChips();
-  updatePhotocardHeadlineFromChips();
+  const customSwatch = dom.pcColorCustomSwatch || document.getElementById('pc-color-custom-swatch');
+  if (customSwatch) {
+    if (matchedPreset) {
+      customSwatch.classList.remove('active');
+    } else {
+      customSwatch.classList.add('active');
+    }
+  }
+
+  const customInput = dom.pcColorCustomInput || document.getElementById('pc-color-custom-input');
+  if (customInput && /^#[0-9a-fA-F]{6}$/.test(color)) {
+    customInput.value = color;
+  }
+
+  // Update active color badge indicator
+  const activeDot = document.getElementById('pc-active-dot');
+  if (activeDot) activeDot.style.background = color;
+  const activeName = document.getElementById('pc-active-color-name');
+  if (activeName) {
+    const name = PALETTE_COLOR_NAMES[color.toLowerCase()] || color.toUpperCase();
+    activeName.textContent = name;
+  }
+
+  // If a word is currently selected, apply this color directly to it!
+  if (selectedWordIndex !== null && selectedWordIndex >= 0 && selectedWordIndex < photocardHeadlineWords.length) {
+    photocardWordColors.set(selectedWordIndex, color);
+    photocardBlueIndices = new Set(photocardWordColors.keys());
+    renderHeadlineWordChips();
+    updatePhotocardHeadlineFromChips();
+  }
 }
 
 /**
- * Renders the headline words as clickable color tag chips
+ * Renders the headline words as clickable color tag chips with individual multi-color support
  */
 function renderHeadlineWordChips() {
   const picker = dom.pcHeadlineWordsPicker || document.getElementById('pc-headline-words-picker');
@@ -7897,37 +7966,50 @@ function renderHeadlineWordChips() {
   photocardHeadlineWords.forEach((word, idx) => {
     const chip = document.createElement('button');
     chip.type = 'button';
-    const isHighlighted = photocardBlueIndices.has(idx);
-    chip.className = `pc-word-chip ${isHighlighted ? 'is-active' : 'is-dark'}`;
-    chip.title = `Click to toggle: ${word}`;
-    
+    const wordColor = photocardWordColors.get(idx) || null;
+    const isHighlighted = Boolean(wordColor);
+    const isSelected = (selectedWordIndex === idx);
+    chip.className = `pc-word-chip ${isHighlighted ? 'is-active' : 'is-dark'} ${isSelected ? 'is-selected' : ''}`;
+    chip.title = isHighlighted
+      ? `"${word}" is colored ${wordColor}. Click to clear, or pick another color to change.`
+      : `Click to paint "${word}" with ${currentHeadlineAccentColor}`;
+
     if (isHighlighted) {
-      const isBright = ['#ffe500', '#c8ff00', '#00f0ff', '#ffffff'].includes(currentHeadlineAccentColor.toLowerCase());
-      chip.style.backgroundColor = currentHeadlineAccentColor;
-      chip.style.borderColor = currentHeadlineAccentColor === '#111111' || currentHeadlineAccentColor === '#0a0a0a' ? 'rgba(255, 255, 255, 0.45)' : currentHeadlineAccentColor;
-      chip.style.color = isBright ? '#0A0A0A' : '#FFFFFF';
+      const isBright = isLightColor(wordColor);
+      chip.style.setProperty('background', wordColor, 'important');
+      chip.style.setProperty('border-color', (wordColor === '#111111' || wordColor === '#0a0a0a') ? 'rgba(255, 255, 255, 0.45)' : wordColor, 'important');
+      chip.style.setProperty('color', isBright ? '#0A0A0A' : '#FFFFFF', 'important');
       chip.innerHTML = `<span class="pc-word-chip-dot" style="background:${isBright ? '#0A0A0A' : '#fff'};"></span><span>${escapeHtml(word)}</span>`;
     } else {
-      chip.style.backgroundColor = '';
+      chip.style.background = '';
       chip.style.borderColor = '';
       chip.style.color = '';
       chip.innerHTML = `<span class="pc-word-chip-dot"></span><span>${escapeHtml(word)}</span>`;
     }
-    chip.addEventListener('click', () => {
-      if (photocardBlueIndices.has(idx)) {
-        photocardBlueIndices.delete(idx);
+
+    chip.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectedWordIndex = idx;
+      const current = photocardWordColors.get(idx);
+      if (current && current.toLowerCase() === currentHeadlineAccentColor.toLowerCase()) {
+        // Already has active color -> toggle off to default
+        photocardWordColors.delete(idx);
       } else {
-        photocardBlueIndices.add(idx);
+        // Apply active brush color
+        photocardWordColors.set(idx, currentHeadlineAccentColor);
       }
+      photocardBlueIndices = new Set(photocardWordColors.keys());
       renderHeadlineWordChips();
       updatePhotocardHeadlineFromChips();
     });
+
     picker.appendChild(chip);
   });
 }
 
 /**
- * Re-renders the photocard headline display from the current word color states
+ * Re-renders the photocard headline display from the current word color states.
+ * Groups consecutive words with identical color into optimized inline spans.
  */
 function updatePhotocardHeadlineFromChips() {
   if (!dom.photocardHeadlineDisplay) return;
@@ -7939,31 +8021,32 @@ function updatePhotocardHeadlineFromChips() {
 
   let html = '';
   let currentGroup = [];
-  let currentIsHighlighted = null;
+  let currentColor = null; // null for default text, or hex string for colored text
 
   photocardHeadlineWords.forEach((word, idx) => {
-    const isHighlighted = photocardBlueIndices.has(idx);
-    if (currentIsHighlighted === null) {
-      currentIsHighlighted = isHighlighted;
+    const wordColor = photocardWordColors.get(idx) || null;
+    if (currentColor === null && currentGroup.length === 0) {
+      currentColor = wordColor;
       currentGroup.push(word);
-    } else if (currentIsHighlighted === isHighlighted) {
+    } else if (currentColor === wordColor) {
       currentGroup.push(word);
     } else {
+      // Flush previous group
       const escaped = escapeHtml(currentGroup.join(' '));
-      if (currentIsHighlighted) {
-        html += `<span class="pc-accent-text" style="color: ${currentHeadlineAccentColor} !important;">${escaped}</span> `;
+      if (currentColor) {
+        html += `<span class="pc-accent-text" style="color: ${currentColor} !important;">${escaped}</span> `;
       } else {
         html += `<span class="pc-dark-text">${escaped}</span> `;
       }
-      currentIsHighlighted = isHighlighted;
+      currentColor = wordColor;
       currentGroup = [word];
     }
   });
 
   if (currentGroup.length > 0) {
     const escaped = escapeHtml(currentGroup.join(' '));
-    if (currentIsHighlighted) {
-      html += `<span class="pc-accent-text" style="color: ${currentHeadlineAccentColor} !important;">${escaped}</span>`;
+    if (currentColor) {
+      html += `<span class="pc-accent-text" style="color: ${currentColor} !important;">${escaped}</span>`;
     } else {
       html += `<span class="pc-dark-text">${escaped}</span>`;
     }
@@ -8297,10 +8380,11 @@ async function openPhotocardStudio(post) {
 
   // Default: first half in accent color, remainder in text color
   const mid = Math.ceil(photocardHeadlineWords.length / 2);
-  photocardBlueIndices = new Set();
+  photocardWordColors = new Map();
   for (let i = 0; i < mid; i++) {
-    photocardBlueIndices.add(i);
+    photocardWordColors.set(i, currentHeadlineAccentColor);
   }
+  photocardBlueIndices = new Set(photocardWordColors.keys());
 
   if (dom.photocardHeadlineDisplay) {
     dom.photocardHeadlineDisplay.style.fontSize = '28px';
@@ -8347,6 +8431,7 @@ async function openPhotocardStudio(post) {
  * Closes the Photocard Studio modal
  */
 function closePhotocardStudio() {
+  selectedWordIndex = null;
   dom.photocardModal?.classList.add('hidden');
   document.body.classList.remove('modal-open');
 }
@@ -9099,25 +9184,55 @@ function initEventListeners() {
     });
   });
 
+  // Custom Color Picker (conic-gradient wheel)
+  const onCustomColorPick = (e) => {
+    const color = e.target.value;
+    if (color) {
+      setHeadlineAccentColor(color);
+      dom.pcColorCustomSwatch?.classList.add('active');
+    }
+  };
+  dom.pcColorCustomInput?.addEventListener('input', onCustomColorPick);
+  dom.pcColorCustomInput?.addEventListener('change', onCustomColorPick);
+
   // Headline Word Color Tagger Presets
   dom.pcBtnHalfBlue?.addEventListener('click', () => {
-    photocardBlueIndices = new Set();
+    photocardWordColors = new Map();
     const mid = Math.ceil(photocardHeadlineWords.length / 2);
-    for (let i = 0; i < mid; i++) photocardBlueIndices.add(i);
+    for (let i = 0; i < mid; i++) {
+      photocardWordColors.set(i, currentHeadlineAccentColor);
+    }
+    photocardBlueIndices = new Set(photocardWordColors.keys());
     renderHeadlineWordChips();
     updatePhotocardHeadlineFromChips();
   });
 
   dom.pcBtnAllBlue?.addEventListener('click', () => {
-    photocardBlueIndices = new Set(photocardHeadlineWords.map((_, i) => i));
+    photocardWordColors = new Map();
+    photocardHeadlineWords.forEach((_, i) => {
+      photocardWordColors.set(i, currentHeadlineAccentColor);
+    });
+    photocardBlueIndices = new Set(photocardWordColors.keys());
     renderHeadlineWordChips();
     updatePhotocardHeadlineFromChips();
   });
 
   dom.pcBtnAllBlack?.addEventListener('click', () => {
+    photocardWordColors = new Map();
     photocardBlueIndices = new Set();
+    selectedWordIndex = null;
     renderHeadlineWordChips();
     updatePhotocardHeadlineFromChips();
+  });
+
+  // Deselect word when clicking outside chips and swatches
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#pc-headline-words-picker') && !e.target.closest('#pc-color-swatches') && !e.target.closest('.pc-color-custom-swatch')) {
+      if (selectedWordIndex !== null) {
+        selectedWordIndex = null;
+        renderHeadlineWordChips();
+      }
+    }
   });
 
   // Headline Font Size Slider

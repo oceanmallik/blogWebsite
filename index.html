@@ -41,7 +41,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=8.0">
+  <link rel="stylesheet" href="style.css?v=8.2">
 </head>
 <body>
   <!-- Header / Navigation -->
@@ -2306,26 +2306,48 @@
 
               <!-- Color Palette Swatches (BartaWire Design Tokens) -->
               <div class="pc-color-picker-row">
-                <label class="pc-label">Accent Color</label>
+                <div class="pc-color-picker-header">
+                  <label class="pc-label">Color Palette</label>
+                  <div class="pc-active-brush-badge" title="Currently active brush color">
+                    <span class="pc-active-dot" id="pc-active-dot" style="background:#0066FF;"></span>
+                    <span id="pc-active-color-name">Electric Blue</span>
+                  </div>
+                </div>
                 <div class="pc-color-swatches" id="pc-color-swatches" role="group" aria-label="Headline Highlight Color">
                   <button type="button" class="pc-color-swatch active" data-color="#0066FF" title="Electric Blue (#0066FF)" style="--swatch-color: #0066FF;"></button>
                   <button type="button" class="pc-color-swatch" data-color="#FFE500" title="BartaWire Yellow (#FFE500)" style="--swatch-color: #FFE500;"></button>
                   <button type="button" class="pc-color-swatch" data-color="#FF5C3A" title="Punch Coral (#FF5C3A)" style="--swatch-color: #FF5C3A;"></button>
                   <button type="button" class="pc-color-swatch" data-color="#C8FF00" title="Electric Lime (#C8FF00)" style="--swatch-color: #C8FF00;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#00F0FF" title="Laser Cyan (#00F0FF)" style="--swatch-color: #00F0FF;"></button>
                   <button type="button" class="pc-color-swatch" data-color="#FF3DBC" title="Hot Pink (#FF3DBC)" style="--swatch-color: #FF3DBC;"></button>
                   <button type="button" class="pc-color-swatch" data-color="#7B00FF" title="Vivid Purple (#7B00FF)" style="--swatch-color: #7B00FF;"></button>
-                  <button type="button" class="pc-color-swatch" data-color="#00F0FF" title="Laser Cyan (#00F0FF)" style="--swatch-color: #00F0FF;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#00E676" title="Neon Emerald (#00E676)" style="--swatch-color: #00E676;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#FF9100" title="Sunset Orange (#FF9100)" style="--swatch-color: #FF9100;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#E11D48" title="Crimson Red (#E11D48)" style="--swatch-color: #E11D48;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#D946EF" title="Candy Fuchsia (#D946EF)" style="--swatch-color: #D946EF;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#38BDF8" title="Sky Cyan (#38BDF8)" style="--swatch-color: #38BDF8;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#14B8A6" title="Teal Mint (#14B8A6)" style="--swatch-color: #14B8A6;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#F59E0B" title="Amber Gold (#F59E0B)" style="--swatch-color: #F59E0B;"></button>
                   <button type="button" class="pc-color-swatch" data-color="#0A0A0A" title="Ink Black (#0A0A0A)" style="--swatch-color: #0A0A0A;"></button>
                   <button type="button" class="pc-color-swatch" data-color="#FFFFFF" title="Crisp White (#FFFFFF)" style="--swatch-color: #FFFFFF;"></button>
+
+                  <!-- Custom Color Picker Swatch -->
+                  <label class="pc-color-custom-swatch" id="pc-color-custom-swatch" title="Pick Any Custom Color (Color Wheel)">
+                    <input type="color" id="pc-color-custom-input" class="pc-custom-color-input" value="#0066FF" aria-label="Custom color picker">
+                    <span class="pc-custom-color-wheel" aria-hidden="true"></span>
+                  </label>
                 </div>
               </div>
 
               <div class="pc-tagger-header">
-                <label class="pc-label">Tag Words in Headline</label>
+                <div>
+                  <label class="pc-label">Headline Word Colors</label>
+                  <span class="pc-tagger-hint">Click any word below to paint with the active color (or click again to clear)</span>
+                </div>
                 <div class="pc-tagger-presets">
-                  <button type="button" id="pc-btn-half-blue" class="pc-mini-btn" title="First half in highlight color, second half Black">Auto 50/50</button>
-                  <button type="button" id="pc-btn-all-blue" class="pc-mini-btn" title="Color all words in highlight color">Highlight All</button>
-                  <button type="button" id="pc-btn-all-black" class="pc-mini-btn" title="Reset all words to Black">Reset All</button>
+                  <button type="button" id="pc-btn-half-blue" class="pc-mini-btn" title="First half in active color, second half default">50/50 Split</button>
+                  <button type="button" id="pc-btn-all-blue" class="pc-mini-btn" title="Color all words in active color">Color All</button>
+                  <button type="button" id="pc-btn-all-black" class="pc-mini-btn" title="Clear color from all words">Clear All</button>
                 </div>
               </div>
               <div id="pc-headline-words-picker" class="pc-words-picker" aria-label="Headline words color picker">
@@ -2438,7 +2460,7 @@
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
   <!-- Application Logic -->
-  <script src="app.js?v=8.0"></script>
+  <script src="app.js?v=8.2"></script>
 </body>
 </html>
 

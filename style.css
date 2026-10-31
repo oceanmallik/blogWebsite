@@ -9840,10 +9840,39 @@ input[type="datetime-local"] {
 /* Headline Highlight Color Palette Swatches */
 .pc-color-picker-row {
   display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 0.35rem;
+}
+
+.pc-color-picker-header {
+  display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  margin-bottom: 0.15rem;
+}
+
+.pc-active-brush-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-color);
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  box-shadow: 1px 1px 0 var(--border-color);
+}
+
+.pc-active-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
 }
 
 .pc-color-swatches {
@@ -9879,6 +9908,74 @@ input[type="datetime-local"] {
   z-index: 2;
 }
 
+/* Custom Color Wheel Swatch */
+.pc-color-custom-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  background: #FFFFFF;
+}
+
+.pc-color-custom-swatch:hover {
+  transform: scale(1.16);
+  box-shadow: 0 0 0 2px var(--ocean-primary);
+}
+
+.pc-color-custom-swatch.active {
+  transform: scale(1.22);
+  box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px var(--ocean-primary) !important;
+  z-index: 2;
+}
+
+.pc-custom-color-wheel {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #FF0000, #FFE500, #00FF00, #00FFFF, #0000FF, #FF00FF, #FF0000);
+  pointer-events: none;
+}
+
+.pc-custom-color-input {
+  position: absolute;
+  inset: -10px;
+  width: 200%;
+  height: 200%;
+  opacity: 0;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pc-tagger-hint {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+.pc-btn-rainbow {
+  background: linear-gradient(135deg, rgba(255, 92, 58, 0.15), rgba(0, 102, 255, 0.15)) !important;
+  border-color: var(--border-color) !important;
+  font-weight: 700 !important;
+}
+
+.pc-btn-rainbow:hover {
+  background: linear-gradient(135deg, rgba(255, 92, 58, 0.3), rgba(0, 102, 255, 0.3)) !important;
+  transform: translateY(-1px);
+}
+
 .pc-words-picker {
   display: flex;
   flex-wrap: wrap;
@@ -9887,7 +9984,7 @@ input[type="datetime-local"] {
   background: var(--bg-elevated);
   border: 1.5px solid var(--border-color);
   border-radius: 4px;
-  max-height: 75px;
+  max-height: 95px;
   overflow-y: auto;
 }
 
@@ -9904,6 +10001,13 @@ input[type="datetime-local"] {
   border: 1.5px solid transparent;
   transition: all var(--transition-fast);
   user-select: none;
+}
+
+.pc-word-chip.is-selected {
+  outline: 2px solid var(--border-color) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.45) !important;
+  transform: translateY(-1px);
 }
 
 /* When word is tagged active/highlighted */
@@ -10897,7 +11001,8 @@ input[type="datetime-local"] {
     padding: 0.2rem 0 !important;
   }
 
-  .pc-color-swatch {
+  .pc-color-swatch,
+  .pc-color-custom-swatch {
     width: 26px !important;
     height: 26px !important;
     flex-shrink: 0 !important;
