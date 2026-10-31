@@ -10496,6 +10496,14 @@ input[type="datetime-local"] {
   align-items: center !important;
   justify-content: center !important;
   flex-shrink: 0 !important;
+  overflow: hidden !important;
+}
+
+.pc-brand-logo-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
 }
 
 .pc-logo-icon-box .ocean-wave-icon {
