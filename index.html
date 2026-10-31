@@ -41,7 +41,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=7.7">
+  <link rel="stylesheet" href="style.css?v=8.0">
 </head>
 <body>
   <!-- Header / Navigation -->
@@ -2110,11 +2110,6 @@
     <div class="modal-card photocard-modal-card">
       <div class="modal-header photocard-modal-header">
         <div class="photocard-modal-header-info">
-          <div class="photocard-badge-pill">
-            <span class="photocard-badge-icon">📸</span>
-            <span class="photocard-badge-title">Photocard Studio</span>
-            <span class="photocard-dim-tag">1080 &times; 1350 HD (4:5)</span>
-          </div>
           <h3 id="photocard-modal-title" class="photocard-modal-title">Social News Card Generator</h3>
         </div>
         <button id="photocard-modal-close-btn" class="modal-close" aria-label="Close Photocard Studio">&times;</button>
@@ -2142,44 +2137,48 @@
                      Dynamic Height hugs image & content naturally.
                      Exported at scale: 2 = 1080px Width HD.
                      ============================================== -->
-                <div id="photocard-canvas" class="photocard-canvas theme-navy">
+                <div id="photocard-canvas" class="photocard-canvas theme-yellow">
                   
-                  <!-- 1. Top Brand Header Bar (~56px) -->
+                  <!-- 1. Top Brand Header Bar (~60px) -->
                   <div class="photocard-header" id="photocard-header">
                     <div class="photocard-header-left">
-                      <svg class="photocard-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
-                        <path d="M18 14h-8"></path>
-                        <path d="M15 18h-5"></path>
-                        <path d="M10 6h8v4h-8z"></path>
-                      </svg>
-                      <span class="photocard-brand-name" id="photocard-brand-display">BartaWire</span>
+                      <div class="pc-brand-logo-wrap">
+                        <div class="pc-logo-icon-box" aria-hidden="true">
+                          <svg class="ocean-wave-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 12c2.5-3 5-3 7.5 0s5 3 7.5 0 5-3 5-3"></path>
+                            <path d="M2 17c2.5-3 5-3 7.5 0s5 3 7.5 0 5-3 5-3"></path>
+                          </svg>
+                        </div>
+                        <span class="photocard-brand-name" id="photocard-brand-display">Barta<span class="pc-brand-highlight">Wire</span></span>
+                      </div>
                     </div>
                     <div class="photocard-header-right">
                       <div class="photocard-topic-pill" id="photocard-topic-pill">
                         <span id="photocard-topic-display">Technology</span>
-                        <svg class="photocard-info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13">
-                          <circle cx="12" cy="12" r="10"></circle>
-                          <line x1="12" y1="16" x2="12" y2="12"></line>
-                          <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                        </svg>
                       </div>
                     </div>
                   </div>
 
-                  <!-- 2. Upper Text Section (White BG, Padding 24px 28px 16px) -->
+                  <!-- 2. Upper Text Section -->
                   <div class="photocard-upper-body" id="photocard-upper-body">
-                    <!-- Date Line -->
-                    <div class="photocard-date-line" id="photocard-date-display">Oct 30, 2026</div>
+                    <!-- Date Box -->
+                    <div class="photocard-date-line" id="photocard-date-display"><span>Oct 30, 2026</span></div>
 
                     <!-- Two-Tone Headline -->
                     <h2 class="photocard-headline" id="photocard-headline-display">
-                      <span class="pc-blue-text">Headline First Half</span> <span class="pc-dark-text">Second Half</span>
+                      <span class="pc-accent-text">Headline First Half</span> <span class="pc-dark-text">Second Half</span>
                     </h2>
 
-                    <!-- Italic Attribution Line -->
+                    <!-- Neo-Brutalist Attribution Badges -->
                     <div class="photocard-attribution" id="photocard-attribution-display">
-                      @author | Topic: Technology | Image: BartaWire
+                      <span class="pc-attr-tag pc-attr-author">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="12" height="12"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <span id="photocard-author-display">@publisher</span>
+                      </span>
+                      <span class="pc-attr-tag pc-attr-source">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="12" height="12"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        <span id="photocard-source-display">Image: BartaWire</span>
+                      </span>
                     </div>
 
                     <!-- Summary Line -->
@@ -2197,11 +2196,18 @@
                     </div>
                   </div>
 
-                  <!-- 4. Bottom Footer Banner (~44px, fixed) -->
+                  <!-- 4. Bottom Footer Banner (~46px, fixed) -->
                   <div class="photocard-footer" id="photocard-footer">
                     <div class="photocard-footer-badge" id="photocard-footer-badge-display"><span>TRENDING</span></div>
                     <div class="photocard-footer-callout" id="photocard-footer-callout-display"><span>Read the full article on BartaWire</span></div>
-                    <div class="photocard-footer-domain" id="photocard-footer-domain-display"><span>bartawire.com.bd</span></div>
+                    <div class="photocard-footer-domain" id="photocard-footer-domain-display">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="12" height="12" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                      </svg>
+                      <span>bartawire.com.bd</span>
+                    </div>
                   </div>
 
                 </div>
@@ -2245,23 +2251,27 @@
                 <span class="pc-group-title">Brand Header Theme</span>
               </div>
               
-              <!-- Theme Preset Switcher (Compact 4-column row) -->
+              <!-- Theme Preset Switcher (5 BartaWire Design Themes) -->
               <div class="pc-theme-switcher" role="group" aria-label="Header Theme">
-                <button type="button" class="pc-theme-chip active" data-theme="navy" title="Navy Blue (#123c69)">
-                  <span class="pc-theme-dot" style="background:#123c69;"></span>
-                  <span>Navy Blue</span>
+                <button type="button" class="pc-theme-chip active" data-theme="yellow" title="BartaWire Yellow (Signature Neo-Brutalism)">
+                  <span class="pc-theme-dot" style="background:#FFE500; border:1.5px solid #0A0A0A;"></span>
+                  <span>BartaWire</span>
                 </button>
-                <button type="button" class="pc-theme-chip" data-theme="yellow" title="BartaWire Yellow (#ffe600)">
-                  <span class="pc-theme-dot" style="background:#ffe600; border:1px solid #111;"></span>
-                  <span>Yellow/Black</span>
+                <button type="button" class="pc-theme-chip" data-theme="dark" title="Pitch Obsidian (BartaWire Dark Mode)">
+                  <span class="pc-theme-dot" style="background:#0E0E11; border:1.5px solid #FFE500;"></span>
+                  <span>Obsidian</span>
                 </button>
-                <button type="button" class="pc-theme-chip" data-theme="dark" title="Dark Slate (#0f172a)">
-                  <span class="pc-theme-dot" style="background:#0f172a;"></span>
-                  <span>Dark Slate</span>
+                <button type="button" class="pc-theme-chip" data-theme="cyberpunk" title="Cyberpunk Neon (Synthwave Pop)">
+                  <span class="pc-theme-dot" style="background:#080312; border:1.5px solid #FF2A85;"></span>
+                  <span>Cyberpunk</span>
                 </button>
-                <button type="button" class="pc-theme-chip" data-theme="crimson" title="Crimson Red (#b91c1c)">
-                  <span class="pc-theme-dot" style="background:#b91c1c;"></span>
-                  <span>Crimson</span>
+                <button type="button" class="pc-theme-chip" data-theme="ocean" title="Electric Ocean (Royal Blue)">
+                  <span class="pc-theme-dot" style="background:#0066FF; border:1.5px solid #0A0A0A;"></span>
+                  <span>Ocean</span>
+                </button>
+                <button type="button" class="pc-theme-chip" data-theme="crimson" title="Punch Coral (Breaking News Wire)">
+                  <span class="pc-theme-dot" style="background:#FF5C3A; border:1.5px solid #0A0A0A;"></span>
+                  <span>Coral Wire</span>
                 </button>
               </div>
             </div>
@@ -2294,18 +2304,19 @@
                 <span class="pc-group-title">Headline Words &amp; Highlight Color</span>
               </div>
 
-              <!-- Color Palette Swatches -->
+              <!-- Color Palette Swatches (BartaWire Design Tokens) -->
               <div class="pc-color-picker-row">
                 <label class="pc-label">Accent Color</label>
                 <div class="pc-color-swatches" id="pc-color-swatches" role="group" aria-label="Headline Highlight Color">
-                  <button type="button" class="pc-color-swatch active" data-color="#0018A8" title="Royal Blue (#0018A8)" style="--swatch-color: #0018A8;"></button>
-                  <button type="button" class="pc-color-swatch" data-color="#DC2626" title="Crimson Red (#DC2626)" style="--swatch-color: #DC2626;"></button>
-                  <button type="button" class="pc-color-swatch" data-color="#16A34A" title="Emerald Green (#16A34A)" style="--swatch-color: #16A34A;"></button>
-                  <button type="button" class="pc-color-swatch" data-color="#EA580C" title="Sunset Orange (#EA580C)" style="--swatch-color: #EA580C;"></button>
-                  <button type="button" class="pc-color-swatch" data-color="#9333EA" title="Vivid Purple (#9333EA)" style="--swatch-color: #9333EA;"></button>
-                  <button type="button" class="pc-color-swatch" data-color="#E11D48" title="Hot Pink (#E11D48)" style="--swatch-color: #E11D48;"></button>
-                  <button type="button" class="pc-color-swatch" data-color="#0284C7" title="Ocean Cyan (#0284C7)" style="--swatch-color: #0284C7;"></button>
-                  <button type="button" class="pc-color-swatch" data-color="#111111" title="Bold Black (#111111)" style="--swatch-color: #111111;"></button>
+                  <button type="button" class="pc-color-swatch active" data-color="#0066FF" title="Electric Blue (#0066FF)" style="--swatch-color: #0066FF;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#FFE500" title="BartaWire Yellow (#FFE500)" style="--swatch-color: #FFE500;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#FF5C3A" title="Punch Coral (#FF5C3A)" style="--swatch-color: #FF5C3A;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#C8FF00" title="Electric Lime (#C8FF00)" style="--swatch-color: #C8FF00;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#FF3DBC" title="Hot Pink (#FF3DBC)" style="--swatch-color: #FF3DBC;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#7B00FF" title="Vivid Purple (#7B00FF)" style="--swatch-color: #7B00FF;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#00F0FF" title="Laser Cyan (#00F0FF)" style="--swatch-color: #00F0FF;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#0A0A0A" title="Ink Black (#0A0A0A)" style="--swatch-color: #0A0A0A;"></button>
+                  <button type="button" class="pc-color-swatch" data-color="#FFFFFF" title="Crisp White (#FFFFFF)" style="--swatch-color: #FFFFFF;"></button>
                 </div>
               </div>
 
@@ -2427,7 +2438,7 @@
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
   <!-- Application Logic -->
-  <script src="app.js?v=7.7"></script>
+  <script src="app.js?v=8.0"></script>
 </body>
 </html>
 

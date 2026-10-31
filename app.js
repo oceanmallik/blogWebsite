@@ -55,7 +55,7 @@ const authorProfilesCache = new Map();
 
 // Photocard Studio State (1080x1350 News Card Generator)
 let currentPhotocardPost = null;
-let currentPhotocardTheme = 'navy';
+let currentPhotocardTheme = 'yellow';
 let currentPhotocardLang = 'en';
 let currentPhotocardFitMode = 'fit-width';
 
@@ -7837,14 +7837,22 @@ let currentPhotocardTopic = '';
 let currentPhotocardImageSource = 'BartaWire';
 
 /**
- * Updates the attribution display line on the photocard
+ * Updates the attribution display line on the photocard with Neo-Brutalist badge pills
  */
 function updatePhotocardAttribution() {
   const author = currentPhotocardAuthorUsername || '@bartawire';
-  const topic = currentPhotocardTopic || 'General';
   const source = currentPhotocardImageSource || 'BartaWire';
   if (dom.photocardAttributionDisplay) {
-    dom.photocardAttributionDisplay.textContent = `${author} | Topic: ${topic} | Image: ${source}`;
+    dom.photocardAttributionDisplay.innerHTML = `
+      <span class="pc-attr-tag pc-attr-author">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="12" height="12"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        <span>${escapeHtml(author)}</span>
+      </span>
+      <span class="pc-attr-tag pc-attr-source">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="12" height="12"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+        <span>Image: ${escapeHtml(source)}</span>
+      </span>
+    `;
   }
 }
 
@@ -7894,16 +7902,17 @@ function renderHeadlineWordChips() {
     chip.title = `Click to toggle: ${word}`;
     
     if (isHighlighted) {
+      const isBright = ['#ffe500', '#c8ff00', '#00f0ff', '#ffffff'].includes(currentHeadlineAccentColor.toLowerCase());
       chip.style.backgroundColor = currentHeadlineAccentColor;
-      chip.style.borderColor = currentHeadlineAccentColor === '#111111' ? 'rgba(255, 255, 255, 0.45)' : currentHeadlineAccentColor;
-      chip.style.color = '#FFFFFF';
+      chip.style.borderColor = currentHeadlineAccentColor === '#111111' || currentHeadlineAccentColor === '#0a0a0a' ? 'rgba(255, 255, 255, 0.45)' : currentHeadlineAccentColor;
+      chip.style.color = isBright ? '#0A0A0A' : '#FFFFFF';
+      chip.innerHTML = `<span class="pc-word-chip-dot" style="background:${isBright ? '#0A0A0A' : '#fff'};"></span><span>${escapeHtml(word)}</span>`;
     } else {
       chip.style.backgroundColor = '';
       chip.style.borderColor = '';
       chip.style.color = '';
+      chip.innerHTML = `<span class="pc-word-chip-dot"></span><span>${escapeHtml(word)}</span>`;
     }
-
-    chip.innerHTML = `<span class="pc-word-chip-dot" style="${isHighlighted ? 'background:#fff;' : ''}"></span><span>${escapeHtml(word)}</span>`;
     chip.addEventListener('click', () => {
       if (photocardBlueIndices.has(idx)) {
         photocardBlueIndices.delete(idx);
@@ -8064,19 +8073,20 @@ function getDefaultPhotocardPlaceholder() {
   return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`
     <svg xmlns="http://www.w3.org/2000/svg" width="1080" height="700" viewBox="0 0 1080 700">
       <defs>
-        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#0F172A"/>
-          <stop offset="50%" stop-color="#1E293B"/>
-          <stop offset="100%" stop-color="#0284C7"/>
-        </linearGradient>
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2"/>
+        </pattern>
       </defs>
-      <rect width="1080" height="700" fill="url(#grad)"/>
-      <g fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="4">
-        <path d="M0 350 Q 270 200, 540 350 T 1080 350"/>
-        <path d="M0 450 Q 270 300, 540 450 T 1080 450"/>
+      <rect width="1080" height="700" fill="#0A0A0A"/>
+      <rect width="1080" height="700" fill="url(#grid)"/>
+      <rect x="60" y="60" width="960" height="580" fill="none" stroke="#FFE500" stroke-width="4" stroke-dasharray="12 8"/>
+      <g transform="translate(540, 270)">
+        <rect x="-44" y="-44" width="88" height="88" fill="#FFE500" stroke="#0A0A0A" stroke-width="4"/>
+        <path d="M -24 -2 C -18 -10 -12 -10 -6 -2 C 0 6 6 6 12 -2 C 18 -10 24 -10 24 -10" fill="none" stroke="#0A0A0A" stroke-width="4.5" stroke-linecap="round"/>
+        <path d="M -24 14 C -18 6 -12 6 -6 14 C 0 22 6 22 12 14 C 18 6 24 6 24 6" fill="none" stroke="#0A0A0A" stroke-width="4.5" stroke-linecap="round"/>
       </g>
-      <text x="540" y="340" font-family="'Space Grotesk', sans-serif" font-size="48" font-weight="800" fill="#FFE600" text-anchor="middle">🌊 BartaWire News</text>
-      <text x="540" y="400" font-family="'Space Grotesk', sans-serif" font-size="22" font-weight="500" fill="#E2E8F0" text-anchor="middle">Digital Stories &amp; Daily Perspectives</text>
+      <text x="540" y="405" font-family="'Space Grotesk', sans-serif" font-size="52" font-weight="800" fill="#FFFFFF" text-anchor="middle">BARTA<tspan fill="#FFE500">WIRE</tspan></text>
+      <text x="540" y="460" font-family="'Space Mono', monospace" font-size="20" font-weight="700" fill="#FFE500" letter-spacing="4" text-anchor="middle">BARTAWIRE.COM.BD</text>
     </svg>
   `);
 }
@@ -8168,13 +8178,14 @@ function handlePhotocardLocalImageUpload(e) {
 }
 
 /**
- * Switches the theme of the photocard header
+ * Switches the theme of the photocard canvas and updates theme chip indicators
  */
 function updatePhotocardTheme(themeName) {
+  if (themeName === 'navy') themeName = 'ocean';
   currentPhotocardTheme = themeName;
   const card = dom.photocardCanvas;
   if (card) {
-    card.classList.remove('theme-navy', 'theme-yellow', 'theme-dark', 'theme-crimson');
+    card.classList.remove('theme-navy', 'theme-yellow', 'theme-dark', 'theme-cyberpunk', 'theme-ocean', 'theme-crimson', 'theme-coral', 'theme-bartawire');
     card.classList.add(`theme-${themeName}`);
   }
 
@@ -8186,6 +8197,8 @@ function updatePhotocardTheme(themeName) {
       chip.classList.remove('active');
     }
   });
+
+  adjustPhotocardPreviewScale();
 }
 
 /**
@@ -8201,8 +8214,17 @@ async function openPhotocardStudio(post) {
     }
   }
 
+  // Default theme matches active website theme or BartaWire signature yellow
+  const activeSiteTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  let defaultTheme = 'yellow';
+  if (activeSiteTheme === 'dark') {
+    defaultTheme = 'dark';
+  } else if (activeSiteTheme === 'cyberpunk') {
+    defaultTheme = 'cyberpunk';
+  }
+
   currentPhotocardPost = post;
-  currentPhotocardTheme = 'navy';
+  currentPhotocardTheme = defaultTheme;
   const isPostBangla = isBanglaPost(post);
   currentPhotocardLang = isPostBangla ? 'bn' : 'en';
 
@@ -8216,7 +8238,6 @@ async function openPhotocardStudio(post) {
   if (!authorUsername.startsWith('@')) authorUsername = '@' + authorUsername;
 
   // 2. Fixed & post-driven text
-  const defaultBrand = 'BartaWire';
   const defaultTopic = post.topic || 'General';
   const defaultDateEn = formatPhotocardDate(post.created_at, 'en');
   const defaultDateBn = formatPhotocardDate(post.created_at, 'bn');
@@ -8238,9 +8259,18 @@ async function openPhotocardStudio(post) {
   if (dom.pcSliderHeadlineSize) dom.pcSliderHeadlineSize.value = 28;
   if (dom.pcHeadlineSizeVal) dom.pcHeadlineSizeVal.textContent = '28px';
 
-  // 3. Update preview displays
-  updatePhotocardTheme('navy');
-  setHeadlineAccentColor('#0018A8');
+  // 3. Update preview displays & themes
+  updatePhotocardTheme(defaultTheme);
+
+  // Set default headline highlight color matching theme
+  let defaultAccent = '#0066FF';
+  if (defaultTheme === 'dark') {
+    defaultAccent = '#FFE500';
+  } else if (defaultTheme === 'cyberpunk') {
+    defaultAccent = '#00F0FF';
+  }
+  setHeadlineAccentColor(defaultAccent);
+
   if (dom.photocardCanvas) {
     if (isPostBangla) {
       dom.photocardCanvas.classList.add('is-bangla');
@@ -8250,9 +8280,14 @@ async function openPhotocardStudio(post) {
       dom.photocardCanvas.removeAttribute('lang');
     }
   }
-  if (dom.photocardBrandDisplay) dom.photocardBrandDisplay.textContent = defaultBrand;
+  if (dom.photocardBrandDisplay) {
+    dom.photocardBrandDisplay.innerHTML = 'Barta<span class="pc-brand-highlight">Wire</span>';
+  }
   if (dom.photocardTopicDisplay) dom.photocardTopicDisplay.textContent = defaultTopic;
-  if (dom.photocardDateDisplay) dom.photocardDateDisplay.textContent = isPostBangla ? defaultDateBn : defaultDateEn;
+  if (dom.photocardDateDisplay) {
+    const activeDate = isPostBangla ? defaultDateBn : defaultDateEn;
+    dom.photocardDateDisplay.innerHTML = '<span>' + escapeHtml(activeDate) + '</span>';
+  }
   updatePhotocardAttribution();
   if (dom.photocardSummaryDisplay) dom.photocardSummaryDisplay.textContent = defaultSummary;
 
@@ -8260,7 +8295,7 @@ async function openPhotocardStudio(post) {
   photocardHeadlineWords = (post.title || 'Untitled Article').trim().split(/\s+/).filter(Boolean);
   if (photocardHeadlineWords.length === 0) photocardHeadlineWords = ['Untitled', 'Article'];
 
-  // Default: first half Royal Blue, remainder Black
+  // Default: first half in accent color, remainder in text color
   const mid = Math.ceil(photocardHeadlineWords.length / 2);
   photocardBlueIndices = new Set();
   for (let i = 0; i < mid; i++) {
@@ -8273,11 +8308,26 @@ async function openPhotocardStudio(post) {
   renderHeadlineWordChips();
   updatePhotocardHeadlineFromChips();
 
-  // 5. Fixed Bottom Footer
+  // 5. Fixed Bottom Footer with Neo-Brutalist badge & verified domain
   if (dom.photocardFooter) dom.photocardFooter.classList.remove('hidden');
-  if (dom.photocardFooterBadgeDisplay) dom.photocardFooterBadgeDisplay.innerHTML = '<span>TRENDING</span>';
-  if (dom.photocardFooterCalloutDisplay) dom.photocardFooterCalloutDisplay.innerHTML = '<span>Read the full article on BartaWire</span>';
-  if (dom.photocardFooterDomainDisplay) dom.photocardFooterDomainDisplay.innerHTML = '<span>bartawire.com.bd</span>';
+  if (dom.photocardFooterBadgeDisplay) {
+    dom.photocardFooterBadgeDisplay.innerHTML = isPostBangla ? '<span>ট্রেন্ডিং</span>' : '<span>TRENDING</span>';
+  }
+  if (dom.photocardFooterCalloutDisplay) {
+    dom.photocardFooterCalloutDisplay.innerHTML = isPostBangla
+      ? '<span>সম্পূর্ণ খবরটি পড়ুন BartaWire-এ</span>'
+      : '<span>Read the full article on BartaWire</span>';
+  }
+  if (dom.photocardFooterDomainDisplay) {
+    dom.photocardFooterDomainDisplay.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="12" height="12" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="2" y1="12" x2="22" y2="12"></line>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+      </svg>
+      <span>bartawire.com.bd</span>
+    `;
+  }
 
   // 6. Load cover image CORS-proof
   loadCorsProofCoverImage(post.cover_image);
@@ -8324,11 +8374,15 @@ async function generatePhotocardExportCanvas() {
     } catch (_) {}
   }
 
+  const cardComputed = window.getComputedStyle(card);
+  const cardBg = cardComputed.backgroundColor || '#FFFEF0';
+  const borderColor = cardComputed.getPropertyValue('--pc-border').trim() || '#0A0A0A';
+
   const canvas = await html2canvas(card, {
     scale: 2, // 540px width at 2x scale = 1080px crisp HD export
     useCORS: true,
     allowTaint: true,
-    backgroundColor: '#0F172A',
+    backgroundColor: cardBg,
     scrollX: 0,
     scrollY: 0,
     logging: false,
@@ -8355,7 +8409,7 @@ async function generatePhotocardExportCanvas() {
       const clonedCard = clonedDoc.getElementById('photocard-canvas');
       if (clonedCard) {
         clonedCard.style.boxShadow = 'none';
-        clonedCard.style.border = 'none';
+        clonedCard.style.border = `3px solid ${borderColor}`;
         clonedCard.style.margin = '0';
         clonedCard.style.width = '540px';
         clonedCard.style.minWidth = '540px';
@@ -8387,7 +8441,7 @@ async function generatePhotocardExportCanvas() {
       const brand = clonedDoc.querySelector('.photocard-brand-name');
       if (brand) {
         brand.style.position = 'relative';
-        brand.style.top = '-12px';
+        brand.style.top = '-10px';
       }
       const topicPill = clonedDoc.querySelector('.photocard-topic-pill');
       if (topicPill) {
@@ -8402,33 +8456,45 @@ async function generatePhotocardExportCanvas() {
         topic.style.display = 'inline-block';
         topic.style.verticalAlign = 'middle';
       }
-      const topicIcon = clonedDoc.querySelector('.photocard-topic-pill svg');
-      if (topicIcon) {
-        topicIcon.style.display = 'inline-block';
-        topicIcon.style.verticalAlign = 'middle';
-      }
       const dateLine = clonedDoc.querySelector('.photocard-date-line');
       if (dateLine) {
-        dateLine.style.position = 'relative';
-        dateLine.style.top = '-9px';
+        dateLine.style.position = 'static';
+        dateLine.style.top = '0';
+        dateLine.style.display = 'inline-flex';
+        dateLine.style.alignItems = 'center';
+        dateLine.style.justifyContent = 'center';
+        dateLine.style.lineHeight = '1';
+        dateLine.style.marginBottom = '16px';
+        let dateSpan = dateLine.querySelector('span');
+        if (!dateSpan) {
+          dateLine.innerHTML = `<span>${escapeHtml(dateLine.textContent.trim())}</span>`;
+          dateSpan = dateLine.querySelector('span');
+        }
+        if (dateSpan) {
+          dateSpan.style.position = 'relative';
+          dateSpan.style.top = '-8px';
+          dateSpan.style.display = 'inline-block';
+          dateSpan.style.verticalAlign = 'middle';
+          dateSpan.style.lineHeight = '1';
+        }
       }
       const headline = clonedDoc.querySelector('.photocard-headline');
       if (headline) {
         const fontSize = parseFloat(window.getComputedStyle(headline).fontSize) || 28;
         headline.style.position = 'relative';
-        headline.style.top = '-' + Math.round(fontSize * 0.64) + 'px';
+        headline.style.top = '-' + Math.round(fontSize * 0.25) + 'px';
       }
-      const attr = clonedDoc.querySelector('.photocard-attribution');
-      if (attr) {
-        attr.style.position = 'relative';
-        attr.style.top = '-9px';
-      }
+      const attrSpans = clonedDoc.querySelectorAll('.pc-attr-tag span');
+      attrSpans.forEach(s => {
+        s.style.position = 'relative';
+        s.style.top = '-8px';
+      });
       const summary = clonedDoc.querySelector('.photocard-summary');
       if (summary) {
         summary.style.position = 'relative';
-        summary.style.top = '-9px';
+        summary.style.top = '-5px';
       }
-      // 3. Footer Banner elements (Pink badge, Callout text, Domain) - lifted to -8px
+      // 3. Footer Banner elements
       const badge = clonedDoc.getElementById('photocard-footer-badge-display') || clonedDoc.querySelector('.photocard-footer-badge');
       if (badge) {
         badge.style.position = 'static';
@@ -8438,8 +8504,6 @@ async function generatePhotocardExportCanvas() {
           badgeSpan.style.position = 'relative';
           badgeSpan.style.top = '-8px';
           badgeSpan.style.display = 'inline-block';
-        } else {
-          badge.innerHTML = `<span style="position:relative; top:-8px; display:inline-block;">${escapeHtml(badge.textContent.trim())}</span>`;
         }
       }
 
@@ -8447,6 +8511,7 @@ async function generatePhotocardExportCanvas() {
       if (callout) {
         callout.style.position = 'static';
         callout.style.top = '0';
+        callout.style.whiteSpace = 'nowrap';
         callout.style.overflow = 'visible';
         callout.style.textOverflow = 'clip';
         const calloutSpan = callout.querySelector('span');
@@ -8454,8 +8519,6 @@ async function generatePhotocardExportCanvas() {
           calloutSpan.style.position = 'relative';
           calloutSpan.style.top = '-8px';
           calloutSpan.style.display = 'inline-block';
-        } else {
-          callout.innerHTML = `<span style="position:relative; top:-8px; display:inline-block;">${escapeHtml(callout.textContent.trim())}</span>`;
         }
       }
 
@@ -8469,8 +8532,6 @@ async function generatePhotocardExportCanvas() {
           domainSpan.style.position = 'relative';
           domainSpan.style.top = '-8px';
           domainSpan.style.display = 'inline-block';
-        } else {
-          domain.innerHTML = `<span style="position:relative; top:-8px; display:inline-block;">${escapeHtml(domain.textContent.trim())}</span>`;
         }
       }
     }
@@ -8999,8 +9060,17 @@ function initEventListeners() {
   // Photocard Theme Switcher Chips
   document.querySelectorAll('.pc-theme-chip').forEach(chip => {
     chip.addEventListener('click', () => {
-      const theme = chip.dataset.theme || 'navy';
+      const theme = chip.dataset.theme || 'yellow';
       updatePhotocardTheme(theme);
+
+      // Auto-adapt headline highlight color to complement active theme
+      if (theme === 'dark' && (currentHeadlineAccentColor === '#0066FF' || currentHeadlineAccentColor === '#0018A8')) {
+        setHeadlineAccentColor('#FFE500');
+      } else if (theme === 'cyberpunk' && (currentHeadlineAccentColor === '#0066FF' || currentHeadlineAccentColor === '#0018A8')) {
+        setHeadlineAccentColor('#00F0FF');
+      } else if (theme === 'yellow' && currentHeadlineAccentColor === '#00F0FF') {
+        setHeadlineAccentColor('#0066FF');
+      }
     });
   });
 
@@ -9010,7 +9080,7 @@ function initEventListeners() {
     dom.pcDateToggleEn.classList.add('active');
     dom.pcDateToggleBn?.classList.remove('active');
     const formatted = formatPhotocardDate(currentPhotocardPost?.created_at, 'en');
-    if (dom.photocardDateDisplay) dom.photocardDateDisplay.textContent = formatted;
+    if (dom.photocardDateDisplay) dom.photocardDateDisplay.innerHTML = '<span>' + escapeHtml(formatted) + '</span>';
   });
 
   dom.pcDateToggleBn?.addEventListener('click', () => {
@@ -9018,7 +9088,7 @@ function initEventListeners() {
     dom.pcDateToggleBn.classList.add('active');
     dom.pcDateToggleEn?.classList.remove('active');
     const formatted = formatPhotocardDate(currentPhotocardPost?.created_at, 'bn');
-    if (dom.photocardDateDisplay) dom.photocardDateDisplay.textContent = formatted;
+    if (dom.photocardDateDisplay) dom.photocardDateDisplay.innerHTML = '<span>' + escapeHtml(formatted) + '</span>';
   });
 
   // Headline Highlight Color Swatches

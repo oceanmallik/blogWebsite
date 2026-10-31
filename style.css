@@ -9608,8 +9608,8 @@ input[type="datetime-local"] {
 /* Theme Switcher Chips */
 .pc-theme-switcher {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.4rem;
+  grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+  gap: 0.45rem;
 }
 
 .pc-theme-chip {
@@ -9617,36 +9617,50 @@ input[type="datetime-local"] {
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
-  padding: 0.35rem 0.45rem;
+  padding: 0.4rem 0.5rem;
   background: var(--bg-elevated);
   border: 1.5px solid var(--border-color);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-family: var(--font-body);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--text-primary);
   transition: all var(--transition-fast);
   white-space: nowrap;
+  box-shadow: 2px 2px 0 var(--border-color);
 }
 
 .pc-theme-chip:hover {
   transform: translate(-1px, -1px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 3px 3px 0 var(--border-color);
+  background: var(--accent-yellow);
+  color: #0A0A0A;
 }
 
 .pc-theme-chip.active {
-  border-color: var(--ocean-primary);
-  background: var(--bg-surface);
-  box-shadow: 2px 2px 0 var(--border-color);
+  border-color: var(--border-color);
+  background: var(--accent-yellow);
+  color: #0A0A0A;
+  box-shadow: 3px 3px 0 var(--border-color);
+}
+
+[data-theme="dark"] .pc-theme-chip.active {
+  background: var(--accent-yellow);
+  color: #050507;
+}
+
+[data-theme="cyberpunk"] .pc-theme-chip.active {
+  background: var(--ocean-primary);
+  color: #080312;
 }
 
 .pc-theme-dot {
-  width: 12px;
-  height: 12px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
   flex-shrink: 0;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.4);
 }
 
 .pc-compact-two-col {
@@ -10108,8 +10122,8 @@ input[type="datetime-local"] {
 }
 
 /* ============================================================================
-   THE EXACT PHOTOCARD DOM ELEMENT (#photocard-canvas)
-   Width 540px, Dynamic Height hugs photo and text naturally -> 2x Scale = 1080px HD
+   BARTAWIRE NEO-BRUTALIST SOCIAL PHOTOCARD (#photocard-canvas)
+   540px Width live, dynamic height -> 2x Scale = 1080px HD Export
    ============================================================================ */
 .photocard-canvas {
   width: 540px !important;
@@ -10120,25 +10134,182 @@ input[type="datetime-local"] {
   max-height: none !important;
   box-sizing: border-box !important;
   display: block !important;
-  background: #0F172A !important;
+  background: var(--pc-body-bg, #FFFEF0) !important;
   overflow: hidden !important;
   position: relative !important;
-  font-family: 'Anek Bangla', 'Hind Siliguri', 'Space Grotesk', -apple-system, sans-serif !important;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  font-family: 'Space Grotesk', 'Anek Bangla', 'Hind Siliguri', -apple-system, sans-serif !important;
+  box-shadow: 8px 8px 0px var(--pc-border, #0A0A0A);
+  border: 3px solid var(--pc-border, #0A0A0A);
   text-align: left;
 }
 
-/* 1. Top Brand Header Bar (~56px) */
+/* ----------------------------------------------------------------------------
+   THEMES: Curated BartaWire Design System Themes
+   ---------------------------------------------------------------------------- */
+
+/* 1. Theme: BartaWire Signature (Yellow & Ink Neo-Brutalism - Default) */
+.photocard-canvas.theme-yellow,
+.photocard-canvas.theme-bartawire {
+  --pc-border: #0A0A0A;
+  --pc-header-bg: #FFE500;
+  --pc-header-text: #0A0A0A;
+  --pc-header-highlight: #0066FF;
+  --pc-logo-box-bg: #0A0A0A;
+  --pc-logo-box-color: #FFE500;
+  --pc-topic-bg: #0A0A0A;
+  --pc-topic-text: #FFE500;
+  --pc-body-bg: #FFFEF0;
+  --pc-text-dark: #0A0A0A;
+  --pc-text-muted: #444444;
+  --pc-date-bg: #FFE500;
+  --pc-date-text: #0A0A0A;
+  --pc-wire-bg: #0A0A0A;
+  --pc-wire-text: #FFE500;
+  --pc-attr-bg: #FFFFFF;
+  --pc-attr-text: #0A0A0A;
+  --pc-summary-bg: rgba(255, 229, 0, 0.12);
+  --pc-footer-bg: #0A0A0A;
+  --pc-footer-text: #FFFFFF;
+  --pc-footer-badge-bg: #FFE500;
+  --pc-footer-badge-text: #0A0A0A;
+  --pc-footer-badge-border: #FFE500;
+  --pc-footer-callout: #FFFFFF;
+  --pc-footer-domain: #FFE500;
+}
+
+/* 2. Theme: Pitch Obsidian (BartaWire Dark Mode) */
+.photocard-canvas.theme-dark {
+  --pc-border: #27272A;
+  --pc-header-bg: #0E0E11;
+  --pc-header-text: #F4F4F6;
+  --pc-header-highlight: #FFE500;
+  --pc-logo-box-bg: #FFE500;
+  --pc-logo-box-color: #050507;
+  --pc-topic-bg: #FFE500;
+  --pc-topic-text: #050507;
+  --pc-body-bg: #0E0E11;
+  --pc-text-dark: #F4F4F6;
+  --pc-text-muted: #A1A1AA;
+  --pc-date-bg: #161619;
+  --pc-date-text: #FFE500;
+  --pc-wire-bg: #FFE500;
+  --pc-wire-text: #050507;
+  --pc-attr-bg: #161619;
+  --pc-attr-text: #D4D4D8;
+  --pc-summary-bg: rgba(255, 229, 0, 0.08);
+  --pc-footer-bg: #050507;
+  --pc-footer-text: #F4F4F6;
+  --pc-footer-badge-bg: #FFE500;
+  --pc-footer-badge-text: #050507;
+  --pc-footer-badge-border: #FFE500;
+  --pc-footer-callout: #F4F4F6;
+  --pc-footer-domain: #FFE500;
+}
+
+/* 3. Theme: Cyberpunk Neon (BartaWire Synthwave Mode) */
+.photocard-canvas.theme-cyberpunk {
+  --pc-border: #FF2A85;
+  --pc-header-bg: #080312;
+  --pc-header-text: #00F0FF;
+  --pc-header-highlight: #FF2A85;
+  --pc-logo-box-bg: #FF2A85;
+  --pc-logo-box-color: #080312;
+  --pc-topic-bg: #00F0FF;
+  --pc-topic-text: #080312;
+  --pc-body-bg: #0E071D;
+  --pc-text-dark: #FFFFFF;
+  --pc-text-muted: #D8B4FE;
+  --pc-date-bg: #190B38;
+  --pc-date-text: #00F0FF;
+  --pc-wire-bg: #FF2A85;
+  --pc-wire-text: #FFFFFF;
+  --pc-attr-bg: #190B38;
+  --pc-attr-text: #00F0FF;
+  --pc-summary-bg: rgba(0, 240, 255, 0.1);
+  --pc-footer-bg: #080312;
+  --pc-footer-text: #FFFFFF;
+  --pc-footer-badge-bg: #00F0FF;
+  --pc-footer-badge-text: #080312;
+  --pc-footer-badge-border: #00F0FF;
+  --pc-footer-callout: #FFFFFF;
+  --pc-footer-domain: #FF2A85;
+}
+
+/* 4. Theme: Electric Ocean (Royal Blue Neo-Brutalist) */
+.photocard-canvas.theme-ocean,
+.photocard-canvas.theme-navy {
+  --pc-border: #0A0A0A;
+  --pc-header-bg: #0066FF;
+  --pc-header-text: #FFFFFF;
+  --pc-header-highlight: #FFE500;
+  --pc-logo-box-bg: #FFE500;
+  --pc-logo-box-color: #0A0A0A;
+  --pc-topic-bg: #FFE500;
+  --pc-topic-text: #0A0A0A;
+  --pc-body-bg: #FFFFFF;
+  --pc-text-dark: #0A0A0A;
+  --pc-text-muted: #555555;
+  --pc-date-bg: #0066FF;
+  --pc-date-text: #FFFFFF;
+  --pc-wire-bg: #0A0A0A;
+  --pc-wire-text: #FFE500;
+  --pc-attr-bg: #F5F4E0;
+  --pc-attr-text: #0A0A0A;
+  --pc-summary-bg: rgba(0, 102, 255, 0.08);
+  --pc-footer-bg: #0A0A0A;
+  --pc-footer-text: #FFFFFF;
+  --pc-footer-badge-bg: #0066FF;
+  --pc-footer-badge-text: #FFFFFF;
+  --pc-footer-badge-border: #0066FF;
+  --pc-footer-callout: #FFFFFF;
+  --pc-footer-domain: #00C2B8;
+}
+
+/* 5. Theme: Punch Coral (Breaking News Wire) */
+.photocard-canvas.theme-crimson,
+.photocard-canvas.theme-coral {
+  --pc-border: #0A0A0A;
+  --pc-header-bg: #FF5C3A;
+  --pc-header-text: #FFFFFF;
+  --pc-header-highlight: #FFE500;
+  --pc-logo-box-bg: #0A0A0A;
+  --pc-logo-box-color: #FFE500;
+  --pc-topic-bg: #0A0A0A;
+  --pc-topic-text: #FFE500;
+  --pc-body-bg: #FFFEF0;
+  --pc-text-dark: #0A0A0A;
+  --pc-text-muted: #555555;
+  --pc-date-bg: #FF5C3A;
+  --pc-date-text: #FFFFFF;
+  --pc-wire-bg: #0A0A0A;
+  --pc-wire-text: #FFE500;
+  --pc-attr-bg: #FFFFFF;
+  --pc-attr-text: #0A0A0A;
+  --pc-summary-bg: rgba(255, 92, 58, 0.1);
+  --pc-footer-bg: #0A0A0A;
+  --pc-footer-text: #FFFFFF;
+  --pc-footer-badge-bg: #FF5C3A;
+  --pc-footer-badge-text: #FFFFFF;
+  --pc-footer-badge-border: #FF5C3A;
+  --pc-footer-callout: #FFFFFF;
+  --pc-footer-domain: #FFE500;
+}
+
+/* ----------------------------------------------------------------------------
+   1. Brand Header Bar
+   ---------------------------------------------------------------------------- */
 .photocard-header {
-  height: 56px !important;
-  min-height: 56px !important;
-  max-height: 56px !important;
-  padding: 0 24px !important;
+  height: 60px !important;
+  min-height: 60px !important;
+  max-height: 60px !important;
+  padding: 0 20px !important;
   box-sizing: border-box !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
+  background: var(--pc-header-bg, #FFE500) !important;
+  color: var(--pc-header-text, #0A0A0A) !important;
+  border-bottom: 3px solid var(--pc-border, #0A0A0A) !important;
   flex-shrink: 0 !important;
   transition: background 0.15s ease, color 0.15s ease;
 }
@@ -10148,19 +10319,41 @@ input[type="datetime-local"] {
   align-items: center !important;
 }
 
-.photocard-header-icon {
-  width: 24px !important;
-  height: 24px !important;
-  margin-right: 10px !important;
+.pc-brand-logo-wrap {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.pc-logo-icon-box {
+  width: 32px !important;
+  height: 32px !important;
+  background: var(--pc-logo-box-bg, #0A0A0A) !important;
+  color: var(--pc-logo-box-color, #FFE500) !important;
+  border: 2px solid var(--pc-border, #0A0A0A) !important;
+  box-shadow: 2px 2px 0 var(--pc-border, #0A0A0A) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   flex-shrink: 0 !important;
 }
 
+.pc-logo-icon-box .ocean-wave-icon {
+  width: 18px !important;
+  height: 18px !important;
+}
+
 .photocard-brand-name {
-  font-family: 'Space Grotesk', 'Hind Siliguri', sans-serif !important;
+  font-family: 'Space Grotesk', sans-serif !important;
   font-size: 22px !important;
   font-weight: 800 !important;
-  letter-spacing: 0 !important;
+  letter-spacing: -0.03em !important;
   line-height: 1 !important;
+  color: var(--pc-header-text, #0A0A0A) !important;
+}
+
+.pc-brand-highlight {
+  color: var(--pc-header-highlight, #0066FF) !important;
 }
 
 .photocard-header-right {
@@ -10172,159 +10365,157 @@ input[type="datetime-local"] {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  height: 24px !important;
-  padding: 0 12px !important;
+  height: 26px !important;
+  padding: 0 10px !important;
   box-sizing: border-box !important;
-  border-radius: 9999px !important;
-  font-family: 'Space Grotesk', 'Hind Siliguri', sans-serif !important;
-  font-size: 12px !important;
+  border: 2px solid var(--pc-border, #0A0A0A) !important;
+  box-shadow: 2px 2px 0 var(--pc-border, #0A0A0A) !important;
+  background: var(--pc-topic-bg, #0A0A0A) !important;
+  color: var(--pc-topic-text, #FFE500) !important;
+  font-family: 'Space Mono', monospace !important;
+  font-size: 11px !important;
   font-weight: 700 !important;
   line-height: 1 !important;
-  text-transform: capitalize !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
 }
 
-.photocard-topic-pill span {
-  margin-right: 6px !important;
-  display: inline-block !important;
-  vertical-align: middle !important;
-  line-height: 1 !important;
-}
-
-.photocard-info-icon {
-  width: 12px !important;
-  height: 12px !important;
-  flex-shrink: 0 !important;
-  display: inline-block !important;
-  vertical-align: middle !important;
-}
-
-/* Header Themes */
-/* Theme: Navy Blue (#123c69) - Default */
-.photocard-canvas.theme-navy .photocard-header {
-  background: #123C69 !important;
-  color: #FFFFFF !important;
-}
-.photocard-canvas.theme-navy .photocard-header .photocard-topic-pill {
-  background: #FFFFFF !important;
-  color: #123C69 !important;
-  border: 1px solid rgba(255, 255, 255, 0.4) !important;
-}
-
-/* Theme: BartaWire Yellow/Black */
-.photocard-canvas.theme-yellow .photocard-header {
-  background: #FFE600 !important;
-  color: #111111 !important;
-}
-.photocard-canvas.theme-yellow .photocard-header .photocard-topic-pill {
-  background: #111111 !important;
-  color: #FFE600 !important;
-  border: 1px solid #111111 !important;
-}
-
-/* Theme: Dark Slate */
-.photocard-canvas.theme-dark .photocard-header {
-  background: #0F172A !important;
-  color: #FFFFFF !important;
-}
-.photocard-canvas.theme-dark .photocard-header .photocard-topic-pill {
-  background: #FFFFFF !important;
-  color: #0F172A !important;
-  border: 1px solid rgba(255, 255, 255, 0.4) !important;
-}
-
-/* Theme: Crimson Red */
-.photocard-canvas.theme-crimson .photocard-header {
-  background: #B91C1C !important;
-  color: #FFFFFF !important;
-}
-.photocard-canvas.theme-crimson .photocard-header .photocard-topic-pill {
-  background: #FFFFFF !important;
-  color: #B91C1C !important;
-  border: 1px solid rgba(255, 255, 255, 0.4) !important;
-}
-
-/* 2. Upper Text Section (White BG, 24px 28px 18px Padding) */
+/* ----------------------------------------------------------------------------
+   2. Upper Text Body Section
+   ---------------------------------------------------------------------------- */
 .photocard-upper-body {
-  padding: 24px 28px 18px !important;
-  background: #FFFFFF !important;
+  padding: 22px 26px 18px !important;
+  background: var(--pc-body-bg, #FFFEF0) !important;
   box-sizing: border-box !important;
   display: block !important;
-  color: #111111 !important;
+  color: var(--pc-text-dark, #0A0A0A) !important;
 }
 
+/* Date Box Badge - aligned flush with content grid */
 .photocard-date-line {
-  font-family: 'Space Grotesk', 'Hind Siliguri', sans-serif !important;
-  font-size: 13px !important;
+  font-family: 'Space Mono', 'Hind Siliguri', monospace !important;
+  font-size: 11px !important;
   font-weight: 700 !important;
-  color: #111111 !important;
+  letter-spacing: 0.06em !important;
   text-transform: uppercase !important;
-  letter-spacing: 0 !important;
-  line-height: 1.2 !important;
-  margin: 0 0 8px 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 24px !important;
+  padding: 0 10px !important;
+  box-sizing: border-box !important;
+  border: 1.5px solid var(--pc-border, #0A0A0A) !important;
+  background: var(--pc-date-bg, #FFE500) !important;
+  color: var(--pc-date-text, #0A0A0A) !important;
+  box-shadow: 2px 2px 0 var(--pc-border, #0A0A0A) !important;
+  margin: 0 0 12px 0 !important;
+  line-height: 1 !important;
 }
 
+.photocard-date-line span {
+  display: inline-block !important;
+  vertical-align: middle !important;
+  line-height: 1 !important;
+}
+
+/* Headline */
 .photocard-headline {
-  font-family: 'Anek Bangla', 'Hind Siliguri', 'Noto Serif Bengali', 'Space Grotesk', sans-serif !important;
+  font-family: 'Space Grotesk', 'Anek Bangla', 'Hind Siliguri', sans-serif !important;
   font-size: 28px;
-  font-weight: 700 !important;
-  line-height: 1.32 !important;
-  letter-spacing: 0 !important;
-  margin: 0 0 10px 0 !important;
+  font-weight: 800 !important;
+  line-height: 1.25 !important;
+  letter-spacing: -0.02em !important;
+  margin: 0 0 12px 0 !important;
   word-break: break-word !important;
+  color: var(--pc-text-dark, #0A0A0A) !important;
 }
 
-.pc-blue-text {
-  color: #0018A8 !important;
+.photocard-canvas.is-bangla .photocard-headline {
+  font-family: 'Anek Bangla', 'Hind Siliguri', 'Noto Serif Bengali', sans-serif !important;
+  line-height: 1.34 !important;
 }
 
+.pc-blue-text,
 .pc-accent-text {
-  color: var(--pc-accent-color, #0018A8);
+  color: var(--pc-accent-color, #0066FF) !important;
 }
 
 .pc-dark-text {
-  color: #111111 !important;
+  color: var(--pc-text-dark, #0A0A0A) !important;
 }
 
+/* Attribution Neo-Brutalist Badges */
 .photocard-attribution {
-  font-family: 'Space Grotesk', 'Hind Siliguri', sans-serif !important;
-  font-size: 13px !important;
-  font-style: italic !important;
-  font-weight: 500 !important;
-  color: #444444 !important;
-  line-height: 1.35 !important;
-  letter-spacing: 0 !important;
-  margin: 0 0 8px 0 !important;
-  word-break: break-word !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin: 0 0 10px 0 !important;
 }
 
+.pc-attr-tag {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 3px 8px !important;
+  font-family: 'Space Mono', 'Hind Siliguri', monospace !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  background: var(--pc-attr-bg, #FFFFFF) !important;
+  color: var(--pc-attr-text, #0A0A0A) !important;
+  border: 1.5px solid var(--pc-border, #0A0A0A) !important;
+  box-shadow: 2px 2px 0 var(--pc-border, #0A0A0A) !important;
+  line-height: 1 !important;
+}
+
+.pc-attr-tag svg {
+  width: 12px !important;
+  height: 12px !important;
+  flex-shrink: 0 !important;
+}
+
+/* Summary Excerpt - perfectly aligned flush with headline and date */
 .photocard-summary {
-  font-family: 'Anek Bangla', 'Hind Siliguri', 'Space Grotesk', -apple-system, sans-serif !important;
+  font-family: 'Space Grotesk', 'Hind Siliguri', 'Anek Bangla', -apple-system, sans-serif !important;
   font-size: 14px !important;
   font-weight: 400 !important;
-  line-height: 1.44 !important;
-  letter-spacing: 0 !important;
-  color: #222222 !important;
-  margin: 0 !important;
+  line-height: 1.55 !important;
+  letter-spacing: -0.01em !important;
+  color: var(--pc-text-muted, #444444) !important;
+  margin: 10px 0 0 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
   word-break: break-word !important;
+  text-align: left !important;
 }
 
-/* 3. Main Image Area (Edge-to-edge width, dynamic height, zero dead space) */
+.photocard-canvas.is-bangla .photocard-summary {
+  font-family: 'Hind Siliguri', 'Anek Bangla', sans-serif !important;
+  font-size: 14.5px !important;
+  line-height: 1.6 !important;
+}
+
+/* ----------------------------------------------------------------------------
+   3. Main Image Area
+   ---------------------------------------------------------------------------- */
 .photocard-image-frame {
   width: 100% !important;
   height: auto !important;
   min-height: 0 !important;
   position: relative !important;
   overflow: hidden !important;
-  background: #0F172A !important;
+  background: #0A0A0A !important;
   display: block !important;
   margin: 0 !important;
   padding: 0 !important;
   line-height: 0 !important;
   font-size: 0 !important;
+  border-top: 3px solid var(--pc-border, #0A0A0A) !important;
+  border-bottom: 3px solid var(--pc-border, #0A0A0A) !important;
 }
 
-/* Main sharp photo fitting left & right edge-to-edge with no cutoff and no dead space */
 .photocard-main-img {
   position: relative;
   z-index: 2;
@@ -10345,7 +10536,7 @@ input[type="datetime-local"] {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.75);
   color: #FFFFFF;
   font-family: var(--font-mono);
   font-size: 0.8rem;
@@ -10365,18 +10556,20 @@ input[type="datetime-local"] {
   to { transform: rotate(360deg); }
 }
 
-/* 4. Bottom Footer Banner (~44px, Fixed) */
+/* ----------------------------------------------------------------------------
+   4. Bottom Footer Banner (~46px)
+   ---------------------------------------------------------------------------- */
 .photocard-footer {
-  height: 44px !important;
-  min-height: 44px !important;
-  max-height: 44px !important;
-  padding: 0 20px !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  max-height: 46px !important;
+  padding: 0 16px !important;
   box-sizing: border-box !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  background: #0F172A !important;
-  color: #FFFFFF !important;
+  background: var(--pc-footer-bg, #0A0A0A) !important;
+  color: var(--pc-footer-text, #FFFFFF) !important;
   font-family: 'Space Grotesk', 'Hind Siliguri', sans-serif !important;
   margin: 0 !important;
   overflow: hidden !important;
@@ -10387,19 +10580,21 @@ input[type="datetime-local"] {
 }
 
 .photocard-footer-badge {
-  background: #FF2A85 !important;
-  color: #FFFFFF !important;
+  background: var(--pc-footer-badge-bg, #FFE500) !important;
+  color: var(--pc-footer-badge-text, #0A0A0A) !important;
+  border: 1.5px solid var(--pc-footer-badge-border, #FFE500) !important;
+  box-shadow: 2px 2px 0 var(--pc-border, #0A0A0A) !important;
   font-weight: 800 !important;
-  font-size: 11px !important;
+  font-size: 10.5px !important;
   height: 22px !important;
   padding: 0 8px !important;
   box-sizing: border-box !important;
-  border-radius: 4px !important;
+  border-radius: 0 !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.5px !important;
+  letter-spacing: 0.06em !important;
   flex-shrink: 0 !important;
-  margin-right: 12px !important;
-  font-family: 'Space Grotesk', sans-serif !important;
+  margin-right: 8px !important;
+  font-family: 'Space Mono', monospace !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -10417,36 +10612,41 @@ input[type="datetime-local"] {
 .photocard-footer-callout {
   font-family: 'Space Grotesk', 'Hind Siliguri', sans-serif !important;
   font-weight: 700 !important;
-  font-size: 12px !important;
+  font-size: 11px !important;
   height: 22px !important;
   box-sizing: border-box !important;
   line-height: 1 !important;
-  color: #FFFFFF !important;
+  color: var(--pc-footer-callout, #FFFFFF) !important;
   overflow: hidden !important;
-  text-overflow: ellipsis !important;
   white-space: nowrap !important;
   flex: 1 1 auto !important;
   text-align: center !important;
   letter-spacing: 0 !important;
+  text-transform: none !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
 }
 
 .photocard-footer-domain {
-  font-family: 'Space Grotesk', 'Hind Siliguri', sans-serif !important;
+  font-family: 'Space Mono', monospace !important;
   font-weight: 700 !important;
-  font-size: 12px !important;
+  font-size: 11px !important;
   height: 22px !important;
   box-sizing: border-box !important;
   line-height: 1 !important;
-  color: #94A3B8 !important;
+  color: var(--pc-footer-domain, #FFE500) !important;
   flex-shrink: 0 !important;
-  letter-spacing: 0 !important;
-  margin-left: 12px !important;
+  letter-spacing: 0.02em !important;
+  margin-left: 8px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: flex-end !important;
+  gap: 4px !important;
+}
+
+.photocard-footer-domain svg {
+  flex-shrink: 0 !important;
 }
 
 /* Actions Bar Below Preview */
