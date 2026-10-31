@@ -18,9 +18,13 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" id="meta-twitter-title" content="BartaWire" />
   <meta name="twitter:description" id="meta-twitter-desc" content="A personal blogging backend and community space." />
-  <meta name="twitter:image" id="meta-twitter-image" content="https://yourdomain.com/default-cover.png" />
+  <meta name="twitter:image" id="meta-twitter-image" content="bartawire.png" />
 
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌊</text></svg>">
+  <!-- Favicon & Touch Icons (Official BartaWire Logo) -->
+  <link rel="icon" type="image/png" sizes="32x32" href="bartawire.png?v=8.4">
+  <link rel="icon" type="image/png" sizes="16x16" href="bartawire.png?v=8.4">
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=8.4">
+  <link rel="apple-touch-icon" sizes="180x180" href="bartawire.png?v=8.4">
   <!-- Neo-Brutalism & Newspaper Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -41,7 +45,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=8.2">
+  <link rel="stylesheet" href="style.css?v=8.4">
 </head>
 <body>
   <!-- Header / Navigation -->
@@ -49,10 +53,7 @@
     <div class="header-container">
       <a href="#" class="brand-logo" id="brand-logo" aria-label="BartaWire - A Blog Site">
         <div class="logo-icon-wrap">
-          <svg class="ocean-wave-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M2 12c2.5-3 5-3 7.5 0s5 3 7.5 0 5-3 5-3"></path>
-            <path d="M2 17c2.5-3 5-3 7.5 0s5 3 7.5 0 5-3 5-3"></path>
-          </svg>
+          <img src="bartawire.png" alt="BartaWire Logo" class="brand-logo-img" width="42" height="42">
         </div>
         <div class="brand-text">
           <span class="brand-name"><span class="brand-title">Barta<span class="brand-highlight">Wire</span></span><span class="brand-subtitle"> - A Blog Site</span></span>
@@ -636,11 +637,22 @@
 
             <div class="admin-form">
               <input type="hidden" id="admin-post-id" value="">
+              <input type="file" id="admin-markdown-file-input" accept=".md,.markdown,.mdown,.mkd,.txt,text/markdown,text/plain" class="visually-hidden">
 
               <div class="form-group">
-                <label for="admin-title">Article Title <span class="required" title="Required">*</span></label>
+                <div class="label-with-action">
+                  <label for="admin-title">Article Title <span class="required" title="Required">*</span></label>
+                  <button type="button" id="admin-upload-md-btn" class="btn-text-action" title="Upload Markdown (.md / .txt) file to auto-fill title &amp; content">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="17 8 12 3 7 8"></polyline>
+                      <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <span>Upload .md</span>
+                  </button>
+                </div>
                 <input type="text" id="admin-title" placeholder="e.g. Deep Ocean Explorations (required)" required>
-                <span class="field-hint">The main headline for your article (required).</span>
+                <span class="field-hint">The main headline for your article (required). Or click <strong>Upload .md</strong> to import from file.</span>
               </div>
 
               <div class="form-group">
@@ -953,6 +965,14 @@
 
                   <!-- Right Stats & Helper -->
                   <div class="editor-toolbar-meta">
+                    <button type="button" class="editor-tool-btn editor-tool-upload" id="editor-upload-md-btn" data-action="upload-md" title="Upload Markdown file (.md / .txt) - 1st line fills Title, rest fills Content" aria-label="Upload Markdown">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                      </svg>
+                      <span class="tool-label">Upload .md</span>
+                    </button>
                     <span id="editor-word-count" class="editor-word-count">0 words</span>
                   </div>
                 </div>
@@ -2411,10 +2431,7 @@
         <div class="footer-brand">
           <a href="#" class="brand-logo footer-logo" id="footer-brand-logo" aria-label="BartaWire Home">
             <div class="logo-icon-wrap">
-              <svg class="ocean-wave-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M2 12c2.5-3 5-3 7.5 0s5 3 7.5 0 5-3 5-3"></path>
-                <path d="M2 17c2.5-3 5-3 7.5 0s5 3 7.5 0 5-3 5-3"></path>
-              </svg>
+              <img src="bartawire.png" alt="BartaWire Logo" class="brand-logo-img" width="42" height="42">
             </div>
             <div class="brand-text">
               <span class="brand-name"><span class="brand-title">Barta<span class="brand-highlight">Wire</span></span></span>
@@ -2460,7 +2477,7 @@
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
   <!-- Application Logic -->
-  <script src="app.js?v=8.2"></script>
+  <script src="app.js?v=8.4"></script>
 </body>
 </html>
 

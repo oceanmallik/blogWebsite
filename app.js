@@ -378,6 +378,9 @@ function initDOM() {
   dom.editorPreviewPane = document.getElementById('editor-preview-pane');
   dom.editorToolbar = document.getElementById('editor-toolbar');
   dom.editorWordCount = document.getElementById('editor-word-count');
+  dom.adminUploadMdBtn = document.getElementById('admin-upload-md-btn');
+  dom.editorUploadMdBtn = document.getElementById('editor-upload-md-btn');
+  dom.adminMarkdownFileInput = document.getElementById('admin-markdown-file-input');
   dom.adminPreviewAuthorCard = document.getElementById('admin-preview-author-card');
   dom.adminPreviewAvatarImg = document.getElementById('admin-preview-avatar-img');
   dom.adminPreviewAvatarFallback = document.getElementById('admin-preview-avatar-fallback');
@@ -5171,6 +5174,210 @@ function updateEditorWordCount() {
 }
 
 /**
+ * Triggers the hidden markdown file picker input
+ */
+function triggerMarkdownFileUpload() {
+  const input = dom.adminMarkdownFileInput || document.getElementById('admin-markdown-file-input');
+  if (input) {
+    input.value = ''; // Reset to allow re-upload of the same file
+    input.click();
+  }
+}
+
+/**
+ * Parses raw markdown or text into title, content, and optional summary
+ * The first non-empty line (with leading # and wrappers stripped) becomes the title.
+ * All subsequent lines remain as the content for editing.
+ * @param {string} rawText
+ * @returns {{ title: string, content: string, summary: string }}
+ */
+function parseMarkdownImport(rawText) {
+  if (!rawText || typeof rawText !== 'string') {
+    return { title: '', content: '', summary: '' };
+  }
+
+  // Normalize Windows and Mac line endings
+  const text = rawText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+  let bodyText = text;
+  let extractedTitle = '';
+  let extractedSummary = '';
+
+  // 1. Check for YAML frontmatter block at start (--- ... ---)
+  const frontmatterMatch = text.match(/^---\s*\n([\s\S]*?)\n---\s*(\n|$)/);
+  if (frontmatterMatch) {
+    const yamlBlock = frontmatterMatch[1];
+    bodyText = text.slice(frontmatterMatch[0].length);
+
+    const titleMatch = yamlBlock.match(/^title:\s*["']?(.*?)["']?\s*$/m);
+    if (titleMatch && titleMatch[1].trim()) {
+      extractedTitle = titleMatch[1].trim();
+    }
+    const summaryMatch = yamlBlock.match(/^(?:summary|description|excerpt):\s*["']?(.*?)["']?\s*$/m);
+    if (summaryMatch && summaryMatch[1].trim()) {
+      extractedSummary = summaryMatch[1].trim();
+    }
+  }
+
+  // 2. Extract first non-empty line as title
+  const lines = bodyText.split('\n');
+  let firstLineIdx = -1;
+
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trim().length > 0) {
+      firstLineIdx = i;
+      break;
+    }
+  }
+
+  if (firstLineIdx !== -1) {
+    let rawFirstLine = lines[firstLineIdx].trim();
+    const cleanFirstLine = rawFirstLine
+      .replace(/^#{1,6}\s+/, '')
+      .replace(/^(\*{1,2}|_{1,2})(.*?)\1$/, '$2')
+      .trim();
+
+    if (!extractedTitle) {
+      extractedTitle = cleanFirstLine;
+      const remainingLines = lines.slice(firstLineIdx + 1);
+      let contentStartIdx = 0;
+      while (contentStartIdx < remainingLines.length && remainingLines[contentStartIdx].trim() === '') {
+        contentStartIdx++;
+      }
+      bodyText = remainingLines.slice(contentStartIdx).join('\n');
+    } else {
+      // If extractedTitle was from frontmatter, check if the first body line is a duplicate title heading
+      if (cleanFirstLine.toLowerCase() === extractedTitle.toLowerCase()) {
+        const remainingLines = lines.slice(firstLineIdx + 1);
+        let contentStartIdx = 0;
+        while (contentStartIdx < remainingLines.length && remainingLines[contentStartIdx].trim() === '') {
+          contentStartIdx++;
+        }
+        bodyText = remainingLines.slice(contentStartIdx).join('\n');
+      }
+    }
+  } else if (!extractedTitle) {
+    bodyText = '';
+  }
+
+  return {
+    title: extractedTitle,
+    content: bodyText.trim(),
+    summary: extractedSummary
+  };
+}
+
+/**
+ * Applies parsed markdown import data into the article title, slug, summary, and content fields
+ * @param {string} rawText
+ * @param {string} fileName
+ */
+function applyMarkdownImport(rawText, fileName = '') {
+  const parsed = parseMarkdownImport(rawText);
+
+  if (!parsed.title && !parsed.content) {
+    showToast('The uploaded markdown file appears to be empty.', 'error');
+    return;
+  }
+
+  // 1. Article Title: First line fills the title
+  if (dom.adminTitle) {
+    const finalTitle = parsed.title || fileName.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+    dom.adminTitle.value = finalTitle;
+    dom.adminTitle.classList.toggle('is-bangla', isBanglaText(finalTitle));
+    dom.adminTitle.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  // 2. Slug: Auto-generate from title if creating a new post
+  if (!editingPostId && dom.adminSlug && dom.adminTitle) {
+    dom.adminSlug.value = generateSlugFromText(dom.adminTitle.value);
+  }
+
+  // 3. Content: The rest stays in editor for editing
+  if (dom.adminContent) {
+    dom.adminContent.value = parsed.content;
+    dom.adminContent.classList.toggle('is-bangla', isBanglaText(parsed.content));
+    dom.adminContent.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  // 4. Summary: If empty, populate from frontmatter or first paragraph excerpt
+  if (dom.adminSummary && !dom.adminSummary.value.trim()) {
+    if (parsed.summary) {
+      dom.adminSummary.value = parsed.summary;
+    } else if (parsed.content) {
+      const cleanParagraph = parsed.content
+        .split('\n')
+        .map(l => l.trim())
+        .filter(l => l.length > 0 && !l.startsWith('#') && !l.startsWith('---') && !l.startsWith('!['))[0] || '';
+      if (cleanParagraph) {
+        const stripped = cleanParagraph.replace(/[*_`\[\]()#]/g, '').trim();
+        dom.adminSummary.value = stripped.slice(0, 180);
+      }
+    }
+    if (dom.adminSummary.value) {
+      dom.adminSummary.classList.toggle('is-bangla', isBanglaText(dom.adminSummary.value));
+      dom.adminSummary.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  }
+
+  // 5. Update word count and live preview
+  updateEditorWordCount();
+  if (currentEditorTab === 'preview' || dom.editorViewContainer?.classList.contains('split-view')) {
+    updateAdminPreview();
+  }
+
+  // 6. User feedback
+  const titleDisplay = parsed.title ? `"${parsed.title}"` : 'File';
+  showToast(`Imported ${titleDisplay}! Title & content loaded.`, 'success');
+  showAdminMsg(`Markdown loaded! 1st line set as Title, rest in editor ready to customize!`, 'success');
+}
+
+/**
+ * Handles validation and FileReader reading for an uploaded markdown file
+ * @param {File} file
+ */
+function handleMarkdownFile(file) {
+  if (!file) return;
+
+  const validExtensions = ['.md', '.markdown', '.mdown', '.mkd', '.txt'];
+  const fileName = (file.name || '').toLowerCase();
+  const hasValidExt = validExtensions.some(ext => fileName.endsWith(ext));
+  const isTextType = file.type.startsWith('text/') || file.type === '';
+
+  if (!hasValidExt && !isTextType) {
+    showToast('Please select a valid Markdown (.md) or text (.txt) file.', 'error');
+    return;
+  }
+
+  // Max 5MB limit
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('File is too large (max 5MB).', 'error');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    try {
+      const rawText = event.target?.result;
+      if (typeof rawText !== 'string') {
+        showToast('Could not read text contents from the file.', 'error');
+        return;
+      }
+      applyMarkdownImport(rawText, file.name);
+    } catch (err) {
+      console.error('Error importing markdown:', err);
+      showToast('Error importing file: ' + (err.message || 'Unknown error'), 'error');
+    }
+  };
+
+  reader.onerror = () => {
+    showToast('Failed to read the selected file.', 'error');
+  };
+
+  reader.readAsText(file, 'utf-8');
+}
+
+/**
  * Initializes the visual markdown toolbar, mobile focus retention, and PC keyboard shortcuts
  */
 function initMarkdownEditorToolbar() {
@@ -5186,14 +5393,14 @@ function initMarkdownEditorToolbar() {
   // Prevent blur on pointerdown/mousedown so tapping toolbar buttons doesn't steal textarea focus
   toolbar.addEventListener('pointerdown', (e) => {
     const btn = e.target.closest('.editor-tool-btn');
-    if (btn) {
+    if (btn && btn.dataset.action && btn.dataset.action !== 'upload-md') {
       trackEditorSelection();
       e.preventDefault();
     }
   });
   toolbar.addEventListener('mousedown', (e) => {
     const btn = e.target.closest('.editor-tool-btn');
-    if (btn) {
+    if (btn && btn.dataset.action && btn.dataset.action !== 'upload-md') {
       trackEditorSelection();
       e.preventDefault();
     }
@@ -5236,6 +5443,9 @@ function initMarkdownEditorToolbar() {
       case 'clear':
         clearFormatting();
         break;
+      case 'upload-md':
+        triggerMarkdownFileUpload();
+        return;
       default:
         break;
     }
@@ -9465,6 +9675,50 @@ function initEventListeners() {
   dom.adminBottomResetBtn?.addEventListener('click', resetAdminEditor);
   initSplitViewScrollSync();
   initMarkdownEditorToolbar();
+
+  // Admin Markdown File Upload & Drag-and-Drop
+  dom.adminUploadMdBtn?.addEventListener('click', triggerMarkdownFileUpload);
+  dom.editorUploadMdBtn?.addEventListener('click', triggerMarkdownFileUpload);
+  dom.adminMarkdownFileInput?.addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleMarkdownFile(file);
+    }
+  });
+
+  const writePane = dom.editorWritePane;
+  if (writePane) {
+    ['dragenter', 'dragover'].forEach(eventName => {
+      writePane.addEventListener(eventName, (e) => {
+        const hasFiles = e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files');
+        if (hasFiles) {
+          e.preventDefault();
+          e.stopPropagation();
+          writePane.classList.add('drag-active');
+        }
+      });
+    });
+
+    ['dragleave', 'dragend', 'drop'].forEach(eventName => {
+      writePane.addEventListener(eventName, (e) => {
+        writePane.classList.remove('drag-active');
+      });
+    });
+
+    writePane.addEventListener('drop', (e) => {
+      const files = e.dataTransfer?.files;
+      if (files && files.length > 0) {
+        const file = files[0];
+        const fileName = (file.name || '').toLowerCase();
+        const validExtensions = ['.md', '.markdown', '.mdown', '.mkd', '.txt'];
+        if (validExtensions.some(ext => fileName.endsWith(ext)) || file.type.startsWith('text/')) {
+          e.preventDefault();
+          e.stopPropagation();
+          handleMarkdownFile(file);
+        }
+      }
+    });
+  }
 
   // Photo Upload Modal Listeners
   dom.photoModalCloseBtn?.addEventListener('click', closePhotoUploadModal);
