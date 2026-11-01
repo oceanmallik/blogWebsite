@@ -9347,8 +9347,8 @@ async function generatePhotocardExportCanvas(targetCard = null) {
         const headline = clonedCard.querySelector('.photocard-headline');
         if (headline) {
           const fontSize = parseFloat(window.getComputedStyle(headline).fontSize) || 28;
-          headline.style.position = 'relative';
-          headline.style.top = '-' + Math.round(fontSize * 0.25) + 'px';
+          headline.style.setProperty('position', 'relative', 'important');
+          headline.style.setProperty('top', '-' + Math.round(fontSize * 0.38) + 'px', 'important');
         }
         const storyBannerLabel = clonedCard.querySelector('.pc-story-title-label');
         if (storyBannerLabel) {
