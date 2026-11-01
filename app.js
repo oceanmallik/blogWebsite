@@ -3361,7 +3361,7 @@ function returnToHomeView() {
     window.location.hash = '';
   }
 
-  document.title = 'BartaWire - A Blog Site';
+  document.title = 'BartaWire - Your Daily News Dose';
   currentPage = 1;
   window.currentPage = currentPage;
   resetArticleMetaTags();
