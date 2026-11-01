@@ -10796,7 +10796,6 @@ input[type="datetime-local"] {
   flex-shrink: 0 !important;
   display: block !important;
   margin: 0 !important;
-  position: static !important;
 }
 
 .photocard-footer-social-item span {
@@ -10804,7 +10803,6 @@ input[type="datetime-local"] {
   vertical-align: middle !important;
   line-height: 1 !important;
   margin: 0 !important;
-  position: static !important;
 }
 
 /* Legacy footer classes preserved for backward compatibility */

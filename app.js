@@ -9366,7 +9366,8 @@ async function generatePhotocardExportCanvas(targetCard = null) {
           summary.style.top = '-5px';
         }
 
-        // Footer Social items - keep icons naturally centered and apply baseline compensation to text spans
+        // Keep the export footer on the same natural flex layout as the
+        // preview. Do not redistribute items by their text width.
         const footer = clonedCard.querySelector('.photocard-footer');
         if (footer) {
           footer.style.display = 'flex';
@@ -9380,8 +9381,11 @@ async function generatePhotocardExportCanvas(targetCard = null) {
         socialItems.forEach(item => {
           item.style.display = 'inline-flex';
           item.style.alignItems = 'center';
+          item.style.justifyContent = 'flex-start';
+          item.style.flex = '0 0 auto';
           item.style.gap = '6px';
           item.style.height = '22px';
+          item.style.width = 'auto';
           item.style.lineHeight = '1';
         });
         const footerSvgs = clonedCard.querySelectorAll('.photocard-footer-social-item svg');
@@ -9392,14 +9396,17 @@ async function generatePhotocardExportCanvas(targetCard = null) {
           svg.style.display = 'block';
           svg.style.flexShrink = '0';
         });
-        const footerSpans = clonedCard.querySelectorAll('.photocard-footer-social-item span');
-        footerSpans.forEach(s => {
-          s.style.position = 'relative';
-          s.style.top = '-2.5px';
-          s.style.transform = 'none';
-          s.style.display = 'inline-block';
-          s.style.verticalAlign = 'middle';
-          s.style.lineHeight = '1';
+        const footerSpans = clonedCard.querySelectorAll(
+          '.photocard-footer-social-item span, .photocard-footer-badge span, .photocard-footer-callout span, .photocard-footer-domain span'
+        );
+        footerSpans.forEach(span => {
+          // html2canvas renders Space Mono text glyphs below the live browser baseline;
+          // elevate by 8px matching topic and date pills so footer text is centered between footer top and bottom.
+          span.style.setProperty('position', 'relative', 'important');
+          span.style.setProperty('top', '-8px', 'important');
+          span.style.setProperty('display', 'inline-block', 'important');
+          span.style.setProperty('vertical-align', 'middle', 'important');
+          span.style.setProperty('line-height', '1', 'important');
         });
       }
     }
