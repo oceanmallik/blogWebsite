@@ -48,7 +48,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=8.7">
+  <link rel="stylesheet" href="style.css?v=8.8">
 </head>
 <body>
   <!-- Header / Navigation -->
@@ -2266,20 +2266,20 @@
             <!-- Export / Download Action Bar -->
             <div class="photocard-actions-bar">
               <div class="pc-actions-primary-row">
-                <button type="button" id="photocard-download-btn" class="btn-primary photocard-download-btn">
+                <button type="button" id="photocard-download-btn" class="btn-primary photocard-download-btn" title="Download current card as HD PNG">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="17" height="17" aria-hidden="true">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                     <polyline points="7 10 12 15 17 10"></polyline>
                     <line x1="12" y1="15" x2="12" y2="3"></line>
                   </svg>
-                  <span id="photocard-download-text">Download This Card (PNG)</span>
+                  <span id="photocard-download-text">Download Current</span>
                 </button>
-                <button type="button" id="photocard-download-all-btn" class="btn-primary pc-download-all-btn" title="Download all carousel slides as separate PNG images openly">
+                <button type="button" id="photocard-download-all-btn" class="btn-primary pc-download-all-btn" title="Download all carousel slides as separate PNG images">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="17" height="17" aria-hidden="true">
                     <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
                     <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
                   </svg>
-                  <span id="photocard-download-all-text">Download All Cards (PNG)</span>
+                  <span id="photocard-download-all-text">Download All</span>
                 </button>
               </div>
               
@@ -2478,20 +2478,20 @@
             <!-- Mobile-Only Action Bar at Bottom of Controls Pane -->
             <div class="photocard-actions-bar photocard-controls-bottom-actions">
               <div class="pc-actions-primary-row">
-                <button type="button" id="photocard-download-btn-bottom" class="btn-primary photocard-download-btn">
+                <button type="button" id="photocard-download-btn-bottom" class="btn-primary photocard-download-btn" title="Download current card as HD PNG">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="16" height="16" aria-hidden="true">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                     <polyline points="7 10 12 15 17 10"></polyline>
                     <line x1="12" y1="15" x2="12" y2="3"></line>
                   </svg>
-                  <span>Download This Card (PNG)</span>
+                  <span>Download Current</span>
                 </button>
-                <button type="button" id="photocard-download-all-btn-bottom" class="btn-primary pc-download-all-btn" title="Download all carousel cards as separate PNG images openly">
+                <button type="button" id="photocard-download-all-btn-bottom" class="btn-primary pc-download-all-btn" title="Download all carousel cards as separate PNG images">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="16" height="16" aria-hidden="true">
                     <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
                     <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
                   </svg>
-                  <span>Download All Cards (PNG)</span>
+                  <span>Download All</span>
                 </button>
               </div>
               
@@ -2585,7 +2585,7 @@
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
   <!-- Application Logic -->
-  <script src="app.js?v=9.1"></script>
+  <script src="app.js?v=9.2"></script>
 </body>
 </html>
 

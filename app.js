@@ -8984,22 +8984,21 @@ function setActivePhotocardCard(index) {
     }
   }
 
-  const dlText = index === 0 ? 'Download Cover Card (PNG)' : `Download Story Card ${index} (PNG)`;
   if (dom.photocardDownloadBtn) {
     const span = dom.photocardDownloadBtn.querySelector('span') || dom.photocardDownloadBtn;
-    span.textContent = dlText;
+    span.textContent = 'Download Current';
   }
   if (dom.photocardDownloadBtnBottom) {
     const span = dom.photocardDownloadBtnBottom.querySelector('span') || dom.photocardDownloadBtnBottom;
-    span.textContent = dlText;
+    span.textContent = 'Download Current';
   }
   if (dom.photocardDownloadAllBtn) {
     const span = dom.photocardDownloadAllBtn.querySelector('span') || dom.photocardDownloadAllBtn;
-    span.textContent = `Download All ${totalCards} Cards (PNG)`;
+    span.textContent = 'Download All';
   }
   if (dom.photocardDownloadAllBtnBottom) {
     const span = dom.photocardDownloadAllBtnBottom.querySelector('span') || dom.photocardDownloadAllBtnBottom;
-    span.textContent = `Download All ${totalCards} Cards (PNG)`;
+    span.textContent = 'Download All';
   }
 
   adjustPhotocardPreviewScale();
