@@ -68,6 +68,25 @@ let card1MeasuredHeight = 0;
 // Default OpenGraph & Twitter Card Image Fallback (Official BartaWire Banner)
 const DEFAULT_OG_IMAGE = 'banner.png';
 
+// Writing icon SVG used for writer/publisher role badge
+const WRITING_ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>`;
+
+function updateRoleBadge(element, role) {
+  if (!element) return;
+  const r = (role || '').toLowerCase();
+  const isWriter = r === 'admin' || r === 'publisher';
+  element.className = `role-badge role-${isWriter ? 'admin' : 'visitor'}`;
+  if (isWriter) {
+    element.innerHTML = WRITING_ICON_SVG;
+    element.title = 'Writer';
+    element.setAttribute('aria-label', 'Writer');
+  } else {
+    element.textContent = 'Visitor';
+    element.title = 'Role: Visitor';
+    element.setAttribute('aria-label', 'Role: Visitor');
+  }
+}
+
 // Expose state globally on window for convenient debugging
 window.supabaseClient = null;
 window.currentUser = null;
@@ -850,27 +869,28 @@ async function handleUserSession(user, fallbackDisplayName) {
   const effectiveDisplayName = getEffectiveDisplayName(profile, user, fallbackDisplayName);
   const effectiveUsername = getEffectiveUsername(profile, user);
   const effectiveAvatarUrl = profile?.avatar_url || user.user_metadata?.avatar_url || null;
-  const effectiveRole = profile?.role || user.user_metadata?.role || 'visitor';
+  const rawRole = (profile?.role || user.user_metadata?.role || 'visitor').toLowerCase();
+  const effectiveRole = (rawRole === 'publisher' || rawRole === 'admin' || rawRole === 'writer') ? 'admin' : rawRole;
   const effectiveCreatedAt = profile?.created_at || user.created_at || new Date().toISOString();
 
   profile = {
+    bio: '',
+    location: '',
+    institution: '',
+    website_url: '',
+    cover_url: '',
+    skills: [],
+    social_links: {},
+    is_verified: false,
+    pinned_post_id: null,
+    ...(profile || {}),
     id: user.id,
     email: user.email,
     display_name: effectiveDisplayName,
     username: effectiveUsername,
     avatar_url: effectiveAvatarUrl,
     role: effectiveRole,
-    created_at: effectiveCreatedAt,
-    bio: profile?.bio || '',
-    location: profile?.location || '',
-    institution: profile?.institution || '',
-    website_url: profile?.website_url || '',
-    cover_url: profile?.cover_url || '',
-    skills: Array.isArray(profile?.skills) ? profile.skills : [],
-    social_links: profile?.social_links && typeof profile.social_links === 'object' ? profile.social_links : {},
-    is_verified: !!profile?.is_verified,
-    pinned_post_id: profile?.pinned_post_id || null,
-    ...(profile || {})
+    created_at: effectiveCreatedAt
   };
 
   currentProfile = profile;
@@ -960,22 +980,18 @@ function updateAuthUI() {
       }
     }
 
+    // Role determination
+    const role = (currentUserRole || currentProfile?.role || 'visitor').toLowerCase();
+    const isAdmin = role === 'admin' || role === 'publisher';
+
     // Role badge
-    const role = (currentUserRole || 'visitor').toLowerCase();
     if (dom.navUserRole) {
-      dom.navUserRole.className = `role-badge role-${role}`;
-      if (role === 'admin') {
-        dom.navUserRole.innerHTML = `👑 Publisher`;
-        dom.navUserRole.title = 'Role: Publisher';
-      } else {
-        dom.navUserRole.innerHTML = `Visitor`;
-        dom.navUserRole.title = 'Role: Visitor';
-      }
+      updateRoleBadge(dom.navUserRole, role);
     }
 
-    // Admin button visible ONLY for admin
+    // Admin button visible ONLY for admin / publisher
     if (dom.navAdminBtn) {
-      if (role === 'admin') {
+      if (isAdmin) {
         dom.navAdminBtn.classList.remove('hidden');
       } else {
         dom.navAdminBtn.classList.add('hidden');
@@ -991,6 +1007,29 @@ function updateAuthUI() {
     }
     if (dom.heroSignupBtn) {
       dom.heroSignupBtn.title = 'View your public profile';
+    }
+
+    // Hero primary action button: if admin/publisher, show "Create a Post"
+    if (dom.heroBecomeWriterBtn) {
+      if (isAdmin) {
+        dom.heroBecomeWriterBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16" aria-hidden="true">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+          </svg>
+          <span>Create a Post</span>
+        `;
+        dom.heroBecomeWriterBtn.title = 'Create a new article';
+      } else {
+        dom.heroBecomeWriterBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16" aria-hidden="true">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+          </svg>
+          <span>Apply for Writer Access</span>
+        `;
+        dom.heroBecomeWriterBtn.title = 'Apply for Writer Access • Be a Publisher';
+      }
     }
   } else {
     // Logged out
@@ -1010,6 +1049,16 @@ function updateAuthUI() {
     }
     if (dom.heroSignupBtn) {
       dom.heroSignupBtn.title = 'Create an account or sign in';
+    }
+    if (dom.heroBecomeWriterBtn) {
+      dom.heroBecomeWriterBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16" aria-hidden="true">
+          <path d="M12 20h9"></path>
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+        </svg>
+        <span>Apply for Writer Access</span>
+      `;
+      dom.heroBecomeWriterBtn.title = 'Apply for Writer Access • Be a Publisher';
     }
   }
 
@@ -3669,8 +3718,8 @@ function createCommentCardElement(comment) {
 
   if (commentRole === 'admin') {
     const roleBadge = document.createElement('span');
-    roleBadge.className = 'role-badge role-admin comment-role-badge';
-    roleBadge.textContent = '👑 Publisher';
+    updateRoleBadge(roleBadge, 'admin');
+    roleBadge.classList.add('comment-role-badge');
     authorNameRow.appendChild(roleBadge);
   }
 
@@ -3874,6 +3923,7 @@ function openManageView() {
   }
 
   currentPublicProfileUser = null;
+  manageCurrentPage = 1;
 
   dom.homeView?.classList.add('hidden');
   dom.articleView?.classList.add('hidden');
@@ -3896,24 +3946,28 @@ function openManageView() {
 }
 
 async function loadManagePosts() {
-  if (dom.managePostsCount) dom.managePostsCount.textContent = 'Loading...';
+  if (dom.managePostsCount) dom.managePostsCount.textContent = 'Loading your posts...';
   dom.manageRefreshBtn?.classList.add('spinning');
 
   try {
-    if (supabaseClient) {
+    const currentUserId = currentUser?.id;
+    if (supabaseClient && currentUserId) {
       const { data, error } = await supabaseClient
         .from('posts')
         .select('*')
+        .eq('author_id', currentUserId)
         .order('created_at', { ascending: false });
 
       if (error) {
         console.warn('Could not load manage posts:', error.message);
-        managePosts = (allPosts && allPosts.length > 0) ? allPosts : [];
+        managePosts = (allPosts && allPosts.length > 0) ? allPosts.filter(p => p.author_id === currentUserId) : [];
       } else {
-        managePosts = (data && data.length > 0) ? data : ((allPosts && allPosts.length > 0) ? allPosts : []);
+        managePosts = data || [];
       }
     } else {
-      managePosts = (allPosts && allPosts.length > 0) ? allPosts : [];
+      managePosts = (allPosts && allPosts.length > 0)
+        ? (currentUserId ? allPosts.filter(p => p.author_id === currentUserId) : [])
+        : [];
     }
 
     // Also sync adminPosts for edit operations
@@ -3922,7 +3976,7 @@ async function loadManagePosts() {
     renderManagePostsGrid(managePosts);
   } catch (err) {
     console.error('Failed to load manage posts:', err);
-    managePosts = allPosts || [];
+    managePosts = [];
     renderManagePostsGrid(managePosts);
   } finally {
     dom.manageRefreshBtn?.classList.remove('spinning');
@@ -3938,7 +3992,7 @@ function renderManagePostsGrid(posts) {
   const drafts = total - published;
 
   if (dom.managePostsCount) {
-    dom.managePostsCount.textContent = `${total} total • ${published} published • ${drafts} drafts`;
+    dom.managePostsCount.textContent = `${total} of your articles • ${published} published • ${drafts} drafts`;
   }
 
   if (total === 0) {
@@ -3966,12 +4020,12 @@ function renderManagePostsGrid(posts) {
     card.dataset.id = post.id;
     card.setAttribute('role', 'button');
     card.setAttribute('tabindex', '0');
-    card.setAttribute('title', `Manage: ${post.title || 'Untitled'}`);
+    card.setAttribute('title', `Click to edit: ${post.title || 'Untitled'}`);
 
     const isPublished = Boolean(post.is_published);
     const statusClass = isPublished ? 'status-published' : 'status-draft';
     const statusText = isPublished ? 'Published' : 'Draft';
-    const isAuthor = Boolean(currentUser && post.author_id && post.author_id === currentUser.id);
+    const isAuthor = Boolean(!post.author_id || (currentUser && post.author_id === currentUser.id));
 
     const thumbWrap = document.createElement('div');
     thumbWrap.className = 'card-image-wrap manage-card-image-wrap';
@@ -3987,12 +4041,12 @@ function renderManagePostsGrid(posts) {
       img.alt = post.title || 'Post thumbnail';
       img.loading = 'lazy';
       img.onerror = () => {
-        thumbWrap.innerHTML = getPlaceholderIconSvg();
+        thumbWrap.innerHTML = getPlaceholderIconSvg ? getPlaceholderIconSvg() : '';
         thumbWrap.appendChild(statusBadge);
       };
       thumbWrap.appendChild(img);
     } else {
-      thumbWrap.innerHTML = getPlaceholderIconSvg();
+      thumbWrap.innerHTML = getPlaceholderIconSvg ? getPlaceholderIconSvg() : '<div class="card-placeholder-image" aria-hidden="true"><span style="font-size:1.5rem">🖼️</span></div>';
     }
     thumbWrap.appendChild(statusBadge);
 
@@ -4012,16 +4066,14 @@ function renderManagePostsGrid(posts) {
       </div>
       <p class="card-summary ${isBanglaText(post.summary) ? 'is-bangla' : ''}">${escapeHtml(post.summary || 'No summary provided.')}</p>
       <div class="manage-card-actions">
-        ${isAuthor ? `
-          <button type="button" class="manage-action-btn manage-btn-edit" data-id="${post.id}" title="Edit this post">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-            Edit
-          </button>
-          <button type="button" class="manage-action-btn manage-btn-delete" data-id="${post.id}" title="Delete this post">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-            Delete
-          </button>
-        ` : `<span class="role-badge role-visitor" style="font-size:0.68rem;">Author Only</span>`}
+        <button type="button" class="manage-action-btn manage-btn-edit" data-id="${post.id}" title="Edit this post">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+          Edit
+        </button>
+        <button type="button" class="manage-action-btn manage-btn-delete" data-id="${post.id}" title="Delete this post">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          Delete
+        </button>
         <button type="button" class="manage-action-btn manage-btn-view" data-id="${post.id}" title="View article">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
           View
@@ -4029,15 +4081,11 @@ function renderManagePostsGrid(posts) {
       </div>
     `;
 
-    // Clicking card (not buttons) opens edit if author, otherwise view
+    // Clicking anywhere on the card opens editing and managing options
     card.addEventListener('click', (e) => {
       if (e.target.closest('button')) return;
-      if (isAuthor) {
-        openAdminView();
-        setTimeout(() => editPost(post.id), 100);
-      } else {
-        openArticleView(post);
-      }
+      openAdminView();
+      setTimeout(() => editPost(post.id), 100);
     });
     card.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -4046,19 +4094,17 @@ function renderManagePostsGrid(posts) {
       }
     });
 
-    if (isAuthor) {
-      body.querySelector('.manage-btn-edit')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        openAdminView();
-        setTimeout(() => editPost(post.id), 100);
-      });
-      body.querySelector('.manage-btn-delete')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        deletePost(post.id).then(() => loadManagePosts()).catch(() => {});
-      });
-    }
+    body.querySelector('.manage-btn-edit')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openAdminView();
+      setTimeout(() => editPost(post.id), 100);
+    });
+    body.querySelector('.manage-btn-delete')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      deletePost(post.id).then(() => loadManagePosts()).catch(() => {});
+    });
 
     body.querySelector('.manage-btn-view')?.addEventListener('click', (e) => {
       e.preventDefault();
@@ -4128,20 +4174,24 @@ async function loadAdminPosts() {
   dom.adminRefreshPostsBtn?.classList.add('spinning');
 
   try {
-    if (supabaseClient) {
+    const currentUserId = currentUser?.id;
+    if (supabaseClient && currentUserId) {
       const { data, error } = await supabaseClient
         .from('posts')
         .select('*')
+        .eq('author_id', currentUserId)
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.warn('Could not select all posts for admin:', error.message);
-        adminPosts = (allPosts && allPosts.length > 0) ? allPosts : [];
+        console.warn('Could not select posts for admin:', error.message);
+        adminPosts = (allPosts && allPosts.length > 0) ? allPosts.filter(p => p.author_id === currentUserId) : [];
       } else {
-        adminPosts = (data && data.length > 0) ? data : ((allPosts && allPosts.length > 0) ? allPosts : []);
+        adminPosts = data || [];
       }
     } else {
-      adminPosts = (allPosts && allPosts.length > 0) ? allPosts : [];
+      adminPosts = (allPosts && allPosts.length > 0)
+        ? (currentUser?.id ? allPosts.filter(p => p.author_id === currentUser.id) : allPosts)
+        : [];
     }
 
     renderAdminPostsList(adminPosts);
@@ -6578,14 +6628,11 @@ async function populateProfileView() {
   }
 
   // Role badges
-  const roleLabel = role === 'admin' ? '👑 Publisher' : 'Visitor';
   if (dom.profileIdentityRole) {
-    dom.profileIdentityRole.className = `role-badge role-${role}`;
-    dom.profileIdentityRole.textContent = roleLabel;
+    updateRoleBadge(dom.profileIdentityRole, role);
   }
   if (dom.profileHeaderRole) {
-    dom.profileHeaderRole.className = `role-badge role-${role}`;
-    dom.profileHeaderRole.textContent = roleLabel;
+    updateRoleBadge(dom.profileHeaderRole, role);
   }
 
   // Verified badge on identity card
@@ -8010,7 +8057,6 @@ function renderPublicProfileHero(profile) {
   const name = profile.display_name || 'Member';
   const username = profile.username ? `@${profile.username}` : '';
   const role = (profile.role || 'visitor').toLowerCase();
-  const roleLabel = role === 'admin' ? '👑 Publisher' : 'Visitor';
   const createdAt = profile.created_at ? formatDate(profile.created_at) : 'Recently';
 
   if (dom.publicProfileName) dom.publicProfileName.textContent = name;
@@ -8026,12 +8072,10 @@ function renderPublicProfileHero(profile) {
   }
 
   if (dom.publicProfileRoleBadge) {
-    dom.publicProfileRoleBadge.className = `role-badge role-${role}`;
-    dom.publicProfileRoleBadge.textContent = roleLabel;
+    updateRoleBadge(dom.publicProfileRoleBadge, role);
   }
   if (dom.publicProfileHeaderRole) {
-    dom.publicProfileHeaderRole.className = `role-badge role-${role}`;
-    dom.publicProfileHeaderRole.textContent = roleLabel;
+    updateRoleBadge(dom.publicProfileHeaderRole, role);
   }
 
   if (dom.publicProfileJoined) {
@@ -10559,7 +10603,13 @@ function initEventListeners() {
   });
 
   // Hero Action Buttons (Apply for Writer Access & Sign Up)
-  dom.heroBecomeWriterBtn?.addEventListener('click', openWriterModal);
+  dom.heroBecomeWriterBtn?.addEventListener('click', () => {
+    if (currentUserRole === 'admin' || currentUserRole === 'publisher') {
+      openAdminView();
+    } else {
+      openWriterModal();
+    }
+  });
   dom.heroSignupBtn?.addEventListener('click', () => {
     if (currentUser) {
       openPublicProfileView(currentUser.id, currentProfile?.username, currentProfile?.display_name);
@@ -10570,7 +10620,13 @@ function initEventListeners() {
 
   // Hero Top Writers Card Actions
   dom.heroViewAllWritersBtn?.addEventListener('click', openTopWritersModal);
-  dom.heroWritersApplyBtn?.addEventListener('click', openWriterModal);
+  dom.heroWritersApplyBtn?.addEventListener('click', () => {
+    if (currentUserRole === 'admin' || currentUserRole === 'publisher') {
+      openAdminView();
+    } else {
+      openWriterModal();
+    }
+  });
 
   // Writer & Top Writers Modals Handlers
   dom.writerModalCloseBtn?.addEventListener('click', closeWriterModal);

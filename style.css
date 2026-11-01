@@ -590,6 +590,7 @@ img {
 .role-badge {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.25rem;
   font-size: 0.65rem;
   font-weight: 700;
@@ -609,6 +610,16 @@ img {
   background: var(--accent-yellow);
   color: #0A0A0A;
   border-color: var(--border-color);
+  padding: 0.18rem 0.38rem;
+  min-width: 22px;
+  min-height: 20px;
+}
+
+.role-badge.role-admin svg {
+  display: block;
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
 }
 
 .badge-auto {
@@ -637,7 +648,7 @@ img {
 [data-theme="dark"] .role-badge.role-admin,
 [data-theme="cyberpunk"] .role-badge.role-admin {
   background: var(--accent-yellow);
-  color: var(--text-inverse);
+  color: #0A0A0A;
   border-color: var(--border-color);
 }
 
