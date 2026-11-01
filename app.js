@@ -9315,11 +9315,16 @@ async function generatePhotocardExportCanvas(targetCard = null) {
           topic.style.verticalAlign = 'middle';
         }
         const slidePill = clonedCard.querySelector('.pc-story-slide-pill span');
+        const slidePillContainer = clonedCard.querySelector('.pc-story-slide-pill');
         if (slidePill) {
           slidePill.style.position = 'relative';
           slidePill.style.top = '-8px';
           slidePill.style.display = 'inline-block';
           slidePill.style.verticalAlign = 'middle';
+          if (clonedCard.classList.contains('theme-dark')) {
+            slidePill.style.setProperty('color', '#0A0A0A', 'important');
+            if (slidePillContainer) slidePillContainer.style.setProperty('color', '#0A0A0A', 'important');
+          }
         }
         const dateLine = clonedCard.querySelector('.photocard-date-line');
         if (dateLine) {
