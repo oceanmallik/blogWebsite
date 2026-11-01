@@ -9490,7 +9490,11 @@ async function generatePhotocardExportCanvas(targetCard = null) {
           slidePill.style.top = '-8px';
           slidePill.style.display = 'inline-block';
           slidePill.style.verticalAlign = 'middle';
-          if (clonedCard.classList.contains('theme-dark')) {
+          if (clonedCard.classList.contains('theme-dark') ||
+              clonedCard.classList.contains('theme-ocean') ||
+              clonedCard.classList.contains('theme-navy') ||
+              clonedCard.classList.contains('theme-crimson') ||
+              clonedCard.classList.contains('theme-coral')) {
             slidePill.style.setProperty('color', '#0A0A0A', 'important');
             if (slidePillContainer) slidePillContainer.style.setProperty('color', '#0A0A0A', 'important');
           }

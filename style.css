@@ -11484,11 +11484,27 @@ input[type="datetime-local"] {
   line-height: 1 !important;
 }
 
-/* Obsidian (Dark Mode) slide pill uses yellow background; text must be black for legibility */
+/* Obsidian (Dark Mode), Electric Ocean, and Coral Wire slide pills use bright yellow background; text must be black for legibility */
 .photocard-canvas.theme-dark .pc-story-slide-pill,
 .photocard-canvas.theme-dark .pc-story-slide-pill span,
 .theme-dark .pc-story-slide-pill,
-.theme-dark .pc-story-slide-pill span {
+.theme-dark .pc-story-slide-pill span,
+.photocard-canvas.theme-ocean .pc-story-slide-pill,
+.photocard-canvas.theme-ocean .pc-story-slide-pill span,
+.photocard-canvas.theme-navy .pc-story-slide-pill,
+.photocard-canvas.theme-navy .pc-story-slide-pill span,
+.theme-ocean .pc-story-slide-pill,
+.theme-ocean .pc-story-slide-pill span,
+.theme-navy .pc-story-slide-pill,
+.theme-navy .pc-story-slide-pill span,
+.photocard-canvas.theme-crimson .pc-story-slide-pill,
+.photocard-canvas.theme-crimson .pc-story-slide-pill span,
+.photocard-canvas.theme-coral .pc-story-slide-pill,
+.photocard-canvas.theme-coral .pc-story-slide-pill span,
+.theme-crimson .pc-story-slide-pill,
+.theme-crimson .pc-story-slide-pill span,
+.theme-coral .pc-story-slide-pill,
+.theme-coral .pc-story-slide-pill span {
   color: #0A0A0A !important;
 }
 
