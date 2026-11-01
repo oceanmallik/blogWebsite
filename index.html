@@ -48,7 +48,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=8.9">
+  <link rel="stylesheet" href="style.css?v=9.0">
 </head>
 <body>
   <!-- Header / Navigation -->
@@ -458,6 +458,7 @@
           <!-- Article Cover Image Banner (Post photo appears first) -->
           <div id="article-cover-wrap" class="article-cover-wrapper hidden">
             <img id="article-cover" class="article-cover-image" src="" alt="Post cover image">
+            <div id="article-cover-caption" class="article-cover-caption">Photo Source: BartaWire</div>
           </div>
 
           <!-- Article Header -->
@@ -658,19 +659,16 @@
                 <span class="field-hint">The main headline for your article (required). Or click <strong>Upload .md</strong> to import from file.</span>
               </div>
 
-              <div class="form-group">
-                <div class="label-with-action">
-                  <label for="admin-slug">Slug (URL identifier) <span class="badge-auto">Auto-generated</span></label>
-                  <button type="button" id="admin-generate-slug" class="btn-text-action hidden">Generate from Title</button>
-                </div>
-                <input type="text" id="admin-slug" placeholder="Auto-generated from title..." readonly tabindex="-1">
-                <span class="field-hint">Auto-generated from your article title (used in article URL: <code>/#/post/your-slug</code>).</span>
-              </div>
+              <!-- Slug is auto-generated in the background (6-character random alphanumeric) -->
+              <input type="hidden" id="admin-slug">
 
               <div class="form-group">
-                <label for="admin-summary">Summary (Excerpt) <span class="required" title="Required">*</span></label>
-                <textarea id="admin-summary" rows="2" placeholder="Brief 1-2 sentence preview for cards (required)..." required></textarea>
-                <span class="field-hint">Brief summary shown on homepage cards and search results (required).</span>
+                <div class="label-with-action">
+                  <label for="admin-summary">Summary (Excerpt) <span class="required" title="Required">*</span></label>
+                  <span id="admin-summary-count" class="summary-word-badge">0 / 25 words</span>
+                </div>
+                <textarea id="admin-summary" rows="2" placeholder="Brief 1-2 sentence preview for cards (max 25 words, fits 2 lines)..." required></textarea>
+                <span class="field-hint">Brief summary shown on homepage cards (visually locked at 25 words to strictly fit 2 lines).</span>
               </div>
 
               <!-- Article Topic Selector -->
@@ -751,6 +749,13 @@
                 </div>
 
                 <span class="field-hint">Paste external link or upload image (auto-compressed to WebP &amp; uploaded to Supabase Storage, optional).</span>
+              </div>
+
+              <!-- Photo Source Input -->
+              <div class="form-group admin-photo-source-group" id="admin-photo-source-group">
+                <label for="post-photo-source">PHOTO SOURCE</label>
+                <input type="text" id="post-photo-source" value="BartaWire" placeholder="BartaWire">
+                <span class="field-hint">Source or credit for the cover photo (defaults to BartaWire).</span>
               </div>
 
               <!-- Publication Date (Backdate Option) -->
@@ -2585,7 +2590,7 @@
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
   <!-- Application Logic -->
-  <script src="app.js?v=9.3"></script>
+  <script src="app.js?v=9.4"></script>
 </body>
 </html>
 

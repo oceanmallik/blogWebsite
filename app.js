@@ -80,9 +80,10 @@ const DEMO_PREVIEW_POSTS = [
     id: 'demo-1',
     author_id: null,
     title: 'The Architecture of the Modern Ocean: Designing Resilient Web Systems',
-    slug: 'architecture-of-modern-ocean',
+    slug: 'k9x2m4',
     topic: 'Technology',
     summary: 'A deep dive into distributed systems, modular frontend design, and how building resilient web platforms resembles the fluid dynamics of ocean currents.',
+    photo_source: 'BartaWire',
     content: `## The Fluid Nature of Modern Systems\n\nSoftware architectures, much like tidal systems, must adapt to immense pressure and sudden shifts in volume. When designing scalable applications, rigidity leads to breakage.\n\n### Core Tenets of Resilient Design\n\n- **Loose Coupling:** Services should function independently with well-defined contracts.\n- **Graceful Degradation:** When a component fails, the system provides a predictable fallback rather than a complete blackout.\n- **Stateless Horizons:** Treating compute as ephemeral allows systems to scale effortlessly.\n\n> "The sea does not ask the storm to cease; it adjusts its surface to endure."\n\n\`\`\`javascript\n// Embracing resilience with retry backoffs\nasync function fetchWithResilience(url, retries = 3) {\n  for (let attempt = 0; attempt < retries; attempt++) {\n    try {\n      return await fetch(url);\n    } catch (err) {\n      if (attempt === retries - 1) throw err;\n      await new Promise(r => setTimeout(r, Math.pow(2, attempt) * 1000));\n    }\n  }\n}\n\`\`\`\n\nBy treating web systems with fluid design principles, we craft user experiences that feel smooth, dependable, and enduring.`,
     cover_image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
     is_published: true,
@@ -92,9 +93,10 @@ const DEMO_PREVIEW_POSTS = [
     id: 'demo-2',
     author_id: null,
     title: 'Crafting High-Performance Vanilla JavaScript Applications',
-    slug: 'high-performance-vanilla-javascript',
+    slug: 'b7y3q8',
     topic: 'Programming',
     summary: 'Why reaching for zero-dependency native JavaScript often delivers unmatched speed, clarity, and longevity for modern web frontends.',
+    photo_source: 'BartaWire',
     content: `## The Power of the Native Web\n\nIn an era dominated by sprawling framework ecosystems, the power of modern vanilla JavaScript is often underestimated. Browsers today are faster, more capable, and more standardized than ever before.\n\n### Why Vanilla JS Still Reigns\n\n1. **Zero Bundle Overhead:** No 300KB runtime shipped before the first render.\n2. **Direct DOM Interaction:** Using \`DocumentFragment\` and modern CSS containment yields incredible frame rates.\n3. **Future Proofing:** Code written to web standards remains functional decade after decade.\n\n\`\`\`javascript\n// Efficient batched DOM updates\nconst fragment = document.createDocumentFragment();\nposts.forEach(post => {\n  const card = createPostCard(post);\n  fragment.appendChild(card);\n});\ndocument.getElementById('posts-grid').appendChild(fragment);\n\`\`\`\n\nBy mastering the web platform's built-in APIs, you build experiences that load instantly on any network.`,
     cover_image: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1200&q=80',
     is_published: true,
@@ -104,9 +106,10 @@ const DEMO_PREVIEW_POSTS = [
     id: 'demo-3',
     author_id: null,
     title: 'Undercurrents: The Quiet Evolution of Edge Computing',
-    slug: 'undercurrents-quiet-evolution-edge-computing',
+    slug: 'w2n5p9',
     topic: 'AI',
     summary: 'How shifting computation closer to the edge transforms distributed performance, latency, and real-time experiences.',
+    photo_source: 'BartaWire',
     content: `## Beyond Centralized Horizons\n\nFor decades, computing oscillated between centralized mainframes and localized client hardware. Today, the edge represents a harmonious equilibrium — data processed precisely where it is generated.\n\n### Why the Edge Matters\n\n- **Sub-millisecond Latency:** Processing requests in local edge clusters eliminates round-trip lag across oceanic fiber cables.\n- **Resilience Under Pressure:** If an origin datacenter experiences disruption, edge nodes continue serving cached and dynamic workloads.\n- **Smart Data Routing:** Intelligent routing steers requests dynamically along optimal paths.\n\n> "Speed is not merely a feature; it is the silent foundation of trust in digital spaces."\n\nAs web platforms evolve, embracing edge computing ensures that every reader experiences instantaneous, seamless engagement regardless of where they reside on the globe.`,
     cover_image: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?auto=format&fit=crop&w=1200&q=80',
     is_published: true,
@@ -202,6 +205,7 @@ function initDOM() {
   dom.articleHeaderTopicText = document.getElementById('article-header-topic-text');
   dom.articleCoverWrap = document.getElementById('article-cover-wrap');
   dom.articleCover = document.getElementById('article-cover');
+  dom.articleCoverCaption = document.getElementById('article-cover-caption');
   dom.articleContent = document.getElementById('article-content');
   dom.articleAdminActions = document.getElementById('article-admin-actions');
   dom.articleAdminEditBtn = document.getElementById('article-admin-edit-btn');
@@ -323,9 +327,11 @@ function initDOM() {
   dom.adminSlug = document.getElementById('admin-slug');
   dom.adminGenerateSlug = document.getElementById('admin-generate-slug');
   dom.adminSummary = document.getElementById('admin-summary');
+  dom.adminSummaryCount = document.getElementById('admin-summary-count');
   dom.adminTopic = document.getElementById('admin-topic');
   dom.adminCoverGroup = document.getElementById('admin-cover-group');
   dom.adminCoverImage = document.getElementById('admin-cover-image');
+  dom.postPhotoSource = document.getElementById('post-photo-source');
   dom.adminCoverFile = document.getElementById('admin-cover-file');
   dom.adminUploadBtn = document.getElementById('admin-upload-btn');
   dom.adminCoverStatus = document.getElementById('admin-cover-status');
@@ -683,7 +689,9 @@ async function loadPosts() {
     updateTopicCounts();
     renderPostsGrid(allPosts);
     renderHeroTopWriters();
-    handleHashNavigation();
+    if (!activePost || dom.articleView?.classList.contains('hidden')) {
+      handleHashNavigation();
+    }
   } catch (err) {
     console.error('Failed to load posts:', err);
     showErrorState(err.message || 'Unable to load articles right now.');
@@ -3134,6 +3142,9 @@ async function openArticleView(post, updateHash = true) {
     dom.articleCover.onerror = () => {
       dom.articleCoverWrap?.classList.add('hidden');
     };
+    if (dom.articleCoverCaption) {
+      dom.articleCoverCaption.textContent = `Photo Source: ${post.photo_source || 'BartaWire'}`;
+    }
     dom.articleCoverWrap.classList.remove('hidden');
   } else {
     dom.articleCoverWrap.classList.add('hidden');
@@ -3177,17 +3188,20 @@ async function openArticleView(post, updateHash = true) {
   loadCommentsForPost(post.id);
 
   if (updateHash) {
-    const postIdentifier = post.slug || post.id;
-    const targetHash = `#/post/${encodeURIComponent(postIdentifier)}`;
-    const basePath = getAppBasePath() || '/';
+    const postSlug = post.slug || post.id;
     try {
-      if (window.location.pathname.includes('/@') && window.history && window.history.replaceState && window.location.protocol !== 'file:') {
-        window.history.replaceState(null, '', `${basePath}${targetHash}`);
-      } else if (window.location.hash !== targetHash) {
-        window.location.hash = targetHash;
+      if (window.history && window.history.pushState && window.location.protocol !== 'file:') {
+        const url = new URL(window.location.href);
+        url.searchParams.set('post', postSlug);
+        if (url.hash && url.hash.startsWith('#/post/')) {
+          url.hash = '';
+        }
+        window.history.pushState({ postId: post.id, slug: postSlug }, '', url.pathname + '?' + url.searchParams.toString() + (url.hash || ''));
+      } else {
+        window.location.search = `?post=${encodeURIComponent(postSlug)}`;
       }
     } catch (e) {
-      window.location.hash = targetHash;
+      window.location.hash = `#/post/${encodeURIComponent(postSlug)}`;
     }
   }
 
@@ -3287,10 +3301,29 @@ function returnToHomeView() {
 
   const basePath = getAppBasePath() || '/';
   try {
-    if (window.location.pathname.includes('/@') && window.history && window.history.replaceState && window.location.protocol !== 'file:') {
-      window.history.replaceState(null, '', basePath);
-    }
-    if (selectedTopic && selectedTopic !== 'all') {
+    if (window.history && window.history.replaceState && window.location.protocol !== 'file:') {
+      const url = new URL(window.location.href);
+      let changed = false;
+      if (url.searchParams.has('post')) {
+        url.searchParams.delete('post');
+        changed = true;
+      }
+      if (url.pathname.includes('/@')) {
+        url.pathname = basePath;
+        changed = true;
+      }
+      if (selectedTopic && selectedTopic !== 'all') {
+        url.hash = `#/topic/${encodeURIComponent(selectedTopic)}`;
+        changed = true;
+      } else if (url.hash) {
+        url.hash = '';
+        changed = true;
+      }
+      if (changed) {
+        const newSearch = url.searchParams.toString();
+        window.history.replaceState(null, '', url.pathname + (newSearch ? '?' + newSearch : '') + url.hash);
+      }
+    } else if (selectedTopic && selectedTopic !== 'all') {
       window.location.hash = `#/topic/${encodeURIComponent(selectedTopic)}`;
     } else if (window.location.hash) {
       window.location.hash = '';
@@ -3311,7 +3344,19 @@ function handleHashChange() {
 }
 
 function handleAppNavigation() {
-  // 1. Check pathname for /@username
+  // 1. Check query parameter ?post=
+  const urlParams = new URLSearchParams(window.location.search);
+  const postParam = urlParams.get('post')?.trim();
+  if (postParam) {
+    if (activePost && (activePost.slug === postParam || String(activePost.id) === postParam) && !dom.articleView?.classList.contains('hidden')) {
+      updateArticleMetaTags(activePost);
+      return;
+    }
+    openPostByIdOrSlug(postParam, postParam, null, false);
+    return;
+  }
+
+  // 2. Check pathname for /@username
   const pathname = decodeURIComponent(window.location.pathname || '');
   const pathAtMatch = pathname.match(/(?:^|\/)@([a-zA-Z0-9_\-\.]+)/);
   if (pathAtMatch && pathAtMatch[1]) {
@@ -3409,6 +3454,9 @@ function handleAppNavigation() {
       return;
     }
   } else if (!hash || hash === '#' || hash === '#/') {
+    if (urlParams.get('post')) {
+      return;
+    }
     if (!dom.articleView?.classList.contains('hidden') || !dom.adminView?.classList.contains('hidden') || !dom.profileView?.classList.contains('hidden') || !dom.publicProfileView?.classList.contains('hidden')) {
       returnToHomeView();
     }
@@ -4035,6 +4083,8 @@ async function handleAdminPostSubmit(e) {
   const title = dom.adminTitle.value.trim();
   const summary = dom.adminSummary.value.trim();
   const cover_image = dom.adminCoverImage.value.trim() || null;
+  const photoSourceInput = dom.postPhotoSource || document.getElementById('post-photo-source');
+  const photo_source = (photoSourceInput?.value || '').trim() || 'BartaWire';
   const content = dom.adminContent.value.trim();
   const is_published = dom.adminIsPublished.checked;
   const topic = dom.adminTopic ? dom.adminTopic.value.trim() : '';
@@ -4045,13 +4095,15 @@ async function handleAdminPostSubmit(e) {
     return;
   }
 
-  // Auto-generate slug from title on create post, no manual entry needed
-  let slug = (!editingPostId || !dom.adminSlug || !dom.adminSlug.value.trim())
-    ? generateSlugFromText(title)
-    : dom.adminSlug.value.trim();
-
-  if (dom.adminSlug) {
-    dom.adminSlug.value = slug;
+  // 6 character random alphanumeric slug (kept unchanged when editing)
+  let slug = dom.adminSlug?.value.trim();
+  if (!slug) {
+    slug = editingPostId
+      ? (adminPosts.find(p => p.id === editingPostId)?.slug || generateRandomSlug())
+      : generateRandomSlug();
+    if (dom.adminSlug) {
+      dom.adminSlug.value = slug;
+    }
   }
 
   if (!summary) {
@@ -4106,6 +4158,7 @@ async function handleAdminPostSubmit(e) {
         slug,
         summary,
         cover_image,
+        photo_source,
         content,
         is_published,
         topic
@@ -4139,6 +4192,7 @@ async function handleAdminPostSubmit(e) {
         slug,
         summary,
         cover_image,
+        photo_source,
         content,
         is_published,
         topic,
@@ -4154,9 +4208,9 @@ async function handleAdminPostSubmit(e) {
         .insert({ ...insertPayload, slug: finalSlug })
         .select();
 
-      // If duplicate slug constraint, append unique short suffix and retry
+      // If duplicate slug constraint, generate a fresh 6-char random slug and retry
       if (error && (error.code === '23505' || String(error.message).includes('slug') || String(error.message).includes('duplicate'))) {
-        finalSlug = `${slug}-${Date.now().toString(36).slice(-4)}`;
+        finalSlug = generateRandomSlug();
         const retryResult = await supabaseClient
           .from('posts')
           .insert({ ...insertPayload, slug: finalSlug })
@@ -4199,11 +4253,15 @@ function editPost(postId) {
   dom.adminPostId.value = post.id;
   dom.adminTitle.value = post.title || '';
   if (dom.adminSlug) {
-    dom.adminSlug.value = post.slug || generateSlugFromText(post.title || '');
+    dom.adminSlug.value = post.slug || generateRandomSlug();
     dom.adminSlug.readOnly = true;
   }
   dom.adminSummary.value = post.summary || '';
+  updateSummaryWordLimit();
   dom.adminCoverImage.value = post.cover_image || '';
+  if (dom.postPhotoSource) {
+    dom.postPhotoSource.value = post.photo_source || 'BartaWire';
+  }
   updateCoverPreview(post.cover_image || '');
   hideCoverStatus();
   dom.adminContent.value = post.content || '';
@@ -4239,8 +4297,9 @@ function resetAdminEditor() {
   editingPostId = null;
   dom.adminPostId.value = '';
   dom.adminPostForm.reset();
+  updateSummaryWordLimit();
   if (dom.adminSlug) {
-    dom.adminSlug.value = '';
+    dom.adminSlug.value = generateRandomSlug();
     dom.adminSlug.readOnly = true;
   }
   dom.adminIsPublished.checked = true;
@@ -4249,6 +4308,9 @@ function resetAdminEditor() {
   }
   if (dom.adminCustomDate) {
     dom.adminCustomDate.value = '';
+  }
+  if (dom.postPhotoSource) {
+    dom.postPhotoSource.value = 'BartaWire';
   }
   clearCoverImage();
   dom.adminTitle?.classList.remove('is-bangla');
@@ -4362,16 +4424,53 @@ function showToast(message, type = 'info') {
 }
 window.showToast = showToast;
 
-function generateSlugFromText(text) {
-  if (!text) return '';
-  const cleaned = text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\u0980-\u09FF\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-  return cleaned || `post-${Date.now()}`;
+/**
+ * Generates a 6 character random alphanumeric slug using 'abcdefghijklmnopqrstuvwxyz0123456789'
+ * @returns {string} e.g. "k9x2m4"
+ */
+function generateRandomSlug() {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let slug = '';
+  for (let i = 0; i < 6; i++) {
+    slug += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return slug;
 }
+window.generateRandomSlug = generateRandomSlug;
+
+const MAX_SUMMARY_WORDS = 25;
+
+/**
+ * Visually locks the summary input at MAX_SUMMARY_WORDS (25 words) to ensure
+ * the summary strictly does not exceed two lines in the blog card description.
+ */
+function updateSummaryWordLimit() {
+  if (!dom.adminSummary) return;
+  const rawText = dom.adminSummary.value;
+  const words = rawText.trim().match(/[\S]+/g) || [];
+  const wordCount = words.length;
+
+  if (dom.adminSummaryCount) {
+    if (wordCount >= MAX_SUMMARY_WORDS) {
+      dom.adminSummaryCount.classList.add('limit-reached');
+      dom.adminSummaryCount.textContent = `${MAX_SUMMARY_WORDS} / ${MAX_SUMMARY_WORDS} words (Max 2 lines)`;
+    } else {
+      dom.adminSummaryCount.classList.remove('limit-reached');
+      dom.adminSummaryCount.textContent = `${wordCount} / ${MAX_SUMMARY_WORDS} words`;
+    }
+  }
+
+  if (wordCount > MAX_SUMMARY_WORDS) {
+    // Truncate to exactly MAX_SUMMARY_WORDS
+    dom.adminSummary.value = words.slice(0, MAX_SUMMARY_WORDS).join(' ');
+    dom.adminSummary.classList.add('input-locked');
+  } else if (wordCount === MAX_SUMMARY_WORDS) {
+    dom.adminSummary.classList.add('input-locked');
+  } else {
+    dom.adminSummary.classList.remove('input-locked');
+  }
+}
+window.updateSummaryWordLimit = updateSummaryWordLimit;
 
 function escapeHtml(str) {
   if (!str) return '';
@@ -5321,9 +5420,9 @@ function applyMarkdownImport(rawText, fileName = '') {
     dom.adminTitle.dispatchEvent(new Event('input', { bubbles: true }));
   }
 
-  // 2. Slug: Auto-generate from title if creating a new post
-  if (!editingPostId && dom.adminSlug && dom.adminTitle) {
-    dom.adminSlug.value = generateSlugFromText(dom.adminTitle.value);
+  // 2. Slug: 6-char random alphanumeric slug if creating a new post and slug is empty
+  if (!editingPostId && dom.adminSlug && !dom.adminSlug.value.trim()) {
+    dom.adminSlug.value = generateRandomSlug();
   }
 
   // 3. Content: The rest stays in editor for editing
@@ -10384,21 +10483,36 @@ function initEventListeners() {
   dom.adminPaginationPrev?.addEventListener('click', handleAdminPrevPage);
   dom.adminPaginationNext?.addEventListener('click', handleAdminNextPage);
   dom.adminGenerateSlug?.addEventListener('click', () => {
-    if (dom.adminSlug && dom.adminTitle) {
-      dom.adminSlug.value = generateSlugFromText(dom.adminTitle.value);
+    if (!editingPostId && dom.adminSlug) {
+      dom.adminSlug.value = generateRandomSlug();
     }
   });
   dom.adminTitle?.addEventListener('input', () => {
     dom.adminTitle.classList.toggle('is-bangla', isBanglaText(dom.adminTitle.value));
-    if (!editingPostId && dom.adminSlug) {
-      dom.adminSlug.value = generateSlugFromText(dom.adminTitle.value);
-    }
     if (dom.editorViewContainer?.classList.contains('split-view') || currentEditorTab === 'preview') {
       updateAdminPreview();
     }
   });
   dom.adminSummary?.addEventListener('input', () => {
     dom.adminSummary.classList.toggle('is-bangla', isBanglaText(dom.adminSummary.value));
+    updateSummaryWordLimit();
+  });
+  dom.adminSummary?.addEventListener('keydown', (e) => {
+    if (e.key === 'Backspace' || e.key === 'Delete' || e.key.startsWith('Arrow') || e.ctrlKey || e.metaKey || e.altKey || e.key === 'Tab') {
+      return;
+    }
+    const hasSelection = dom.adminSummary.selectionStart !== dom.adminSummary.selectionEnd;
+    if (hasSelection) return;
+
+    const rawText = dom.adminSummary.value;
+    const words = rawText.trim().match(/[\S]+/g) || [];
+    if (words.length >= MAX_SUMMARY_WORDS) {
+      if (/\s/.test(e.key) || (rawText.endsWith(' ') && !/\s/.test(e.key))) {
+        e.preventDefault();
+        dom.adminSummary.classList.add('limit-shake');
+        setTimeout(() => dom.adminSummary?.classList.remove('limit-shake'), 300);
+      }
+    }
   });
 
   // Admin Custom Date Presets & Clear
@@ -10658,6 +10772,53 @@ window.resetArticleMetaTags = resetArticleMetaTags;
 window.resolveOgImageUrl = resolveOgImageUrl;
 window.goToPage = goToPage;
 window.renderPagination = renderPagination;
+window.checkInitialPostQuery = checkInitialPostQuery;
+
+/**
+ * On initial page load, checks if ?post= is present in window.location.search,
+ * fetches the matching post from public.posts where .eq('slug', slugParam), and opens that article directly.
+ */
+async function checkInitialPostQuery() {
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const slugParam = urlParams.get('post')?.trim();
+    if (!slugParam) return false;
+
+    // 1. Fetch from Supabase public.posts where .eq('slug', slugParam)
+    if (supabaseClient) {
+      try {
+        const { data, error } = await supabaseClient
+          .from('posts')
+          .select('*')
+          .eq('slug', slugParam)
+          .maybeSingle();
+
+        if (!error && data) {
+          const idx = allPosts.findIndex(p => p.id === data.id);
+          if (idx >= 0) allPosts[idx] = data;
+          else allPosts.push(data);
+
+          await openArticleView(data, false);
+          return true;
+        }
+      } catch (err) {
+        console.warn('Failed to fetch post by slug from Supabase:', err);
+      }
+    }
+
+    // 2. Fallback: check DEMO_PREVIEW_POSTS
+    if (typeof DEMO_PREVIEW_POSTS !== 'undefined') {
+      const demoPost = DEMO_PREVIEW_POSTS.find(p => p.slug === slugParam || String(p.id) === slugParam);
+      if (demoPost) {
+        await openArticleView(demoPost, false);
+        return true;
+      }
+    }
+  } catch (err) {
+    console.warn('Error in checkInitialPostQuery:', err);
+  }
+  return false;
+}
 
 // ============================================================================
 // 15. DOM READY EXECUTION
@@ -10668,7 +10829,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   initEventListeners();
   initTopicFilters();
   initSupabase();
-  handleHashNavigation();
+  const openedFromPostQuery = await checkInitialPostQuery();
+  if (!openedFromPostQuery) {
+    handleHashNavigation();
+  }
   await initAuth();
   await loadPosts();
 });

@@ -1817,12 +1817,12 @@ img {
   line-height: 1.55;
   margin-bottom: 0.85rem;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-height: calc(1.55em * 3);
+  max-height: calc(1.55em * 2);
   flex: none;
 }
 
@@ -2729,6 +2729,23 @@ img {
   display: block;
 }
 
+.article-cover-caption {
+  padding: 0.55rem 0.95rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border-top: var(--border-width) solid var(--border-color);
+  letter-spacing: 0.02em;
+}
+
+[data-theme="dark"] .article-cover-caption,
+[data-theme="cyberpunk"] .article-cover-caption {
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+}
+
 /* Article Body Typography */
 .article-body {
   font-size: 1.1rem;
@@ -2916,12 +2933,12 @@ img {
   line-height: 1.75;
   font-size: 0.95rem;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-height: calc(1.75em * 3);
+  max-height: calc(1.75em * 2);
   flex: none;
 }
 
@@ -3711,6 +3728,47 @@ textarea::placeholder {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+}
+
+/* Summary Word Count Badge & Visual Locking */
+.summary-word-badge {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  transition: all var(--transition-fast);
+}
+
+.summary-word-badge.limit-reached {
+  background: #FFF1F0;
+  color: var(--accent-coral);
+  border-color: var(--accent-coral);
+  font-weight: 800;
+}
+
+[data-theme="dark"] .summary-word-badge.limit-reached,
+[data-theme="cyberpunk"] .summary-word-badge.limit-reached {
+  background: rgba(255, 107, 107, 0.18);
+  color: #FF8787;
+  border-color: #FF8787;
+}
+
+#admin-summary.input-locked {
+  border-color: var(--accent-coral);
+}
+
+#admin-summary.limit-shake {
+  animation: summaryShake 0.25s ease-in-out;
+}
+
+@keyframes summaryShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
 }
 
 .btn-text-action {
