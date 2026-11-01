@@ -150,6 +150,18 @@ function initDOM() {
   dom.profileView = document.getElementById('profile-view');
   dom.publicProfileView = document.getElementById('public-profile-view');
   dom.manageView = document.getElementById('manage-view');
+  dom.contributorsView = document.getElementById('contributors-view');
+
+  // Contributors View elements
+  dom.contributorsBackBtn = document.getElementById('contributors-back-btn');
+  dom.contributorsRefreshBtn = document.getElementById('contributors-refresh-btn');
+  dom.contributorsSearchInput = document.getElementById('contributors-search-input');
+  dom.contributorsSearchClear = document.getElementById('contributors-search-clear');
+  dom.contributorsCountText = document.getElementById('contributors-count-text');
+  dom.contributorsList = document.getElementById('contributors-list');
+  dom.contributorsEmptyState = document.getElementById('contributors-empty-state');
+  dom.contributorsEmptyDesc = document.getElementById('contributors-empty-desc');
+  dom.contributorsClearSearchBtn = document.getElementById('contributors-clear-search-btn');
 
   // Manage View elements
   dom.manageBackBtn = document.getElementById('manage-back-btn');
@@ -692,44 +704,41 @@ async function loadPosts() {
       }
     }
 
-    // Batch preload contributor profiles into authorProfilesCache BEFORE rendering top contributors and grid
+    // Batch preload all registered profiles into authorProfilesCache BEFORE rendering top contributors and grid
     if (supabaseClient) {
-      const authorIds = allPosts.map(p => p.author_id);
-      const commenterIds = cachedComments.map(c => c.user_id);
-      const contributorIds = [...new Set([...authorIds, ...commenterIds].filter(Boolean))];
-
-      if (contributorIds.length > 0) {
-        try {
-          const { data: profs, error: profsErr } = await supabaseClient
-            .from('profiles')
-            .select('*')
-            .in('id', contributorIds);
-          if (!profsErr && profs) {
-            profs.forEach(p => {
-              authorProfilesCache.set(p.id, {
-                ...p,
-                id: p.id,
-                display_name: p.display_name || (p.email ? p.email.split('@')[0] : 'Contributor'),
-                username: p.username || '',
-                email: p.email || '',
-                avatar_url: p.avatar_url || null,
-                role: p.role || 'visitor',
-                created_at: p.created_at,
-                is_verified: !!p.is_verified,
-                pinned_post_id: p.pinned_post_id || null,
-                bio: p.bio || '',
-                location: p.location || '',
-                institution: p.institution || '',
-                website_url: p.website_url || '',
-                cover_url: p.cover_url || '',
-                skills: Array.isArray(p.skills) ? p.skills : [],
-                social_links: p.social_links && typeof p.social_links === 'object' ? p.social_links : {}
-              });
+      try {
+        const { data: profs, error: profsErr } = await supabaseClient
+          .from('profiles')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (!profsErr && profs) {
+          profs.forEach(p => {
+            authorProfilesCache.set(p.id, {
+              ...p,
+              id: p.id,
+              display_name: p.display_name || (p.email ? p.email.split('@')[0] : 'Contributor'),
+              username: p.username || '',
+              email: p.email || '',
+              avatar_url: p.avatar_url || null,
+              role: p.role || 'visitor',
+              created_at: p.created_at,
+              is_verified: !!p.is_verified,
+              pinned_post_id: p.pinned_post_id || null,
+              bio: p.bio || '',
+              location: p.location || '',
+              institution: p.institution || '',
+              website_url: p.website_url || '',
+              cover_url: p.cover_url || '',
+              skills: Array.isArray(p.skills) ? p.skills : [],
+              social_links: p.social_links && typeof p.social_links === 'object' ? p.social_links : {}
             });
-          }
-        } catch (profErr) {
-          console.warn('Batch contributor profile fetch warning:', profErr);
+            if (p.username) {
+              authorProfilesCache.set(p.username, authorProfilesCache.get(p.id));
+            }
+          });
         }
+      } catch (profErr) {
+        console.warn('Batch contributor profile fetch warning:', profErr);
       }
     }
 
@@ -1200,10 +1209,7 @@ function closeWriterModal() {
 }
 
 function openTopWritersModal() {
-  if (!dom.topWritersModal) return;
-  renderTopWritersList();
-  renderHeroTopWriters();
-  dom.topWritersModal.classList.remove('hidden');
+  openContributorsView();
 }
 
 function closeTopWritersModal() {
@@ -1262,6 +1268,9 @@ function getTopContributors(limit = 3) {
       let role = (isSelf && currentProfile?.role)
         ? currentProfile.role
         : (initialProfile?.role || cached?.role || 'reader');
+      let bio = (isSelf && currentProfile?.bio)
+        ? currentProfile.bio
+        : (initialProfile?.bio || cached?.bio || '');
       let isVerified = Boolean(
         (isSelf && currentProfile?.is_verified) ||
         cached?.is_verified ||
@@ -1281,6 +1290,7 @@ function getTopContributors(limit = 3) {
         username,
         avatarUrl,
         role,
+        bio,
         isVerified,
         postCount: 0,
         commentCount: 0,
@@ -1290,7 +1300,19 @@ function getTopContributors(limit = 3) {
     return contributorMap.get(key);
   };
 
-  // 1. Process posts (10 points per article)
+  // 1. Pre-seed with all registered users from authorProfilesCache and currentProfile
+  // so that even users with zero points are included
+  if (currentUser && currentProfile) {
+    getOrCreateContributor(currentUser.id, currentProfile);
+  }
+
+  authorProfilesCache.forEach((prof, key) => {
+    if (prof && prof.id && (!key || key === prof.id)) {
+      getOrCreateContributor(prof.id, prof);
+    }
+  });
+
+  // 2. Process posts (10 points per article)
   allPosts.forEach(post => {
     const prof = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
     const authorId = post.author_id || prof?.id || 'demo-author';
@@ -1302,6 +1324,7 @@ function getTopContributors(limit = 3) {
       username: (isSelf && currentProfile?.username) ? currentProfile.username : (prof?.username || post.author_username || cached?.username),
       avatar_url: (isSelf && currentProfile?.avatar_url) ? currentProfile.avatar_url : (prof?.avatar_url || post.author_avatar || cached?.avatar_url),
       role: (isSelf && currentProfile?.role) ? currentProfile.role : (prof?.role || cached?.role || 'admin'),
+      bio: (isSelf && currentProfile?.bio) ? currentProfile.bio : (prof?.bio || cached?.bio || ''),
       is_verified: Boolean(
         (isSelf && currentProfile?.is_verified) ||
         prof?.is_verified ||
@@ -1322,6 +1345,9 @@ function getTopContributors(limit = 3) {
     if (!entry.avatarUrl && initialProf.avatar_url) {
       entry.avatarUrl = initialProf.avatar_url;
     }
+    if (!entry.bio && initialProf.bio) {
+      entry.bio = initialProf.bio;
+    }
     if (initialProf.role && initialProf.role === 'admin') {
       entry.role = 'admin';
     }
@@ -1330,7 +1356,7 @@ function getTopContributors(limit = 3) {
     }
   });
 
-  // 2. Process comments (1 point per comment)
+  // 3. Process comments (1 point per comment)
   cachedComments.forEach(comment => {
     const userId = comment.user_id;
     if (!userId) return;
@@ -1339,7 +1365,7 @@ function getTopContributors(limit = 3) {
     entry.score += COMMENT_GRADE_POINTS;
   });
 
-  // 3. Post-sync with authorProfilesCache and currentProfile
+  // 4. Post-sync with authorProfilesCache and currentProfile
   contributorMap.forEach(entry => {
     const cachedEntry = authorProfilesCache.get(entry.id);
     const isSelf = currentUser && currentUser.id === entry.id;
@@ -1348,6 +1374,7 @@ function getTopContributors(limit = 3) {
       if (currentProfile.display_name) entry.name = currentProfile.display_name;
       if (currentProfile.username) entry.username = currentProfile.username;
       if (currentProfile.avatar_url) entry.avatarUrl = currentProfile.avatar_url;
+      if (currentProfile.bio) entry.bio = currentProfile.bio;
       if (currentProfile.is_verified) entry.isVerified = true;
     }
 
@@ -1360,6 +1387,9 @@ function getTopContributors(limit = 3) {
       }
       if (!entry.avatarUrl && cachedEntry.avatar_url) {
         entry.avatarUrl = cachedEntry.avatar_url;
+      }
+      if (!entry.bio && cachedEntry.bio) {
+        entry.bio = cachedEntry.bio;
       }
       if (cachedEntry.is_verified) {
         entry.isVerified = true;
@@ -1374,6 +1404,7 @@ function getTopContributors(limit = 3) {
       username: 'ocean_author',
       avatarUrl: '',
       role: 'admin',
+      bio: '',
       isVerified: true,
       postCount: 1,
       commentCount: 0,
@@ -1381,14 +1412,15 @@ function getTopContributors(limit = 3) {
     });
   }
 
-  // Sort by score desc, then postCount desc, then commentCount desc
+  // Sort by score desc, then postCount desc, then commentCount desc, then name
   const sorted = Array.from(contributorMap.values()).sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
     if (b.postCount !== a.postCount) return b.postCount - a.postCount;
-    return b.commentCount - a.commentCount;
+    if (b.commentCount !== a.commentCount) return b.commentCount - a.commentCount;
+    return (a.name || '').localeCompare(b.name || '');
   });
 
-  return limit && limit > 0 ? sorted.slice(0, limit) : sorted;
+  return (limit && limit > 0) ? sorted.slice(0, limit) : sorted;
 }
 
 // Backwards compatibility alias
@@ -1551,6 +1583,242 @@ function renderTopWritersList() {
     card.addEventListener('click', handleViewClick);
 
     dom.topWritersList.appendChild(card);
+  });
+}
+
+// ============================================================================
+// CONTRIBUTORS VIEW (Dedicated Directory & Leaderboard Page)
+// ============================================================================
+
+let allContributorsList = [];
+
+async function openContributorsView() {
+  currentPublicProfileUser = null;
+
+  dom.homeView?.classList.add('hidden');
+  dom.articleView?.classList.add('hidden');
+  dom.adminView?.classList.add('hidden');
+  dom.profileView?.classList.add('hidden');
+  dom.publicProfileView?.classList.add('hidden');
+  dom.manageView?.classList.add('hidden');
+  dom.contributorsView?.classList.remove('hidden');
+
+  try {
+    if (window.location.hash !== '#/contributors') {
+      window.location.hash = '#/contributors';
+    }
+  } catch (e) {
+    window.location.hash = '#/contributors';
+  }
+  document.title = 'Top Contributors & Community — BartaWire';
+  window.scrollTo?.({ top: 0, behavior: 'smooth' });
+
+  renderContributorsPage();
+  loadAllContributors();
+}
+
+async function loadAllContributors() {
+  if (dom.contributorsCountText && (!allContributorsList || allContributorsList.length === 0)) {
+    dom.contributorsCountText.textContent = 'Loading members...';
+  }
+  dom.contributorsRefreshBtn?.classList.add('spinning');
+
+  try {
+    if (supabaseClient) {
+      const { data: profs, error } = await supabaseClient
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && profs) {
+        profs.forEach(p => {
+          authorProfilesCache.set(p.id, {
+            ...p,
+            id: p.id,
+            display_name: p.display_name || (p.email ? p.email.split('@')[0] : 'Contributor'),
+            username: p.username || '',
+            email: p.email || '',
+            avatar_url: p.avatar_url || null,
+            role: p.role || 'visitor',
+            created_at: p.created_at,
+            is_verified: !!p.is_verified,
+            bio: p.bio || '',
+            location: p.location || '',
+            institution: p.institution || '',
+            website_url: p.website_url || '',
+            cover_url: p.cover_url || ''
+          });
+          if (p.username) {
+            authorProfilesCache.set(p.username, authorProfilesCache.get(p.id));
+          }
+        });
+      }
+
+      // Refresh comments
+      try {
+        const { data: commentsData } = await supabaseClient
+          .from('comments')
+          .select('id, user_id, created_at');
+        if (Array.isArray(commentsData)) {
+          cachedComments = commentsData;
+        }
+      } catch (ce) {}
+    }
+  } catch (err) {
+    console.warn('Could not load fresh contributors list:', err);
+  } finally {
+    dom.contributorsRefreshBtn?.classList.remove('spinning');
+    renderContributorsPage();
+    renderHeroTopWriters();
+  }
+}
+
+function renderContributorsPage() {
+  if (!dom.contributorsList) return;
+
+  allContributorsList = getTopContributors(0); // full list of all users
+  applyContributorsFilter();
+}
+
+function applyContributorsFilter() {
+  if (!dom.contributorsList) return;
+
+  const rawQuery = (dom.contributorsSearchInput?.value || '').trim();
+  const cleanQuery = rawQuery.toLowerCase().replace(/^@/, '');
+
+  if (dom.contributorsSearchClear) {
+    if (rawQuery.length > 0) {
+      dom.contributorsSearchClear.classList.remove('hidden');
+    } else {
+      dom.contributorsSearchClear.classList.add('hidden');
+    }
+  }
+
+  const filtered = cleanQuery
+    ? allContributorsList.filter(c => {
+        const u = (c.username || '').toLowerCase();
+        const n = (c.name || '').toLowerCase();
+        return u.includes(cleanQuery) || n.includes(cleanQuery);
+      })
+    : allContributorsList;
+
+  const total = allContributorsList.length;
+  const shown = filtered.length;
+
+  if (dom.contributorsCountText) {
+    if (cleanQuery) {
+      dom.contributorsCountText.textContent = `Showing ${shown} of ${total} members`;
+    } else {
+      const activeCount = allContributorsList.filter(c => c.score > 0).length;
+      const zeroCount = total - activeCount;
+      dom.contributorsCountText.textContent = `${total} total members • ${activeCount} active • ${zeroCount} new`;
+    }
+  }
+
+  if (shown === 0) {
+    dom.contributorsList.innerHTML = '';
+    dom.contributorsList.classList.add('hidden');
+    dom.contributorsEmptyState?.classList.remove('hidden');
+    if (dom.contributorsEmptyDesc) {
+      dom.contributorsEmptyDesc.textContent = `No members found matching "${rawQuery}". Try checking the username spelling or clear the search.`;
+    }
+    return;
+  }
+
+  dom.contributorsEmptyState?.classList.add('hidden');
+  dom.contributorsList.classList.remove('hidden');
+  dom.contributorsList.innerHTML = '';
+
+  filtered.forEach(writer => {
+    const overallRank = allContributorsList.indexOf(writer) + 1;
+    const isZero = writer.score === 0;
+
+    const card = document.createElement('div');
+    card.className = 'contributor-card';
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.title = `View @${writer.username}'s public profile`;
+
+    const initials = (writer.name || 'M')
+      .split(' ')
+      .filter(Boolean)
+      .map(w => w[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase() || 'M';
+
+    const avatarHtml = writer.avatarUrl && writer.avatarUrl.trim() !== ''
+      ? `<img src="${escapeHtml(writer.avatarUrl)}" alt="${escapeHtml(writer.name)}">`
+      : initials;
+
+    let rankBadgeHtml = '';
+    if (isZero) {
+      rankBadgeHtml = `<span class="contributor-rank-tag rank-zero">#${overallRank} • 0 pts</span>`;
+    } else if (overallRank === 1) {
+      rankBadgeHtml = `<span class="contributor-rank-tag rank-1">🥇 #1</span>`;
+    } else if (overallRank === 2) {
+      rankBadgeHtml = `<span class="contributor-rank-tag rank-2">🥈 #2</span>`;
+    } else if (overallRank === 3) {
+      rankBadgeHtml = `<span class="contributor-rank-tag rank-3">🥉 #3</span>`;
+    } else {
+      rankBadgeHtml = `<span class="contributor-rank-tag">#${overallRank}</span>`;
+    }
+
+    const articleText = `${writer.postCount} ${writer.postCount === 1 ? 'article' : 'articles'}`;
+    const commentText = `${writer.commentCount} ${writer.commentCount === 1 ? 'comment' : 'comments'}`;
+    const bioText = writer.bio ? escapeHtml(writer.bio) : '';
+
+    card.innerHTML = `
+      <div class="contributor-card-header">
+        <div class="contributor-avatar">${avatarHtml}</div>
+        <div class="contributor-info">
+          <div class="contributor-name-row">
+            <span class="contributor-name">${escapeHtml(writer.name)}</span>
+          </div>
+          <span class="contributor-username">@${escapeHtml(writer.username)}</span>
+        </div>
+        ${rankBadgeHtml}
+      </div>
+      ${bioText ? `<p class="contributor-bio">${bioText}</p>` : ''}
+      <div class="contributor-card-footer">
+        <span class="contributor-stats">${articleText} • ${commentText}</span>
+        <span class="contributor-score-pill ${isZero ? 'zero-score' : ''}">${writer.score} pts</span>
+      </div>
+    `;
+
+    // Verified badge
+    if (writer.isVerified) {
+      const nameRow = card.querySelector('.contributor-name-row');
+      if (nameRow) {
+        const vBadge = createVerifiedBadge(writer.name, writer.username, 16);
+        nameRow.appendChild(vBadge);
+      }
+    }
+
+    // Role badge for writers/publishers
+    if (writer.role === 'admin' || writer.role === 'publisher') {
+      const nameRow = card.querySelector('.contributor-name-row');
+      if (nameRow) {
+        const rBadge = document.createElement('span');
+        updateRoleBadge(rBadge, writer.role);
+        nameRow.appendChild(rBadge);
+      }
+    }
+
+    const handleCardClick = (e) => {
+      e.preventDefault();
+      openPublicProfileView(writer.id, writer.username, writer.name);
+    };
+
+    card.addEventListener('click', handleCardClick);
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleCardClick(e);
+      }
+    });
+
+    dom.contributorsList.appendChild(card);
   });
 }
 
@@ -3242,6 +3510,8 @@ async function openArticleView(post, updateHash = true) {
   dom.adminView?.classList.add('hidden');
   dom.profileView?.classList.add('hidden');
   dom.publicProfileView?.classList.add('hidden');
+  dom.manageView?.classList.add('hidden');
+  dom.contributorsView?.classList.add('hidden');
   dom.articleView?.classList.remove('hidden');
 
   // Article admin action buttons (strictly limited to post author)
@@ -3373,6 +3643,7 @@ function returnToHomeView() {
   dom.profileView?.classList.add('hidden');
   dom.publicProfileView?.classList.add('hidden');
   dom.manageView?.classList.add('hidden');
+  dom.contributorsView?.classList.add('hidden');
   dom.homeView?.classList.remove('hidden');
 
   collapseTopics();
@@ -3530,6 +3801,11 @@ function handleAppNavigation() {
     return;
   }
 
+  if (hash === '#/contributors' || hash === '#/writers') {
+    openContributorsView();
+    return;
+  }
+
   if (hash.startsWith('#/post/')) {
     const identifier = decodeURIComponent(hash.replace('#/post/', '')).trim();
     if (identifier) {
@@ -3544,7 +3820,7 @@ function handleAppNavigation() {
     if (urlParams.get('post')) {
       return;
     }
-    if (!dom.articleView?.classList.contains('hidden') || !dom.adminView?.classList.contains('hidden') || !dom.manageView?.classList.contains('hidden') || !dom.profileView?.classList.contains('hidden') || !dom.publicProfileView?.classList.contains('hidden')) {
+    if (!dom.articleView?.classList.contains('hidden') || !dom.adminView?.classList.contains('hidden') || !dom.manageView?.classList.contains('hidden') || !dom.contributorsView?.classList.contains('hidden') || !dom.profileView?.classList.contains('hidden') || !dom.publicProfileView?.classList.contains('hidden')) {
       returnToHomeView();
     }
   }
@@ -3888,6 +4164,7 @@ function openAdminView() {
   dom.profileView?.classList.add('hidden');
   dom.publicProfileView?.classList.add('hidden');
   dom.manageView?.classList.add('hidden');
+  dom.contributorsView?.classList.add('hidden');
   dom.adminView?.classList.remove('hidden');
 
   const basePath = getAppBasePath() || '/';
@@ -3930,6 +4207,7 @@ function openManageView() {
   dom.profileView?.classList.add('hidden');
   dom.publicProfileView?.classList.add('hidden');
   dom.adminView?.classList.add('hidden');
+  dom.contributorsView?.classList.add('hidden');
   dom.manageView?.classList.remove('hidden');
 
   try {
@@ -6536,6 +6814,8 @@ async function openProfileView() {
   dom.articleView?.classList.add('hidden');
   dom.adminView?.classList.add('hidden');
   dom.publicProfileView?.classList.add('hidden');
+  dom.manageView?.classList.add('hidden');
+  dom.contributorsView?.classList.add('hidden');
   dom.profileView?.classList.remove('hidden');
 
   const basePath = getAppBasePath() || '/';
@@ -7868,6 +8148,10 @@ async function openPublicProfileView(userIdentifier, fallbackUsername, fallbackN
       lastNonProfileView = 'article';
     } else if (dom.adminView && !dom.adminView.classList.contains('hidden')) {
       lastNonProfileView = 'admin';
+    } else if (dom.manageView && !dom.manageView.classList.contains('hidden')) {
+      lastNonProfileView = 'manage';
+    } else if (dom.contributorsView && !dom.contributorsView.classList.contains('hidden')) {
+      lastNonProfileView = 'contributors';
     } else if (dom.profileView && !dom.profileView.classList.contains('hidden')) {
       lastNonProfileView = 'profile';
     } else {
@@ -7880,6 +8164,8 @@ async function openPublicProfileView(userIdentifier, fallbackUsername, fallbackN
   dom.articleView?.classList.add('hidden');
   dom.adminView?.classList.add('hidden');
   dom.profileView?.classList.add('hidden');
+  dom.manageView?.classList.add('hidden');
+  dom.contributorsView?.classList.add('hidden');
   dom.publicProfileView?.classList.remove('hidden');
 
   // Update back button label
@@ -7888,6 +8174,10 @@ async function openPublicProfileView(userIdentifier, fallbackUsername, fallbackN
       dom.publicProfileBackLabel.textContent = 'Back to Article';
     } else if (lastNonProfileView === 'admin') {
       dom.publicProfileBackLabel.textContent = 'Back to Create';
+    } else if (lastNonProfileView === 'manage') {
+      dom.publicProfileBackLabel.textContent = 'Back to Manage';
+    } else if (lastNonProfileView === 'contributors') {
+      dom.publicProfileBackLabel.textContent = 'Back to Contributors';
     } else if (lastNonProfileView === 'profile') {
       dom.publicProfileBackLabel.textContent = 'Back to Settings';
     } else {
@@ -8564,6 +8854,10 @@ function handlePublicProfileBack() {
     openArticleView(activePost);
   } else if (lastNonProfileView === 'admin' && currentUserRole === 'admin') {
     openAdminView();
+  } else if (lastNonProfileView === 'manage' && currentUserRole === 'admin') {
+    openManageView();
+  } else if (lastNonProfileView === 'contributors') {
+    openContributorsView();
   } else if (lastNonProfileView === 'profile' && currentUser) {
     openProfileView();
   } else {
@@ -10619,7 +10913,7 @@ function initEventListeners() {
   });
 
   // Hero Top Writers Card Actions
-  dom.heroViewAllWritersBtn?.addEventListener('click', openTopWritersModal);
+  dom.heroViewAllWritersBtn?.addEventListener('click', openContributorsView);
   dom.heroWritersApplyBtn?.addEventListener('click', () => {
     if (currentUserRole === 'admin' || currentUserRole === 'publisher') {
       openAdminView();
@@ -11117,6 +11411,25 @@ function initEventListeners() {
       manageCurrentPage++;
       renderManagePostsGrid(managePosts);
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+
+  // Contributors View navigation & search handlers
+  dom.contributorsBackBtn?.addEventListener('click', returnToHomeView);
+  dom.contributorsRefreshBtn?.addEventListener('click', loadAllContributors);
+  dom.contributorsSearchInput?.addEventListener('input', applyContributorsFilter);
+  dom.contributorsSearchClear?.addEventListener('click', () => {
+    if (dom.contributorsSearchInput) {
+      dom.contributorsSearchInput.value = '';
+      dom.contributorsSearchInput.focus();
+      applyContributorsFilter();
+    }
+  });
+  dom.contributorsClearSearchBtn?.addEventListener('click', () => {
+    if (dom.contributorsSearchInput) {
+      dom.contributorsSearchInput.value = '';
+      dom.contributorsSearchInput.focus();
+      applyContributorsFilter();
     }
   });
 

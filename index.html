@@ -48,7 +48,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=9.0">
+  <link rel="stylesheet" href="style.css?v=9.1">
 </head>
 <body>
   <!-- Header / Navigation -->
@@ -1114,6 +1114,75 @@
         <h2 class="state-title">No posts yet</h2>
         <p class="state-desc">You haven't created any articles yet. Click "New Post" to get started.</p>
         <button id="manage-create-first-btn" class="btn-primary">Create Your First Post</button>
+      </div>
+    </section>
+
+    <!-- ==============================================
+         CONTRIBUTORS VIEW: All Members & Leaderboard
+         ============================================== -->
+    <section id="contributors-view" class="view hidden">
+      <!-- Contributors Top Bar -->
+      <div class="admin-top-bar">
+        <button id="contributors-back-btn" class="back-btn" aria-label="Back to Blog">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span>Back to Feed</span>
+        </button>
+        <div class="admin-top-right">
+          <button type="button" id="contributors-refresh-btn" class="btn-sm btn-outline" title="Reload contributors">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <path d="M23 4v6h-6"></path>
+              <path d="M1 20v-6h6"></path>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Contributors Intro -->
+      <div class="admin-intro">
+        <div class="hero-badge" style="display:inline-flex; margin-bottom:0.75rem;">
+          <span class="pulse-dot"></span>
+          <span>Community Directory</span>
+        </div>
+        <h1 class="admin-title">Top Contributors &amp; Members</h1>
+        <p class="admin-subtitle">Explore the community writers, active commenters, and registered members of BartaWire.</p>
+        <div class="contributors-grade-banner">
+          ⭐ 1 Article = 10 pts • 1 Comment = 1 pt • Zero point members are listed below
+        </div>
+      </div>
+
+      <!-- Search & Controls Bar -->
+      <div class="contributors-controls-bar">
+        <div class="contributors-search-wrap">
+          <div class="search-container contributors-search-box">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="contributors-search-input" placeholder="Search by username (e.g. @ocean_author) or name..." aria-label="Search contributors by username or name">
+            <button type="button" id="contributors-search-clear" class="search-clear-btn hidden" aria-label="Clear search" title="Clear search">&times;</button>
+          </div>
+        </div>
+        <div class="contributors-meta-indicator">
+          <span id="contributors-count-text" class="admin-count-text">Loading members...</span>
+        </div>
+      </div>
+
+      <!-- Contributors Grid -->
+      <div id="contributors-list" class="contributors-grid">
+        <!-- Dynamically populated contributor cards -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="contributors-empty-state" class="state-container hidden">
+        <div class="state-icon">🔍</div>
+        <h2 class="state-title">No members found</h2>
+        <p class="state-desc" id="contributors-empty-desc">No member matched your search. Check the spelling or clear the search filter.</p>
+        <button type="button" id="contributors-clear-search-btn" class="btn-primary">Clear Search</button>
       </div>
     </section>
 
@@ -2671,7 +2740,7 @@
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
   <!-- Application Logic -->
-  <script src="app.js?v=9.5"></script>
+  <script src="app.js?v=9.6"></script>
 </body>
 </html>
 
