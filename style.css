@@ -9639,6 +9639,7 @@ input[type="datetime-local"] {
 .photocard-modal-body {
   padding: 0.85rem 1.15rem;
   overflow: hidden !important;
+  overflow-anchor: none;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -9663,6 +9664,7 @@ input[type="datetime-local"] {
   flex-direction: column;
   gap: 0.65rem;
   overflow-y: auto;
+  overflow-anchor: none;
   max-height: 100%;
   padding-right: 0.25rem;
   justify-content: flex-start;
@@ -9803,6 +9805,30 @@ input[type="datetime-local"] {
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.03em;
+}
+
+.pc-source-badge-wrap {
+  display: flex;
+  align-items: center;
+  height: 38px;
+}
+
+.pc-source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-color);
+  padding: 0.35rem 0.65rem;
+  box-shadow: 2px 2px 0 var(--border-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
 
 .pc-sublabel {
@@ -10009,6 +10035,7 @@ input[type="datetime-local"] {
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   position: relative;
   flex-shrink: 0;
+  touch-action: manipulation;
 }
 
 .pc-color-swatch:hover {
@@ -10115,6 +10142,7 @@ input[type="datetime-local"] {
   border: 1.5px solid transparent;
   transition: all var(--transition-fast);
   user-select: none;
+  touch-action: manipulation;
 }
 
 .pc-word-chip.is-selected {
@@ -11013,6 +11041,7 @@ input[type="datetime-local"] {
 
   .photocard-modal-body {
     overflow-y: auto !important;
+    overflow-anchor: none;
     -webkit-overflow-scrolling: touch;
     flex: 1;
     min-height: 0;
@@ -11025,11 +11054,13 @@ input[type="datetime-local"] {
     gap: 0.75rem;
     display: flex;
     flex-direction: column;
+    overflow-anchor: none;
   }
   
   .photocard-controls-pane {
     max-height: none;
     overflow-y: visible;
+    overflow-anchor: none;
     padding-right: 0;
     width: 100%;
     box-sizing: border-box;

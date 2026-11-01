@@ -221,6 +221,7 @@ function initDOM() {
 
   // Photocard Studio Elements
   dom.photocardModal = document.getElementById('photocard-modal');
+  dom.photocardModalBody = document.querySelector('.photocard-modal-body');
   dom.photocardModalCloseBtn = document.getElementById('photocard-modal-close-btn');
   dom.photocardDoneBtn = document.getElementById('pc-modal-done-btn');
   dom.photocardDoneBtnBottom = document.getElementById('pc-modal-done-btn-bottom');
@@ -269,7 +270,7 @@ function initDOM() {
   dom.pcHeadlineWordsPicker = document.getElementById('pc-headline-words-picker');
   dom.pcSliderHeadlineSize = document.getElementById('pc-slider-headline-size');
   dom.pcHeadlineSizeVal = document.getElementById('pc-headline-size-val');
-  dom.pcImageSourceInput = document.getElementById('pc-image-source-input');
+  dom.pcImageSourceBadge = document.getElementById('pc-image-source-badge');
   dom.pcEnableStoryToggle = document.getElementById('pc-enable-story-toggle');
   dom.pcStoryStatusBox = document.getElementById('pc-story-status-box');
   dom.pcStoryStatusText = document.getElementById('pc-story-status-text');
@@ -8229,7 +8230,7 @@ function updatePhotocardAttribution() {
       </span>
       <span class="pc-attr-tag pc-attr-source">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="12" height="12"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-        <span>Image: ${escapeHtml(source)}</span>
+        <span>Photo: ${escapeHtml(source)}</span>
       </span>
     `;
   }
@@ -8237,13 +8238,18 @@ function updatePhotocardAttribution() {
 
 /**
  * Changes the active brush color for headline words.
- * Never overrides words automatically:
+ * Never jumps scroll on mobile:
  * - If a word is currently selected, applies this color to that word.
- * - Otherwise sets this as the active brush color ready to paint words.
+ * - If no word is selected, recolors highlighted words to this new accent color.
+ * - Always preserves the modal scroll position.
  */
 function setHeadlineAccentColor(color) {
   if (!color) return;
+  const prevAccentColor = currentHeadlineAccentColor;
   currentHeadlineAccentColor = color;
+
+  const modalBody = dom.photocardModalBody || document.querySelector('.photocard-modal-body');
+  const savedScrollTop = modalBody ? modalBody.scrollTop : null;
 
   if (dom.photocardHeadlineDisplay) {
     dom.photocardHeadlineDisplay.style.setProperty('--pc-accent-color', color);
@@ -8297,25 +8303,90 @@ function setHeadlineAccentColor(color) {
     photocardBlueIndices = new Set(photocardWordColors.keys());
     renderHeadlineWordChips();
     updatePhotocardHeadlineFromChips();
+  } else {
+    // If NO word is specifically focused, recolor existing highlighted words to this new color
+    let changed = false;
+    photocardWordColors.forEach((wc, idx) => {
+      if (!wc || (prevAccentColor && wc.toLowerCase() === prevAccentColor.toLowerCase())) {
+        photocardWordColors.set(idx, color);
+        changed = true;
+      }
+    });
+    // If no words were highlighted at all, color the first half
+    if (!changed && photocardWordColors.size === 0 && photocardHeadlineWords.length > 0) {
+      const mid = Math.ceil(photocardHeadlineWords.length / 2);
+      for (let i = 0; i < mid; i++) {
+        photocardWordColors.set(i, color);
+      }
+      changed = true;
+    }
+    if (changed) {
+      photocardBlueIndices = new Set(photocardWordColors.keys());
+      renderHeadlineWordChips();
+      updatePhotocardHeadlineFromChips();
+    }
+  }
+
+  if (modalBody && savedScrollTop !== null && modalBody.scrollTop !== savedScrollTop) {
+    modalBody.scrollTop = savedScrollTop;
   }
 }
 
 /**
- * Renders the headline words as clickable color tag chips with individual multi-color support
+ * Renders or updates headline words as clickable color tag chips with individual multi-color support.
+ * Updates chips in-place to avoid destroying focused DOM elements and prevent viewport jumps on mobile.
  */
 function renderHeadlineWordChips() {
   const picker = dom.pcHeadlineWordsPicker || document.getElementById('pc-headline-words-picker');
   if (!picker) return;
 
-  picker.innerHTML = '';
   picker.style.setProperty('--pc-accent-color', currentHeadlineAccentColor);
 
-  photocardHeadlineWords.forEach((word, idx) => {
-    const chip = document.createElement('button');
-    chip.type = 'button';
+  const existingChips = Array.from(picker.children);
+  const wordsCountMatch = (existingChips.length === photocardHeadlineWords.length);
+
+  // Only recreate elements if the word count has changed (e.g. loading a new post)
+  if (!wordsCountMatch) {
+    picker.innerHTML = '';
+    photocardHeadlineWords.forEach((word, idx) => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'pc-word-chip';
+      chip.dataset.wordIndex = String(idx);
+      chip.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const modalBody = dom.photocardModalBody || document.querySelector('.photocard-modal-body');
+        const savedScroll = modalBody ? modalBody.scrollTop : null;
+
+        selectedWordIndex = idx;
+        const current = photocardWordColors.get(idx);
+        if (current && current.toLowerCase() === currentHeadlineAccentColor.toLowerCase()) {
+          // Already has active color -> toggle off to default
+          photocardWordColors.delete(idx);
+        } else {
+          // Apply active brush color
+          photocardWordColors.set(idx, currentHeadlineAccentColor);
+        }
+        photocardBlueIndices = new Set(photocardWordColors.keys());
+        renderHeadlineWordChips();
+        updatePhotocardHeadlineFromChips();
+
+        if (modalBody && savedScroll !== null && modalBody.scrollTop !== savedScroll) {
+          modalBody.scrollTop = savedScroll;
+        }
+      });
+      picker.appendChild(chip);
+    });
+  }
+
+  // Update classes and styles on chips in-place without deleting elements
+  Array.from(picker.children).forEach((chip, idx) => {
+    const word = photocardHeadlineWords[idx] || '';
     const wordColor = photocardWordColors.get(idx) || null;
     const isHighlighted = Boolean(wordColor);
     const isSelected = (selectedWordIndex === idx);
+
     chip.className = `pc-word-chip ${isHighlighted ? 'is-active' : 'is-dark'} ${isSelected ? 'is-selected' : ''}`;
     chip.title = isHighlighted
       ? `"${word}" is colored ${wordColor}. Click to clear, or pick another color to change.`
@@ -8328,35 +8399,18 @@ function renderHeadlineWordChips() {
       chip.style.setProperty('color', isBright ? '#0A0A0A' : '#FFFFFF', 'important');
       chip.innerHTML = `<span class="pc-word-chip-dot" style="background:${isBright ? '#0A0A0A' : '#fff'};"></span><span>${escapeHtml(word)}</span>`;
     } else {
-      chip.style.background = '';
-      chip.style.borderColor = '';
-      chip.style.color = '';
+      chip.style.removeProperty('background');
+      chip.style.removeProperty('border-color');
+      chip.style.removeProperty('color');
       chip.innerHTML = `<span class="pc-word-chip-dot"></span><span>${escapeHtml(word)}</span>`;
     }
-
-    chip.addEventListener('click', (e) => {
-      e.stopPropagation();
-      selectedWordIndex = idx;
-      const current = photocardWordColors.get(idx);
-      if (current && current.toLowerCase() === currentHeadlineAccentColor.toLowerCase()) {
-        // Already has active color -> toggle off to default
-        photocardWordColors.delete(idx);
-      } else {
-        // Apply active brush color
-        photocardWordColors.set(idx, currentHeadlineAccentColor);
-      }
-      photocardBlueIndices = new Set(photocardWordColors.keys());
-      renderHeadlineWordChips();
-      updatePhotocardHeadlineFromChips();
-    });
-
-    picker.appendChild(chip);
   });
 }
 
 /**
  * Re-renders the photocard headline display from the current word color states.
  * Groups consecutive words with identical color into optimized inline spans.
+ * Only resizes the card scale if line height actually changed, avoiding jumps on mobile.
  */
 function updatePhotocardHeadlineFromChips() {
   if (!dom.photocardHeadlineDisplay) return;
@@ -8365,6 +8419,8 @@ function updatePhotocardHeadlineFromChips() {
     dom.photocardHeadlineDisplay.innerHTML = '';
     return;
   }
+
+  const prevHeight = dom.photocardHeadlineDisplay.offsetHeight || 0;
 
   let html = '';
   let currentGroup = [];
@@ -8400,8 +8456,13 @@ function updatePhotocardHeadlineFromChips() {
   }
 
   dom.photocardHeadlineDisplay.innerHTML = html;
-  refreshPhotocardCarousel();
-  adjustPhotocardPreviewScale();
+
+  // Only re-scale preview if headline height actually changed (e.g. font size change)
+  const newHeight = dom.photocardHeadlineDisplay.offsetHeight || 0;
+  if (Math.abs(newHeight - prevHeight) > 2) {
+    refreshPhotocardCarousel();
+    adjustPhotocardPreviewScale();
+  }
 }
 
 /**
@@ -9177,8 +9238,17 @@ async function openPhotocardStudio(post) {
 
   currentPhotocardAuthorUsername = authorUsername;
   currentPhotocardTopic = defaultTopic;
-  currentPhotocardImageSource = 'BartaWire';
-  if (dom.pcImageSourceInput) dom.pcImageSourceInput.value = currentPhotocardImageSource;
+  let photoSource = post.photo_source;
+  if (!photoSource) {
+    const found = allPosts.find(p => p.id === post.id || (post.slug && p.slug === post.slug));
+    if (found?.photo_source) {
+      photoSource = found.photo_source;
+    }
+  }
+  currentPhotocardImageSource = (photoSource || '').trim() || 'BartaWire';
+  if (dom.pcImageSourceBadge) {
+    dom.pcImageSourceBadge.textContent = `📷 ${currentPhotocardImageSource}`;
+  }
 
   if (isPostBangla) {
     if (dom.pcDateToggleBn) dom.pcDateToggleBn.classList.add('active');
@@ -10250,13 +10320,6 @@ function initEventListeners() {
     }
   });
 
-  // Photocard Image Source / Credit Input
-  dom.pcImageSourceInput?.addEventListener('input', () => {
-    currentPhotocardImageSource = dom.pcImageSourceInput.value.trim() || 'BartaWire';
-    updatePhotocardAttribution();
-    adjustPhotocardPreviewScale();
-  });
-
   // Photocard Theme Switcher Chips
   document.querySelectorAll('.pc-theme-chip').forEach(chip => {
     chip.addEventListener('click', () => {
@@ -10295,7 +10358,9 @@ function initEventListeners() {
 
   // Headline Highlight Color Swatches
   document.querySelectorAll('.pc-color-swatch[data-color]').forEach(swatch => {
-    swatch.addEventListener('click', () => {
+    swatch.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const color = swatch.getAttribute('data-color');
       if (color) setHeadlineAccentColor(color);
     });
@@ -10313,7 +10378,12 @@ function initEventListeners() {
   dom.pcColorCustomInput?.addEventListener('change', onCustomColorPick);
 
   // Headline Word Color Tagger Presets
-  dom.pcBtnHalfBlue?.addEventListener('click', () => {
+  dom.pcBtnHalfBlue?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const modalBody = dom.photocardModalBody || document.querySelector('.photocard-modal-body');
+    const savedScroll = modalBody ? modalBody.scrollTop : null;
+
     photocardWordColors = new Map();
     const mid = Math.ceil(photocardHeadlineWords.length / 2);
     for (let i = 0; i < mid; i++) {
@@ -10322,9 +10392,18 @@ function initEventListeners() {
     photocardBlueIndices = new Set(photocardWordColors.keys());
     renderHeadlineWordChips();
     updatePhotocardHeadlineFromChips();
+
+    if (modalBody && savedScroll !== null && modalBody.scrollTop !== savedScroll) {
+      modalBody.scrollTop = savedScroll;
+    }
   });
 
-  dom.pcBtnAllBlue?.addEventListener('click', () => {
+  dom.pcBtnAllBlue?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const modalBody = dom.photocardModalBody || document.querySelector('.photocard-modal-body');
+    const savedScroll = modalBody ? modalBody.scrollTop : null;
+
     photocardWordColors = new Map();
     photocardHeadlineWords.forEach((_, i) => {
       photocardWordColors.set(i, currentHeadlineAccentColor);
@@ -10332,22 +10411,43 @@ function initEventListeners() {
     photocardBlueIndices = new Set(photocardWordColors.keys());
     renderHeadlineWordChips();
     updatePhotocardHeadlineFromChips();
+
+    if (modalBody && savedScroll !== null && modalBody.scrollTop !== savedScroll) {
+      modalBody.scrollTop = savedScroll;
+    }
   });
 
-  dom.pcBtnAllBlack?.addEventListener('click', () => {
+  dom.pcBtnAllBlack?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const modalBody = dom.photocardModalBody || document.querySelector('.photocard-modal-body');
+    const savedScroll = modalBody ? modalBody.scrollTop : null;
+
     photocardWordColors = new Map();
     photocardBlueIndices = new Set();
     selectedWordIndex = null;
     renderHeadlineWordChips();
     updatePhotocardHeadlineFromChips();
+
+    if (modalBody && savedScroll !== null && modalBody.scrollTop !== savedScroll) {
+      modalBody.scrollTop = savedScroll;
+    }
   });
 
   // Deselect word when clicking outside chips and swatches
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('#pc-headline-words-picker') && !e.target.closest('#pc-color-swatches') && !e.target.closest('.pc-color-custom-swatch')) {
+    if (!e.target.closest('#pc-headline-words-picker') &&
+        !e.target.closest('#pc-color-swatches') &&
+        !e.target.closest('.pc-color-custom-swatch') &&
+        !e.target.closest('.pc-tagger-presets')) {
       if (selectedWordIndex !== null) {
+        const modalBody = dom.photocardModalBody || document.querySelector('.photocard-modal-body');
+        const savedScroll = modalBody ? modalBody.scrollTop : null;
         selectedWordIndex = null;
         renderHeadlineWordChips();
+        if (modalBody && savedScroll !== null && modalBody.scrollTop !== savedScroll) {
+          modalBody.scrollTop = savedScroll;
+        }
       }
     }
   });
