@@ -227,6 +227,8 @@ function initDOM() {
   dom.photocardScaleIndicator = document.getElementById('photocard-scale-indicator');
   dom.photocardCopyClipboardBtn = document.getElementById('pc-copy-clipboard-btn');
   dom.photocardCopyClipboardBtnBottom = document.getElementById('pc-copy-clipboard-btn-bottom');
+  dom.photocardOpenBtn = document.getElementById('pc-open-card-btn');
+  dom.photocardOpenBtnBottom = document.getElementById('pc-open-card-btn-bottom');
   dom.photocardCanvas = document.getElementById('photocard-canvas');
   dom.photocardStoryCardsContainer = document.getElementById('photocard-story-cards-container');
   dom.photocardCanvasScaler = document.getElementById('photocard-canvas-scaler');
@@ -8551,6 +8553,37 @@ function updatePhotocardTheme(themeName) {
 }
 
 /**
+ * Returns the standard BartaWire photocard footer HTML with
+ * Instagram, Facebook, and Website link handles.
+ */
+function getPhotocardFooterHTML() {
+  return `
+    <div class="photocard-footer-social-item pc-footer-instagram">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true">
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+      </svg>
+      <span>@bartawire</span>
+    </div>
+    <div class="photocard-footer-social-item pc-footer-facebook">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true">
+        <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+      </svg>
+      <span>/bartawire</span>
+    </div>
+    <div class="photocard-footer-social-item pc-footer-website">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="2" y1="12" x2="22" y2="12"></line>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"></path>
+      </svg>
+      <span>bartawire.com</span>
+    </div>
+  `;
+}
+
+/**
  * Paginates article markdown/HTML text into multiple story slides
  * so each story slide fits within card1Height (header 60px + footer 46px).
  * Ensures Instagram carousel consistency where every slide has the exact same dimensions.
@@ -8612,7 +8645,7 @@ function paginateStoryContent(rawContent, postTitle, card1Height, isBangla, font
   tempHeader.innerHTML = `<div class="photocard-header-left"><div class="pc-brand-logo-wrap"><div class="pc-logo-icon-box"></div><span class="photocard-brand-name">BartaWire</span></div></div><div class="photocard-header-right"><div class="photocard-topic-pill"><span>Topic</span></div></div>`;
   const tempFooter = document.createElement('div');
   tempFooter.className = 'photocard-footer';
-  tempFooter.innerHTML = `<div class="photocard-footer-badge"><span>PART 1/1</span></div><div class="photocard-footer-callout"><span>Swipe for next</span></div><div class="photocard-footer-domain"><span>bartawire.com</span></div>`;
+  tempFooter.innerHTML = getPhotocardFooterHTML();
 
   const testBody = document.createElement('div');
   testBody.className = 'photocard-story-body';
@@ -8761,29 +8794,10 @@ function renderStoryCardElement(pageHtml, pageIndex, totalStoryPages, cardHeight
   body.innerHTML = pageHtml;
   card.appendChild(body);
 
-  // 3. Footer Banner
+  // 3. Footer Banner - Instagram, Facebook & Website Link
   const footer = document.createElement('div');
   footer.className = 'photocard-footer';
-  const isLast = (pageIndex === totalStoryPages - 1);
-  const badgeText = isBangla
-    ? `পর্ব ${pageIndex + 1}/${totalStoryPages}`
-    : `PART ${pageIndex + 1}/${totalStoryPages}`;
-  const calloutText = isLast
-    ? (isBangla ? 'সম্পূর্ণ খবরটি পড়ুন bartawire.com-এ' : 'Read the full story on bartawire.com')
-    : (isBangla ? 'পরবর্তী অংশ দেখতে সোয়াইপ করুন 👉' : 'Swipe for next part 👉');
-
-  footer.innerHTML = `
-    <div class="photocard-footer-badge"><span>${escapeHtml(badgeText)}</span></div>
-    <div class="photocard-footer-callout"><span>${escapeHtml(calloutText)}</span></div>
-    <div class="photocard-footer-domain">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="12" height="12" aria-hidden="true">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="2" y1="12" x2="22" y2="12"></line>
-        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-      </svg>
-      <span>bartawire.com</span>
-    </div>
-  `;
+  footer.innerHTML = getPhotocardFooterHTML();
   card.appendChild(footer);
 
   return card;
@@ -8981,11 +8995,11 @@ function setActivePhotocardCard(index) {
   }
   if (dom.photocardDownloadAllBtn) {
     const span = dom.photocardDownloadAllBtn.querySelector('span') || dom.photocardDownloadAllBtn;
-    span.textContent = `Download All ${totalCards} Cards (Zip)`;
+    span.textContent = `Download All ${totalCards} Cards (PNG)`;
   }
   if (dom.photocardDownloadAllBtnBottom) {
     const span = dom.photocardDownloadAllBtnBottom.querySelector('span') || dom.photocardDownloadAllBtnBottom;
-    span.textContent = `Download All ${totalCards} Cards (Zip)`;
+    span.textContent = `Download All ${totalCards} Cards (PNG)`;
   }
 
   adjustPhotocardPreviewScale();
@@ -9129,25 +9143,10 @@ async function openPhotocardStudio(post) {
   renderHeadlineWordChips();
   updatePhotocardHeadlineFromChips();
 
-  // 5. Fixed Bottom Footer with Neo-Brutalist badge & verified domain
-  if (dom.photocardFooter) dom.photocardFooter.classList.remove('hidden');
-  if (dom.photocardFooterBadgeDisplay) {
-    dom.photocardFooterBadgeDisplay.innerHTML = isPostBangla ? '<span>ট্রেন্ডিং</span>' : '<span>TRENDING</span>';
-  }
-  if (dom.photocardFooterCalloutDisplay) {
-    dom.photocardFooterCalloutDisplay.innerHTML = isPostBangla
-      ? '<span>সম্পূর্ণ খবরটি পড়ুন BartaWire-এ</span>'
-      : '<span>Read the full article on BartaWire</span>';
-  }
-  if (dom.photocardFooterDomainDisplay) {
-    dom.photocardFooterDomainDisplay.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="12" height="12" aria-hidden="true">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="2" y1="12" x2="22" y2="12"></line>
-        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-      </svg>
-      <span>bartawire.com</span>
-    `;
+  // 5. Fixed Bottom Footer with Instagram, Facebook & Website Link
+  if (dom.photocardFooter) {
+    dom.photocardFooter.classList.remove('hidden');
+    dom.photocardFooter.innerHTML = getPhotocardFooterHTML();
   }
 
   // 6. Load cover image CORS-proof
@@ -9367,46 +9366,41 @@ async function generatePhotocardExportCanvas(targetCard = null) {
           summary.style.top = '-5px';
         }
 
-        // Footer Banner elements
-        const badge = clonedCard.querySelector('.photocard-footer-badge');
-        if (badge) {
-          badge.style.position = 'static';
-          badge.style.top = '0';
-          const badgeSpan = badge.querySelector('span');
-          if (badgeSpan) {
-            badgeSpan.style.position = 'relative';
-            badgeSpan.style.top = '-8px';
-            badgeSpan.style.display = 'inline-block';
-          }
+        // Footer Social items - keep icons naturally centered and apply baseline compensation to text spans
+        const footer = clonedCard.querySelector('.photocard-footer');
+        if (footer) {
+          footer.style.display = 'flex';
+          footer.style.alignItems = 'center';
+          footer.style.justifyContent = 'space-between';
+          footer.style.height = '46px';
+          footer.style.minHeight = '46px';
+          footer.style.maxHeight = '46px';
         }
-
-        const callout = clonedCard.querySelector('.photocard-footer-callout');
-        if (callout) {
-          callout.style.position = 'static';
-          callout.style.top = '0';
-          callout.style.whiteSpace = 'nowrap';
-          callout.style.overflow = 'visible';
-          callout.style.textOverflow = 'clip';
-          const calloutSpan = callout.querySelector('span');
-          if (calloutSpan) {
-            calloutSpan.style.position = 'relative';
-            calloutSpan.style.top = '-8px';
-            calloutSpan.style.display = 'inline-block';
-          }
-        }
-
-        const domain = clonedCard.querySelector('.photocard-footer-domain');
-        if (domain) {
-          domain.style.position = 'static';
-          domain.style.top = '0';
-          domain.style.overflow = 'visible';
-          const domainSpan = domain.querySelector('span');
-          if (domainSpan) {
-            domainSpan.style.position = 'relative';
-            domainSpan.style.top = '-8px';
-            domainSpan.style.display = 'inline-block';
-          }
-        }
+        const socialItems = clonedCard.querySelectorAll('.photocard-footer-social-item');
+        socialItems.forEach(item => {
+          item.style.display = 'inline-flex';
+          item.style.alignItems = 'center';
+          item.style.gap = '6px';
+          item.style.height = '22px';
+          item.style.lineHeight = '1';
+        });
+        const footerSvgs = clonedCard.querySelectorAll('.photocard-footer-social-item svg');
+        footerSvgs.forEach(svg => {
+          svg.style.position = 'static';
+          svg.style.top = '0';
+          svg.style.transform = 'none';
+          svg.style.display = 'block';
+          svg.style.flexShrink = '0';
+        });
+        const footerSpans = clonedCard.querySelectorAll('.photocard-footer-social-item span');
+        footerSpans.forEach(s => {
+          s.style.position = 'relative';
+          s.style.top = '-2.5px';
+          s.style.transform = 'none';
+          s.style.display = 'inline-block';
+          s.style.verticalAlign = 'middle';
+          s.style.lineHeight = '1';
+        });
       }
     }
   });
@@ -9565,37 +9559,93 @@ async function downloadAllPhotocardsCarousel() {
     // Restore active card view
     setActivePhotocardCard(originalActive);
 
-    // If JSZip is available, zip them together
-    if (typeof window.JSZip !== 'undefined') {
+    // Download all cards openly as separate PNG files (no zip packaging)
+    for (let i = 0; i < exportedBlobs.length; i++) {
       allBtns.forEach(btn => {
         btn.innerHTML = `
           <svg class="pc-spinner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
             <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
             <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"></path>
           </svg>
-          <span>Creating ZIP...</span>
+          <span>Downloading ${i + 1}/${exportedBlobs.length}...</span>
         `;
       });
-
-      const zip = new window.JSZip();
-      exportedBlobs.forEach(item => {
-        zip.file(item.name, item.blob);
-      });
-
-      const zipBlob = await zip.generateAsync({ type: 'blob' });
-      triggerBlobDownload(zipBlob, `photocard-${safeTitle}-instagram-carousel.zip`);
-      showToast(`🎉 All ${cardsToExport.length} carousel cards downloaded in ZIP! Same dimensions (${exportDimensions.width}×${exportDimensions.height}px)`, 'success');
-    } else {
-      // Sequential download fallback
-      for (const item of exportedBlobs) {
-        triggerBlobDownload(item.blob, item.name);
-        await new Promise(r => setTimeout(r, 400));
+      const item = exportedBlobs[i];
+      triggerBlobDownload(item.blob, item.name);
+      if (i < exportedBlobs.length - 1) {
+        await new Promise(r => setTimeout(r, 350));
       }
-      showToast(`🎉 All ${cardsToExport.length} carousel cards downloaded! Same dimensions (${exportDimensions.width}×${exportDimensions.height}px)`, 'success');
     }
+    showToast(`🎉 All ${cardsToExport.length} cards downloaded openly as individual PNGs! (${exportDimensions.width}×${exportDimensions.height}px)`, 'success');
   } catch (err) {
     console.error('Failed to export carousel cards:', err);
     showToast('Failed to export carousel cards. Please try downloading individual cards.', 'error');
+  } finally {
+    originalStates.forEach(({ btn, html }) => {
+      btn.disabled = false;
+      btn.innerHTML = html;
+    });
+  }
+}
+
+/**
+ * Opens the currently active photocard openly in a new browser tab for direct viewing or saving
+ */
+async function openPhotocardInNewTab() {
+  const openBtns = [
+    dom.photocardOpenBtn,
+    dom.photocardOpenBtnBottom
+  ].filter(Boolean);
+
+  const originalStates = openBtns.map(btn => ({ btn, html: btn.innerHTML }));
+
+  try {
+    openBtns.forEach(btn => {
+      btn.disabled = true;
+      btn.innerHTML = `
+        <svg class="pc-spinner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+          <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+          <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"></path>
+        </svg>
+        <span>Opening...</span>
+      `;
+    });
+
+    const activeCard = (currentPhotocardCardIndex === 0)
+      ? dom.photocardCanvas
+      : (generatedStoryCards[currentPhotocardCardIndex - 1]?.element || dom.photocardCanvas);
+
+    const canvas = await generatePhotocardExportCanvas(activeCard);
+    if (!canvas) return;
+
+    const dataUrl = canvas.toDataURL('image/png');
+    const newTab = window.open();
+    if (newTab) {
+      const cardLabel = currentPhotocardCardIndex === 0 ? 'Cover Card' : `Story Card ${currentPhotocardCardIndex}`;
+      newTab.document.title = `${cardLabel} - BartaWire`;
+      newTab.document.body.style.margin = '0';
+      newTab.document.body.style.display = 'flex';
+      newTab.document.body.style.alignItems = 'center';
+      newTab.document.body.style.justifyContent = 'center';
+      newTab.document.body.style.background = '#0A0A0A';
+      newTab.document.body.style.minHeight = '100vh';
+      const img = newTab.document.createElement('img');
+      img.src = dataUrl;
+      img.alt = `${cardLabel} - BartaWire`;
+      img.style.maxWidth = '95%';
+      img.style.maxHeight = '95vh';
+      img.style.objectFit = 'contain';
+      img.style.boxShadow = '0 10px 40px rgba(0,0,0,0.6)';
+      img.style.border = '2px solid #222';
+      newTab.document.body.appendChild(img);
+      showToast(`🔍 ${cardLabel} opened openly in new tab!`, 'success');
+    } else {
+      showToast('Pop-up was blocked. Downloading card instead.', 'info');
+      downloadPhotocardHD();
+    }
+  } catch (err) {
+    console.error('Failed to open card in new tab:', err);
+    showToast('Failed to open card image.', 'error');
   } finally {
     originalStates.forEach(({ btn, html }) => {
       btn.disabled = false;
@@ -10032,6 +10082,8 @@ function initEventListeners() {
   dom.photocardDownloadAllBtnBottom?.addEventListener('click', downloadAllPhotocardsCarousel);
   dom.photocardCopyClipboardBtn?.addEventListener('click', copyPhotocardToClipboard);
   dom.photocardCopyClipboardBtnBottom?.addEventListener('click', copyPhotocardToClipboard);
+  dom.photocardOpenBtn?.addEventListener('click', openPhotocardInNewTab);
+  dom.photocardOpenBtnBottom?.addEventListener('click', openPhotocardInNewTab);
 
   // Photocard Studio Carousel Navigator (Previous / Next Buttons)
   dom.pcCardPrevBtn?.addEventListener('click', () => {
@@ -10581,6 +10633,7 @@ window.openPhotocardStudio = openPhotocardStudio;
 window.closePhotocardStudio = closePhotocardStudio;
 window.downloadPhotocardHD = downloadPhotocardHD;
 window.downloadAllPhotocardsCarousel = downloadAllPhotocardsCarousel;
+window.openPhotocardInNewTab = openPhotocardInNewTab;
 window.refreshPhotocardCarousel = refreshPhotocardCarousel;
 window.setActivePhotocardCard = setActivePhotocardCard;
 window.selectTopic = selectTopic;

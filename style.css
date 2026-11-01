@@ -10749,7 +10749,7 @@ input[type="datetime-local"] {
 }
 
 /* ----------------------------------------------------------------------------
-   4. Bottom Footer Banner (~46px)
+   4. Bottom Footer Banner (~46px) - Social Links & Website
    ---------------------------------------------------------------------------- */
 .photocard-footer {
   height: 46px !important;
@@ -10762,7 +10762,7 @@ input[type="datetime-local"] {
   justify-content: space-between !important;
   background: var(--pc-footer-bg, #0A0A0A) !important;
   color: var(--pc-footer-text, #FFFFFF) !important;
-  font-family: 'Space Grotesk', 'Hind Siliguri', sans-serif !important;
+  font-family: 'Space Mono', monospace, sans-serif !important;
   margin: 0 !important;
   overflow: hidden !important;
 }
@@ -10771,6 +10771,43 @@ input[type="datetime-local"] {
   display: none !important;
 }
 
+.photocard-footer-social-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  height: 22px !important;
+  box-sizing: border-box !important;
+  font-family: 'Space Mono', monospace !important;
+  font-weight: 700 !important;
+  font-size: 11.5px !important;
+  line-height: 1 !important;
+  color: var(--pc-footer-text, #FFFFFF) !important;
+  letter-spacing: 0.02em !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  text-decoration: none !important;
+}
+
+.photocard-footer-social-item svg {
+  width: 13px !important;
+  height: 13px !important;
+  color: var(--pc-footer-domain, #FFE500) !important;
+  stroke: var(--pc-footer-domain, #FFE500) !important;
+  flex-shrink: 0 !important;
+  display: block !important;
+  margin: 0 !important;
+  position: static !important;
+}
+
+.photocard-footer-social-item span {
+  display: inline-block !important;
+  vertical-align: middle !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  position: static !important;
+}
+
+/* Legacy footer classes preserved for backward compatibility */
 .photocard-footer-badge {
   background: var(--pc-footer-badge-bg, #FFE500) !important;
   color: var(--pc-footer-badge-text, #0A0A0A) !important;

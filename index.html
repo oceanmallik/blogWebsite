@@ -35,8 +35,6 @@
   
   <!-- html2canvas for High-Res PNG Social Photocard Export (1080x1350) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <!-- JSZip for Multi-Card Instagram Carousel ZIP Bundle Export -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   
   <!-- Supabase JS Client v2 (Required) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2231,12 +2229,24 @@
                     </div>
                   </div>
 
-                  <!-- 4. Bottom Footer Banner (~46px, fixed) -->
+                  <!-- 4. Bottom Footer Banner (~46px, fixed) - Social Handles & Website -->
                   <div class="photocard-footer" id="photocard-footer">
-                    <div class="photocard-footer-badge" id="photocard-footer-badge-display"><span>TRENDING</span></div>
-                    <div class="photocard-footer-callout" id="photocard-footer-callout-display"><span>Read the full article on BartaWire</span></div>
-                    <div class="photocard-footer-domain" id="photocard-footer-domain-display">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="12" height="12" aria-hidden="true">
+                    <div class="photocard-footer-social-item pc-footer-instagram">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                      </svg>
+                      <span>@bartawire</span>
+                    </div>
+                    <div class="photocard-footer-social-item pc-footer-facebook">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true">
+                        <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                      </svg>
+                      <span>/bartawire</span>
+                    </div>
+                    <div class="photocard-footer-social-item pc-footer-website">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true">
                         <circle cx="12" cy="12" r="10"></circle>
                         <line x1="2" y1="12" x2="22" y2="12"></line>
                         <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
@@ -2264,16 +2274,24 @@
                   </svg>
                   <span id="photocard-download-text">Download This Card (PNG)</span>
                 </button>
-                <button type="button" id="photocard-download-all-btn" class="btn-primary pc-download-all-btn" title="Download all carousel slides with matching dimensions for Instagram">
+                <button type="button" id="photocard-download-all-btn" class="btn-primary pc-download-all-btn" title="Download all carousel slides as separate PNG images openly">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="17" height="17" aria-hidden="true">
                     <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
                     <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
                   </svg>
-                  <span id="photocard-download-all-text">Download All Cards (Zip)</span>
+                  <span id="photocard-download-all-text">Download All Cards (PNG)</span>
                 </button>
               </div>
               
               <div class="pc-secondary-actions">
+                <button type="button" id="pc-open-card-btn" class="btn-secondary pc-action-btn" title="Open current card in a new browser tab openly">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                  </svg>
+                  <span>Open in Tab</span>
+                </button>
                 <button type="button" id="pc-copy-clipboard-btn" class="btn-secondary pc-action-btn" title="Copy photocard to clipboard">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -2468,16 +2486,24 @@
                   </svg>
                   <span>Download This Card (PNG)</span>
                 </button>
-                <button type="button" id="photocard-download-all-btn-bottom" class="btn-primary pc-download-all-btn" title="Download all carousel cards with matching dimensions">
+                <button type="button" id="photocard-download-all-btn-bottom" class="btn-primary pc-download-all-btn" title="Download all carousel cards as separate PNG images openly">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="16" height="16" aria-hidden="true">
                     <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
                     <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
                   </svg>
-                  <span>Download All Cards (Zip)</span>
+                  <span>Download All Cards (PNG)</span>
                 </button>
               </div>
               
               <div class="pc-secondary-actions">
+                <button type="button" id="pc-open-card-btn-bottom" class="btn-secondary pc-action-btn" title="Open current card in a new tab openly">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                  </svg>
+                  <span>Open in Tab</span>
+                </button>
                 <button type="button" id="pc-copy-clipboard-btn-bottom" class="btn-secondary pc-action-btn" title="Copy photocard to clipboard">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
