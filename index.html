@@ -35,6 +35,8 @@
   
   <!-- html2canvas for High-Res PNG Social Photocard Export (1080x1350) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- JSZip for Multi-Card Instagram Carousel ZIP Bundle Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   
   <!-- Supabase JS Client v2 (Required) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2148,7 +2150,20 @@
                 <span class="photocard-live-dot"></span>
                 <span class="photocard-preview-tag">LIVE CARD PREVIEW</span>
               </div>
-              <span class="photocard-scale-indicator">1080px Width HD Export</span>
+              <span class="photocard-scale-indicator" id="photocard-scale-indicator">1080px Width HD Export</span>
+            </div>
+
+            <!-- Multi-Card Carousel Navigator for Instagram -->
+            <div class="pc-card-nav-bar" id="pc-card-nav-bar">
+              <button type="button" class="pc-card-nav-btn" id="pc-card-prev-btn" title="Previous card" aria-label="Previous card">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              </button>
+              <div class="pc-card-tabs-wrap" id="pc-card-tabs-wrap">
+                <button type="button" class="pc-card-tab active" data-tab-index="0">📸 1. Cover Card</button>
+              </div>
+              <button type="button" class="pc-card-nav-btn" id="pc-card-next-btn" title="Next card" aria-label="Next card">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
             </div>
 
             <!-- Scaled Viewport Container -->
@@ -2160,7 +2175,7 @@
                      Dynamic Height hugs image & content naturally.
                      Exported at scale: 2 = 1080px Width HD.
                      ============================================== -->
-                <div id="photocard-canvas" class="photocard-canvas theme-yellow">
+                <div id="photocard-canvas" class="photocard-canvas theme-yellow pc-card-active">
                   
                   <!-- 1. Top Brand Header Bar (~60px) -->
                   <div class="photocard-header" id="photocard-header">
@@ -2231,19 +2246,32 @@
                   </div>
 
                 </div>
+
+                <!-- Dynamic Instagram Carousel Story Cards (Same width & height as Card 1) -->
+                <div id="photocard-story-cards-container" class="photocard-story-cards-container"></div>
+
               </div>
             </div>
 
             <!-- Export / Download Action Bar -->
             <div class="photocard-actions-bar">
-              <button type="button" id="photocard-download-btn" class="btn-primary photocard-download-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="18" height="18" aria-hidden="true">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-                <span id="photocard-download-text">Download HD Photocard (PNG)</span>
-              </button>
+              <div class="pc-actions-primary-row">
+                <button type="button" id="photocard-download-btn" class="btn-primary photocard-download-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="17" height="17" aria-hidden="true">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span id="photocard-download-text">Download This Card (PNG)</span>
+                </button>
+                <button type="button" id="photocard-download-all-btn" class="btn-primary pc-download-all-btn" title="Download all carousel slides with matching dimensions for Instagram">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="17" height="17" aria-hidden="true">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                  </svg>
+                  <span id="photocard-download-all-text">Download All Cards (Zip)</span>
+                </button>
+              </div>
               
               <div class="pc-secondary-actions">
                 <button type="button" id="pc-copy-clipboard-btn" class="btn-secondary pc-action-btn" title="Copy photocard to clipboard">
@@ -2251,7 +2279,7 @@
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                   </svg>
-                  <span>Copy Image</span>
+                  <span>Copy Card</span>
                 </button>
                 <button type="button" id="pc-modal-done-btn" class="btn-secondary pc-action-btn">
                   <span>Close</span>
@@ -2384,16 +2412,70 @@
               </div>
             </div>
 
+            <!-- Section 4: Instagram Carousel & Full Story Slides -->
+            <div class="pc-control-group">
+              <div class="pc-group-title-row">
+                <span class="pc-step-badge">4</span>
+                <span class="pc-group-title">Instagram Carousel &amp; Story Slides</span>
+              </div>
+              
+              <div class="pc-story-settings-card">
+                <div class="pc-toggle-row">
+                  <label class="pc-toggle-label" for="pc-enable-story-toggle">
+                    <span class="pc-sublabel">Generate Story Slides</span>
+                    <span class="pc-hint-text">Auto-creates matching story slides with exact same size for Instagram carousel</span>
+                  </label>
+                  <input type="checkbox" id="pc-enable-story-toggle" class="pc-checkbox-toggle" checked>
+                </div>
+
+                <!-- Status indicator badge -->
+                <div class="pc-story-status-box" id="pc-story-status-box">
+                  <span class="pc-story-status-icon">📐</span>
+                  <span id="pc-story-status-text">Story paginated into matching slides</span>
+                </div>
+
+                <!-- Story Font Size Slider -->
+                <div class="pc-slider-row">
+                  <div class="pc-slider-header">
+                    <label for="pc-slider-story-size" class="pc-sublabel">Story Text Font Size</label>
+                    <span id="pc-story-size-val" class="pc-slider-val">16px</span>
+                  </div>
+                  <input type="range" id="pc-slider-story-size" min="13" max="22" step="1" value="16" class="pc-range-slider">
+                </div>
+
+                <!-- Collapsible Story Content Editor -->
+                <details class="pc-story-editor-details">
+                  <summary class="pc-story-editor-summary">
+                    <span>Customize Story Text</span>
+                    <span class="pc-editor-hint">Edit or rephrase before generating</span>
+                  </summary>
+                  <div class="pc-story-editor-body">
+                    <textarea id="pc-story-content-editor" class="pc-textarea" rows="5" placeholder="Story text for slides..."></textarea>
+                    <button type="button" id="pc-reset-story-content-btn" class="pc-mini-btn">Reset to Original Article</button>
+                  </div>
+                </details>
+              </div>
+            </div>
+
             <!-- Mobile-Only Action Bar at Bottom of Controls Pane -->
             <div class="photocard-actions-bar photocard-controls-bottom-actions">
-              <button type="button" id="photocard-download-btn-bottom" class="btn-primary photocard-download-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="18" height="18" aria-hidden="true">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-                <span>Download HD Photocard (PNG)</span>
-              </button>
+              <div class="pc-actions-primary-row">
+                <button type="button" id="photocard-download-btn-bottom" class="btn-primary photocard-download-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="16" height="16" aria-hidden="true">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span>Download This Card (PNG)</span>
+                </button>
+                <button type="button" id="photocard-download-all-btn-bottom" class="btn-primary pc-download-all-btn" title="Download all carousel cards with matching dimensions">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="16" height="16" aria-hidden="true">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                  </svg>
+                  <span>Download All Cards (Zip)</span>
+                </button>
+              </div>
               
               <div class="pc-secondary-actions">
                 <button type="button" id="pc-copy-clipboard-btn-bottom" class="btn-secondary pc-action-btn" title="Copy photocard to clipboard">
@@ -2401,7 +2483,7 @@
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                   </svg>
-                  <span>Copy Image</span>
+                  <span>Copy Card</span>
                 </button>
                 <button type="button" id="pc-modal-done-btn-bottom" class="btn-secondary pc-action-btn">
                   <span>Close</span>
@@ -2477,7 +2559,7 @@
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
   <!-- Application Logic -->
-  <script src="app.js?v=8.6"></script>
+  <script src="app.js?v=8.7"></script>
 </body>
 </html>
 

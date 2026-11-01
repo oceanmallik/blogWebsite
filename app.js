@@ -53,11 +53,17 @@ const COMMENT_GRADE_POINTS = 1;
 let cachedComments = [];
 const authorProfilesCache = new Map();
 
-// Photocard Studio State (1080x1350 News Card Generator)
+// Photocard Studio State (1080x1350 News Card Generator & Instagram Carousel Multi-Card System)
 let currentPhotocardPost = null;
 let currentPhotocardTheme = 'yellow';
 let currentPhotocardLang = 'en';
 let currentPhotocardFitMode = 'fit-width';
+let currentPhotocardCardIndex = 0; // 0 = Cover Card, 1+ = Story Cards
+let generatedStoryCards = []; // Array of { element, pageIndex, totalPages }
+let storyCardsEnabled = true;
+let storyFontSize = 16;
+let storyContentOverride = null;
+let card1MeasuredHeight = 0;
 
 // Default OpenGraph & Twitter Card Image Fallback (Official BartaWire Banner)
 const DEFAULT_OG_IMAGE = 'banner.png';
@@ -216,11 +222,19 @@ function initDOM() {
   dom.photocardDoneBtnBottom = document.getElementById('pc-modal-done-btn-bottom');
   dom.photocardDownloadBtn = document.getElementById('photocard-download-btn');
   dom.photocardDownloadBtnBottom = document.getElementById('photocard-download-btn-bottom');
+  dom.photocardDownloadAllBtn = document.getElementById('photocard-download-all-btn');
+  dom.photocardDownloadAllBtnBottom = document.getElementById('photocard-download-all-btn-bottom');
+  dom.photocardScaleIndicator = document.getElementById('photocard-scale-indicator');
   dom.photocardCopyClipboardBtn = document.getElementById('pc-copy-clipboard-btn');
   dom.photocardCopyClipboardBtnBottom = document.getElementById('pc-copy-clipboard-btn-bottom');
   dom.photocardCanvas = document.getElementById('photocard-canvas');
+  dom.photocardStoryCardsContainer = document.getElementById('photocard-story-cards-container');
   dom.photocardCanvasScaler = document.getElementById('photocard-canvas-scaler');
   dom.photocardViewportContainer = document.getElementById('photocard-viewport-container');
+  dom.pcCardNavBar = document.getElementById('pc-card-nav-bar');
+  dom.pcCardPrevBtn = document.getElementById('pc-card-prev-btn');
+  dom.pcCardNextBtn = document.getElementById('pc-card-next-btn');
+  dom.pcCardTabsWrap = document.getElementById('pc-card-tabs-wrap');
   dom.photocardHeader = document.getElementById('photocard-header');
   dom.photocardBrandDisplay = document.getElementById('photocard-brand-display');
   dom.photocardTopicDisplay = document.getElementById('photocard-topic-display');
@@ -250,6 +264,13 @@ function initDOM() {
   dom.pcSliderHeadlineSize = document.getElementById('pc-slider-headline-size');
   dom.pcHeadlineSizeVal = document.getElementById('pc-headline-size-val');
   dom.pcImageSourceInput = document.getElementById('pc-image-source-input');
+  dom.pcEnableStoryToggle = document.getElementById('pc-enable-story-toggle');
+  dom.pcStoryStatusBox = document.getElementById('pc-story-status-box');
+  dom.pcStoryStatusText = document.getElementById('pc-story-status-text');
+  dom.pcSliderStorySize = document.getElementById('pc-slider-story-size');
+  dom.pcStorySizeVal = document.getElementById('pc-story-size-val');
+  dom.pcStoryContentEditor = document.getElementById('pc-story-content-editor');
+  dom.pcResetStoryContentBtn = document.getElementById('pc-reset-story-content-btn');
 
   // Header & Theme
   dom.brandLogo = document.getElementById('brand-logo');
@@ -8129,6 +8150,11 @@ function setHeadlineAccentColor(color) {
   if (dom.photocardCanvas) {
     dom.photocardCanvas.style.setProperty('--pc-accent-color', color);
   }
+  if (generatedStoryCards && generatedStoryCards.length > 0) {
+    generatedStoryCards.forEach(s => {
+      s.element.style.setProperty('--pc-accent-color', color);
+    });
+  }
 
   // Update active state on preset swatches
   let matchedPreset = false;
@@ -8273,6 +8299,7 @@ function updatePhotocardHeadlineFromChips() {
   }
 
   dom.photocardHeadlineDisplay.innerHTML = html;
+  refreshPhotocardCarousel();
   adjustPhotocardPreviewScale();
 }
 
@@ -8285,11 +8312,18 @@ function updatePhotocardHeadlineFromChips() {
 function adjustPhotocardPreviewScale() {
   const container = dom.photocardViewportContainer;
   const scaler = dom.photocardCanvasScaler;
-  const card = dom.photocardCanvas;
-  if (!container || !scaler || !card) return;
+  if (!container || !scaler) return;
+
+  // Active card: cover or story card
+  let activeCard = dom.photocardCanvas;
+  if (currentPhotocardCardIndex > 0 && generatedStoryCards[currentPhotocardCardIndex - 1]) {
+    activeCard = generatedStoryCards[currentPhotocardCardIndex - 1].element;
+  }
+  if (!activeCard) activeCard = dom.photocardCanvas;
+  if (!activeCard) return;
 
   // Measure card's exact natural height in block flow
-  const naturalHeight = card.scrollHeight || card.offsetHeight;
+  const naturalHeight = activeCard.scrollHeight || activeCard.offsetHeight || card1MeasuredHeight || 680;
   if (!naturalHeight || naturalHeight < 100) return;
 
   const isMobile = window.innerWidth <= 1024;
@@ -8347,6 +8381,7 @@ function setPhotocardImage(src) {
   const onLoaded = () => {
     dom.photocardImgLoading?.classList.add('hidden');
     requestAnimationFrame(() => {
+      refreshPhotocardCarousel();
       adjustPhotocardPreviewScale();
       setTimeout(adjustPhotocardPreviewScale, 60);
     });
@@ -8358,6 +8393,7 @@ function setPhotocardImage(src) {
     const placeholder = getDefaultPhotocardPlaceholder();
     dom.photocardMainImg.src = placeholder;
     requestAnimationFrame(() => {
+      refreshPhotocardCarousel();
       adjustPhotocardPreviewScale();
     });
   };
@@ -8492,6 +8528,16 @@ function updatePhotocardTheme(themeName) {
     card.classList.add(`theme-${themeName}`);
   }
 
+  // Update theme on all generated story cards as well
+  if (generatedStoryCards && generatedStoryCards.length > 0) {
+    const isBn = (currentPhotocardLang === 'bn') || isBanglaPost(currentPhotocardPost);
+    generatedStoryCards.forEach(s => {
+      s.element.classList.remove('theme-navy', 'theme-yellow', 'theme-dark', 'theme-cyberpunk', 'theme-ocean', 'theme-crimson', 'theme-coral', 'theme-bartawire');
+      s.element.classList.add(`theme-${themeName}`);
+      s.element.style.setProperty('--pc-accent-color', currentHeadlineAccentColor);
+    });
+  }
+
   // Update theme chips active state
   document.querySelectorAll('.pc-theme-chip').forEach(chip => {
     if (chip.dataset.theme === themeName) {
@@ -8502,6 +8548,467 @@ function updatePhotocardTheme(themeName) {
   });
 
   adjustPhotocardPreviewScale();
+}
+
+/**
+ * Paginates article markdown/HTML text into multiple story slides
+ * so each story slide fits within card1Height (header 60px + footer 46px).
+ * Ensures Instagram carousel consistency where every slide has the exact same dimensions.
+ */
+function paginateStoryContent(rawContent, postTitle, card1Height, isBangla, fontSize = 16) {
+  if (!rawContent || typeof rawContent !== 'string' || rawContent.trim() === '') {
+    return [];
+  }
+
+  // Clean markdown: strip markdown images and raw img tags
+  let cleanMarkdown = rawContent
+    .replace(/!\[.*?\]\(.*?\)/g, '')
+    .replace(/<img[^>]*>/gi, '')
+    .trim();
+
+  if (!cleanMarkdown) return [];
+
+  // Parse markdown into HTML
+  let parsedHtml = '';
+  if (typeof window.marked !== 'undefined' && typeof window.DOMPurify !== 'undefined') {
+    try {
+      const rawHtml = window.marked.parse(cleanMarkdown);
+      parsedHtml = window.DOMPurify.sanitize(rawHtml);
+    } catch (_) {
+      parsedHtml = `<p>${escapeHtml(cleanMarkdown)}</p>`;
+    }
+  } else {
+    parsedHtml = cleanMarkdown.split(/\n\n+/).map(p => `<p>${escapeHtml(p)}</p>`).join('');
+  }
+
+  const parserDiv = document.createElement('div');
+  parserDiv.innerHTML = parsedHtml;
+  let blockNodes = Array.from(parserDiv.children);
+
+  if (blockNodes.length === 0) {
+    blockNodes = [parserDiv];
+  }
+
+  // Create temporary offscreen container for accurate DOM height calculation.
+  // Must be a real story card clone so measured padding/font/line-height are exact.
+  const sandbox = document.createElement('div');
+  sandbox.className = `photocard-canvas theme-${currentPhotocardTheme} photocard-story-canvas ${isBangla ? 'is-bangla' : ''}`;
+  sandbox.style.position = 'fixed';
+  sandbox.style.left = '-9999px';
+  sandbox.style.top = '0';
+  sandbox.style.width = '540px';
+  sandbox.style.minWidth = '540px';
+  sandbox.style.maxWidth = '540px';
+  sandbox.style.height = `${card1Height}px`;
+  sandbox.style.visibility = 'hidden';
+  sandbox.style.pointerEvents = 'none';
+  // Keep display:flex so layout exactly mirrors a real story card
+  sandbox.style.setProperty('display', 'flex', 'important');
+  sandbox.style.setProperty('flex-direction', 'column', 'important');
+
+  // Measure real header/footer heights by temporarily adding them
+  const tempHeader = document.createElement('div');
+  tempHeader.className = 'photocard-header';
+  tempHeader.innerHTML = `<div class="photocard-header-left"><div class="pc-brand-logo-wrap"><div class="pc-logo-icon-box"></div><span class="photocard-brand-name">BartaWire</span></div></div><div class="photocard-header-right"><div class="photocard-topic-pill"><span>Topic</span></div></div>`;
+  const tempFooter = document.createElement('div');
+  tempFooter.className = 'photocard-footer';
+  tempFooter.innerHTML = `<div class="photocard-footer-badge"><span>PART 1/1</span></div><div class="photocard-footer-callout"><span>Swipe for next</span></div><div class="photocard-footer-domain"><span>bartawire.com</span></div>`;
+
+  const testBody = document.createElement('div');
+  testBody.className = 'photocard-story-body';
+  testBody.style.setProperty('--pc-story-font-size', `${fontSize}px`);
+  testBody.style.fontSize = `${fontSize}px`;
+  testBody.style.flex = '1 1 auto';
+  testBody.style.overflow = 'hidden';
+
+  sandbox.appendChild(tempHeader);
+  sandbox.appendChild(testBody);
+  sandbox.appendChild(tempFooter);
+  document.body.appendChild(sandbox);
+
+  // Measure actual header and footer heights from live DOM
+  const headerH = tempHeader.offsetHeight || 60;
+  const footerH = tempFooter.offsetHeight || 46;
+
+  // Available body height = card height - header - footer (body has flex:1, no extra padding deduction needed
+  // since scrollHeight of testBody reflects its own padding already)
+  const maxBodyHeight = Math.max(120, card1Height - headerH - footerH);
+
+  const pages = [];
+  let currentPageBlocks = [];
+
+  for (let i = 0; i < blockNodes.length; i++) {
+    const node = blockNodes[i];
+    const nodeHtml = node.outerHTML;
+
+    // Test appending node to current page
+    testBody.innerHTML = currentPageBlocks.concat(nodeHtml).join('');
+
+    if (testBody.scrollHeight <= maxBodyHeight) {
+      currentPageBlocks.push(nodeHtml);
+    } else {
+      if (currentPageBlocks.length > 0) {
+        pages.push(currentPageBlocks.join(''));
+        currentPageBlocks = [];
+
+        testBody.innerHTML = nodeHtml;
+        if (testBody.scrollHeight <= maxBodyHeight) {
+          currentPageBlocks.push(nodeHtml);
+        } else {
+          // Large single paragraph: split by sentence
+          const text = node.textContent.trim();
+          const sentences = text.split(/(?<=[.!?।])\s+/).filter(Boolean);
+          if (sentences.length > 1) {
+            let chunk = [];
+            for (const s of sentences) {
+              testBody.innerHTML = currentPageBlocks.concat(`<p>${chunk.concat(s).join(' ')}</p>`).join('');
+              if (testBody.scrollHeight <= maxBodyHeight) {
+                chunk.push(s);
+              } else {
+                if (chunk.length > 0) {
+                  currentPageBlocks.push(`<p>${chunk.join(' ')}</p>`);
+                  pages.push(currentPageBlocks.join(''));
+                  currentPageBlocks = [];
+                }
+                chunk = [s];
+              }
+            }
+            if (chunk.length > 0) {
+              currentPageBlocks.push(`<p>${chunk.join(' ')}</p>`);
+            }
+          } else {
+            currentPageBlocks.push(nodeHtml);
+            pages.push(currentPageBlocks.join(''));
+            currentPageBlocks = [];
+          }
+        }
+      } else {
+        // Force on current page so text is not lost
+        currentPageBlocks.push(nodeHtml);
+        pages.push(currentPageBlocks.join(''));
+        currentPageBlocks = [];
+      }
+    }
+  }
+
+  if (currentPageBlocks.length > 0) {
+    pages.push(currentPageBlocks.join(''));
+  }
+
+  document.body.removeChild(sandbox);
+  return pages;
+}
+
+/**
+ * Creates a DOM element for a Story Card matching Card 1 dimensions and active theme
+ */
+function renderStoryCardElement(pageHtml, pageIndex, totalStoryPages, cardHeight, isBangla) {
+  const card = document.createElement('div');
+  card.className = `photocard-canvas theme-${currentPhotocardTheme} photocard-story-canvas pc-card-hidden ${isBangla ? 'is-bangla' : ''}`;
+  card.id = `photocard-story-canvas-${pageIndex}`;
+  card.dataset.storyIndex = String(pageIndex);
+  card.style.width = '540px';
+  card.style.minWidth = '540px';
+  card.style.maxWidth = '540px';
+  // Lock story card height to EXACTLY match Card 1.
+  // Use CSS custom property (consumed by .photocard-story-canvas stylesheet rule)
+  // AND inline !important to beat `.photocard-canvas { height: auto !important }`.
+  card.style.setProperty('--pc-story-card-height', `${cardHeight}px`);
+  card.style.setProperty('height', `${cardHeight}px`, 'important');
+  card.style.setProperty('min-height', `${cardHeight}px`, 'important');
+  card.style.setProperty('max-height', `${cardHeight}px`, 'important');
+  card.style.setProperty('display', 'none', 'important');
+
+  const slideNumber = pageIndex + 2;
+  const totalSlides = totalStoryPages + 1;
+  const slideLabel = isBangla
+    ? `স্লাইড ${slideNumber}/${totalSlides}`
+    : `Slide ${slideNumber}/${totalSlides}`;
+  const topicName = currentPhotocardTopic || currentPhotocardPost?.topic || 'Technology';
+  // Build an absolute logo URL so the img loads correctly even when cards are cloned
+  const logoBase = (window.location.origin + window.location.pathname).replace(/\/[^/]*$/, '');
+  const logoUrl = `${logoBase}/bartawire.png`;
+
+  // 1. Brand Header
+  const header = document.createElement('div');
+  header.className = 'photocard-header';
+  header.innerHTML = `
+    <div class="photocard-header-left">
+      <div class="pc-brand-logo-wrap">
+        <div class="pc-logo-icon-box" aria-hidden="true">
+          <img src="${logoUrl}" alt="BartaWire Logo" class="pc-brand-logo-img" width="32" height="32">
+        </div>
+        <span class="photocard-brand-name">Barta<span class="pc-brand-highlight">Wire</span></span>
+      </div>
+    </div>
+    <div class="photocard-header-right">
+      <div class="photocard-topic-pill">
+        <span>${escapeHtml(topicName)}</span>
+      </div>
+      <div class="pc-story-slide-pill">
+        <span>${escapeHtml(slideLabel)}</span>
+      </div>
+    </div>
+  `;
+  card.appendChild(header);
+
+  // Story Body — no title banner on any slide (title already shown on cover card)
+  const body = document.createElement('div');
+  body.className = 'photocard-story-body';
+  body.style.setProperty('--pc-story-font-size', `${storyFontSize}px`);
+  body.style.setProperty('--pc-accent-color', currentHeadlineAccentColor);
+
+  body.innerHTML = pageHtml;
+  card.appendChild(body);
+
+  // 3. Footer Banner
+  const footer = document.createElement('div');
+  footer.className = 'photocard-footer';
+  const isLast = (pageIndex === totalStoryPages - 1);
+  const badgeText = isBangla
+    ? `পর্ব ${pageIndex + 1}/${totalStoryPages}`
+    : `PART ${pageIndex + 1}/${totalStoryPages}`;
+  const calloutText = isLast
+    ? (isBangla ? 'সম্পূর্ণ খবরটি পড়ুন bartawire.com-এ' : 'Read the full story on bartawire.com')
+    : (isBangla ? 'পরবর্তী অংশ দেখতে সোয়াইপ করুন 👉' : 'Swipe for next part 👉');
+
+  footer.innerHTML = `
+    <div class="photocard-footer-badge"><span>${escapeHtml(badgeText)}</span></div>
+    <div class="photocard-footer-callout"><span>${escapeHtml(calloutText)}</span></div>
+    <div class="photocard-footer-domain">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="12" height="12" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="2" y1="12" x2="22" y2="12"></line>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+      </svg>
+      <span>bartawire.com</span>
+    </div>
+  `;
+  card.appendChild(footer);
+
+  return card;
+}
+
+/**
+ * Re-measures Card 1 natural height and updates all story cards to match exactly
+ */
+function refreshPhotocardCarousel() {
+  if (!currentPhotocardPost || !dom.photocardCanvas) return;
+
+  // Accurately measure Card 1's natural height.
+  // If Card 1 is currently hidden (user is viewing a story slide), temporarily
+  // make it visible off-screen to get an accurate measurement, then hide it again.
+  let measuredHeight = 0;
+  const card1IsHidden = dom.photocardCanvas.classList.contains('pc-card-hidden');
+
+  if (card1IsHidden) {
+    // Reveal off-screen temporarily for a true offsetHeight reading
+    dom.photocardCanvas.style.setProperty('display', 'block', 'important');
+    dom.photocardCanvas.style.position = 'fixed';
+    dom.photocardCanvas.style.left = '-9999px';
+    dom.photocardCanvas.style.top = '0';
+    dom.photocardCanvas.style.visibility = 'hidden';
+    measuredHeight = dom.photocardCanvas.offsetHeight || dom.photocardCanvas.scrollHeight || card1MeasuredHeight || 680;
+    // Restore hidden state
+    dom.photocardCanvas.style.setProperty('display', 'none', 'important');
+    dom.photocardCanvas.style.position = '';
+    dom.photocardCanvas.style.left = '';
+    dom.photocardCanvas.style.top = '';
+    dom.photocardCanvas.style.visibility = '';
+    if (measuredHeight > 100) card1MeasuredHeight = measuredHeight;
+  } else if (dom.photocardCanvas.offsetHeight > 100) {
+    measuredHeight = dom.photocardCanvas.offsetHeight;
+    card1MeasuredHeight = measuredHeight;
+  } else if (card1MeasuredHeight > 100) {
+    measuredHeight = card1MeasuredHeight;
+  } else {
+    measuredHeight = dom.photocardCanvas.scrollHeight || 680;
+    card1MeasuredHeight = measuredHeight;
+  }
+
+  // Clear existing story cards
+  generatedStoryCards = [];
+  if (dom.photocardStoryCardsContainer) {
+    dom.photocardStoryCardsContainer.innerHTML = '';
+  }
+
+  if (storyCardsEnabled) {
+    const isBn = (currentPhotocardLang === 'bn') || isBanglaPost(currentPhotocardPost);
+    const content = storyContentOverride !== null
+      ? storyContentOverride
+      : (currentPhotocardPost.content || currentPhotocardPost.summary || currentPhotocardPost.title || '');
+
+    const pages = paginateStoryContent(
+      content,
+      currentPhotocardPost.title,
+      measuredHeight,
+      isBn,
+      storyFontSize
+    );
+
+    pages.forEach((pageHtml, idx) => {
+      const cardEl = renderStoryCardElement(pageHtml, idx, pages.length, measuredHeight, isBn);
+      dom.photocardStoryCardsContainer?.appendChild(cardEl);
+      generatedStoryCards.push({
+        element: cardEl,
+        pageIndex: idx,
+        totalPages: pages.length
+      });
+    });
+
+    if (dom.pcStoryStatusBox) dom.pcStoryStatusBox.classList.remove('hidden');
+    if (dom.pcStoryStatusText) {
+      if (pages.length > 0) {
+        dom.pcStoryStatusText.textContent = `Story split into ${pages.length} matching slide${pages.length > 1 ? 's' : ''} (Height: ${measuredHeight}px)`;
+      } else {
+        dom.pcStoryStatusText.textContent = `No story content found. Showing cover card only.`;
+      }
+    }
+  } else {
+    if (dom.pcStoryStatusBox) dom.pcStoryStatusBox.classList.add('hidden');
+  }
+
+  renderPhotocardCardTabs();
+  setActivePhotocardCard(currentPhotocardCardIndex);
+}
+
+/**
+ * Renders the pill tabs for switching between Cover Card and Story Slides
+ */
+function renderPhotocardCardTabs() {
+  if (!dom.pcCardTabsWrap) return;
+  dom.pcCardTabsWrap.innerHTML = '';
+
+  const totalCards = 1 + (storyCardsEnabled ? generatedStoryCards.length : 0);
+
+  // Tab 0: Cover Card
+  const coverTab = document.createElement('button');
+  coverTab.type = 'button';
+  coverTab.className = `pc-card-tab ${currentPhotocardCardIndex === 0 ? 'active' : ''}`;
+  coverTab.dataset.tabIndex = '0';
+  coverTab.innerHTML = `<span>📸 1. Cover</span>`;
+  coverTab.addEventListener('click', () => setActivePhotocardCard(0));
+  dom.pcCardTabsWrap.appendChild(coverTab);
+
+  if (storyCardsEnabled) {
+    generatedStoryCards.forEach((s, idx) => {
+      const tab = document.createElement('button');
+      tab.type = 'button';
+      tab.className = `pc-card-tab ${currentPhotocardCardIndex === idx + 1 ? 'active' : ''}`;
+      tab.dataset.tabIndex = String(idx + 1);
+      tab.innerHTML = `<span>📖 ${idx + 2}. Story (${idx + 1}/${s.totalPages})</span>`;
+      tab.addEventListener('click', () => setActivePhotocardCard(idx + 1));
+      dom.pcCardTabsWrap.appendChild(tab);
+    });
+  }
+
+  if (dom.pcCardPrevBtn) dom.pcCardPrevBtn.disabled = (currentPhotocardCardIndex <= 0);
+  if (dom.pcCardNextBtn) dom.pcCardNextBtn.disabled = (currentPhotocardCardIndex >= totalCards - 1);
+}
+
+/**
+ * Switches the active preview card in the viewport
+ */
+function setActivePhotocardCard(index) {
+  const totalCards = 1 + (storyCardsEnabled ? generatedStoryCards.length : 0);
+  if (index < 0) index = 0;
+  if (index >= totalCards) index = Math.max(0, totalCards - 1);
+  currentPhotocardCardIndex = index;
+
+  if (index === 0) {
+    if (dom.photocardCanvas) {
+      dom.photocardCanvas.classList.remove('pc-card-hidden');
+      dom.photocardCanvas.classList.add('pc-card-active');
+      dom.photocardCanvas.style.setProperty('display', 'block', 'important');
+    }
+    generatedStoryCards.forEach(s => {
+      s.element.classList.remove('pc-card-active');
+      s.element.classList.add('pc-card-hidden');
+      s.element.style.setProperty('display', 'none', 'important');
+    });
+  } else {
+    if (dom.photocardCanvas) {
+      dom.photocardCanvas.classList.remove('pc-card-active');
+      dom.photocardCanvas.classList.add('pc-card-hidden');
+      dom.photocardCanvas.style.setProperty('display', 'none', 'important');
+    }
+    generatedStoryCards.forEach((s, idx) => {
+      if (idx === index - 1) {
+        s.element.classList.remove('pc-card-hidden');
+        s.element.classList.add('pc-card-active');
+        s.element.style.setProperty('display', 'flex', 'important');
+      } else {
+        s.element.classList.remove('pc-card-active');
+        s.element.classList.add('pc-card-hidden');
+        s.element.style.setProperty('display', 'none', 'important');
+      }
+    });
+  }
+
+  if (dom.pcCardTabsWrap) {
+    dom.pcCardTabsWrap.querySelectorAll('.pc-card-tab').forEach(tab => {
+      const tabIdx = parseInt(tab.dataset.tabIndex, 10);
+      if (tabIdx === index) {
+        tab.classList.add('active');
+        tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+      } else {
+        tab.classList.remove('active');
+      }
+    });
+  }
+
+  if (dom.pcCardPrevBtn) dom.pcCardPrevBtn.disabled = (index <= 0);
+  if (dom.pcCardNextBtn) dom.pcCardNextBtn.disabled = (index >= totalCards - 1);
+
+  const exportH = (card1MeasuredHeight || 680) * 2;
+  const indicator = dom.photocardScaleIndicator || document.getElementById('photocard-scale-indicator');
+  if (indicator) {
+    if (index === 0) {
+      indicator.textContent = `Card 1 of ${totalCards} • Cover • 1080 × ${exportH}px HD`;
+    } else {
+      indicator.textContent = `Card ${index + 1} of ${totalCards} • Story Part ${index} • 1080 × ${exportH}px HD (Same Sized)`;
+    }
+  }
+
+  const dlText = index === 0 ? 'Download Cover Card (PNG)' : `Download Story Card ${index} (PNG)`;
+  if (dom.photocardDownloadBtn) {
+    const span = dom.photocardDownloadBtn.querySelector('span') || dom.photocardDownloadBtn;
+    span.textContent = dlText;
+  }
+  if (dom.photocardDownloadBtnBottom) {
+    const span = dom.photocardDownloadBtnBottom.querySelector('span') || dom.photocardDownloadBtnBottom;
+    span.textContent = dlText;
+  }
+  if (dom.photocardDownloadAllBtn) {
+    const span = dom.photocardDownloadAllBtn.querySelector('span') || dom.photocardDownloadAllBtn;
+    span.textContent = `Download All ${totalCards} Cards (Zip)`;
+  }
+  if (dom.photocardDownloadAllBtnBottom) {
+    const span = dom.photocardDownloadAllBtnBottom.querySelector('span') || dom.photocardDownloadAllBtnBottom;
+    span.textContent = `Download All ${totalCards} Cards (Zip)`;
+  }
+
+  adjustPhotocardPreviewScale();
+}
+
+/**
+ * Triggers a download of a Blob file reliably across mobile and desktop browsers
+ */
+function triggerBlobDownload(blob, filename) {
+  try {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 2500);
+  } catch (e) {
+    console.error('Download error:', e);
+  }
 }
 
 /**
@@ -8530,6 +9037,16 @@ async function openPhotocardStudio(post) {
   currentPhotocardTheme = defaultTheme;
   const isPostBangla = isBanglaPost(post);
   currentPhotocardLang = isPostBangla ? 'bn' : 'en';
+
+  currentPhotocardCardIndex = 0;
+  storyContentOverride = null;
+  storyFontSize = 16;
+  storyCardsEnabled = true;
+
+  if (dom.pcEnableStoryToggle) dom.pcEnableStoryToggle.checked = true;
+  if (dom.pcSliderStorySize) dom.pcSliderStorySize.value = 16;
+  if (dom.pcStorySizeVal) dom.pcStorySizeVal.textContent = '16px';
+  if (dom.pcStoryContentEditor) dom.pcStoryContentEditor.value = post.content || '';
 
   // 1. Author details
   const author = await getPostAuthorProfile(post);
@@ -8640,10 +9157,14 @@ async function openPhotocardStudio(post) {
   dom.photocardModal?.classList.remove('hidden');
   document.body.classList.add('modal-open');
 
-  // Adjust preview scaling after render
+  // Adjust preview scaling & generate carousel story slides
   requestAnimationFrame(() => {
+    refreshPhotocardCarousel();
     adjustPhotocardPreviewScale();
-    setTimeout(adjustPhotocardPreviewScale, 60);
+    setTimeout(() => {
+      refreshPhotocardCarousel();
+      adjustPhotocardPreviewScale();
+    }, 80);
   });
 }
 
@@ -8652,19 +9173,22 @@ async function openPhotocardStudio(post) {
  */
 function closePhotocardStudio() {
   selectedWordIndex = null;
+  currentPhotocardCardIndex = 0;
+  storyContentOverride = null;
   dom.photocardModal?.classList.add('hidden');
   document.body.classList.remove('modal-open');
 }
 
 /**
- * Renders the photocard to a crisp HD 1080px canvas via html2canvas
+ * Renders a card (cover or story slide) to a crisp HD 1080px canvas via html2canvas
  * using onclone typography baseline compensations so exported text is
  * perfectly centered and exactly matches the live preview.
- * Renders in a fixed 1200px desktop-width virtual viewport so mobile constraints
- * never cut off or distort the exported HD card.
  */
-async function generatePhotocardExportCanvas() {
-  const card = document.getElementById('photocard-canvas');
+async function generatePhotocardExportCanvas(targetCard = null) {
+  const card = targetCard || (currentPhotocardCardIndex === 0
+    ? dom.photocardCanvas
+    : (generatedStoryCards[currentPhotocardCardIndex - 1]?.element || dom.photocardCanvas));
+
   if (!card) return null;
 
   if (typeof html2canvas === 'undefined') {
@@ -8672,7 +9196,7 @@ async function generatePhotocardExportCanvas() {
     return null;
   }
 
-  // Ensure all custom fonts (Bengali, Space Grotesk) are fully loaded before rendering
+  // Ensure all custom fonts are ready before rendering
   if (document.fonts && document.fonts.ready) {
     try {
       await document.fonts.ready;
@@ -8682,6 +9206,8 @@ async function generatePhotocardExportCanvas() {
   const cardComputed = window.getComputedStyle(card);
   const cardBg = cardComputed.backgroundColor || '#FFFEF0';
   const borderColor = cardComputed.getPropertyValue('--pc-border').trim() || '#0A0A0A';
+  const isCover = (card === dom.photocardCanvas || card.id === 'photocard-canvas');
+  const targetCardHeight = card.offsetHeight || card1MeasuredHeight || 680;
 
   const canvas = await html2canvas(card, {
     scale: 2, // 540px width at 2x scale = 1080px crisp HD export
@@ -8711,15 +9237,43 @@ async function generatePhotocardExportCanvas() {
         clonedContainer.style.maxWidth = 'none';
         clonedContainer.style.height = 'auto';
       }
-      const clonedCard = clonedDoc.getElementById('photocard-canvas');
-      if (clonedCard) {
-        clonedCard.style.boxShadow = 'none';
-        clonedCard.style.border = `3px solid ${borderColor}`;
-        clonedCard.style.margin = '0';
-        clonedCard.style.width = '540px';
-        clonedCard.style.minWidth = '540px';
-        clonedCard.style.maxWidth = '540px';
+
+      // Find cloned card counterpart
+      let clonedCard = card.id ? clonedDoc.getElementById(card.id) : null;
+      if (!clonedCard && card.dataset.storyIndex !== undefined) {
+        clonedCard = clonedDoc.querySelector(`[data-story-index="${card.dataset.storyIndex}"]`);
       }
+      if (!clonedCard) {
+        clonedCard = clonedDoc.getElementById('photocard-canvas');
+      }
+
+      // Hide all other cards in clonedDoc so only the target card is rendered
+      clonedDoc.querySelectorAll('.photocard-canvas, .photocard-story-canvas').forEach(c => {
+        if (c === clonedCard) {
+          c.classList.remove('pc-card-hidden');
+          c.classList.add('pc-card-active');
+          c.style.setProperty('display', isCover ? 'block' : 'flex', 'important');
+          c.style.visibility = 'visible';
+          c.style.opacity = '1';
+          c.style.boxShadow = 'none';
+          c.style.border = `3px solid ${borderColor}`;
+          c.style.margin = '0';
+          c.style.width = '540px';
+          c.style.minWidth = '540px';
+          c.style.maxWidth = '540px';
+          // Force exact height on export — both inline !important and without,
+          // to beat any `height: auto !important` cascade from .photocard-canvas.
+          c.style.setProperty('height', `${targetCardHeight}px`, 'important');
+          c.style.setProperty('min-height', `${targetCardHeight}px`, 'important');
+          c.style.setProperty('max-height', `${targetCardHeight}px`, 'important');
+        } else {
+          c.classList.remove('pc-card-active');
+          c.classList.add('pc-card-hidden');
+          c.style.setProperty('display', 'none', 'important');
+          c.style.visibility = 'hidden';
+          c.style.opacity = '0';
+        }
+      });
 
       // Ensure modal parents don't clip cloned card on mobile
       const clonedPane = clonedDoc.querySelector('.photocard-preview-pane');
@@ -8742,101 +9296,116 @@ async function generatePhotocardExportCanvas() {
         clonedModalCard.style.maxWidth = 'none';
       }
 
-      // 2. Compensate for html2canvas font baseline overestimation on each text element
-      const brand = clonedDoc.querySelector('.photocard-brand-name');
-      if (brand) {
-        brand.style.position = 'relative';
-        brand.style.top = '-10px';
-      }
-      const topicPill = clonedDoc.querySelector('.photocard-topic-pill');
-      if (topicPill) {
-        topicPill.style.display = 'inline-flex';
-        topicPill.style.alignItems = 'center';
-        topicPill.style.justifyContent = 'center';
-      }
-      const topic = clonedDoc.querySelector('.photocard-topic-pill span');
-      if (topic) {
-        topic.style.position = 'relative';
-        topic.style.top = '-8px';
-        topic.style.display = 'inline-block';
-        topic.style.verticalAlign = 'middle';
-      }
-      const dateLine = clonedDoc.querySelector('.photocard-date-line');
-      if (dateLine) {
-        dateLine.style.position = 'static';
-        dateLine.style.top = '0';
-        dateLine.style.display = 'inline-flex';
-        dateLine.style.alignItems = 'center';
-        dateLine.style.justifyContent = 'center';
-        dateLine.style.lineHeight = '1';
-        dateLine.style.marginBottom = '16px';
-        let dateSpan = dateLine.querySelector('span');
-        if (!dateSpan) {
-          dateLine.innerHTML = `<span>${escapeHtml(dateLine.textContent.trim())}</span>`;
-          dateSpan = dateLine.querySelector('span');
+      // 2. Compensate for html2canvas font baseline overestimation on clonedCard text
+      if (clonedCard) {
+        const brand = clonedCard.querySelector('.photocard-brand-name');
+        if (brand) {
+          brand.style.position = 'relative';
+          brand.style.top = '-10px';
         }
-        if (dateSpan) {
-          dateSpan.style.position = 'relative';
-          dateSpan.style.top = '-8px';
-          dateSpan.style.display = 'inline-block';
-          dateSpan.style.verticalAlign = 'middle';
-          dateSpan.style.lineHeight = '1';
+        const topicPill = clonedCard.querySelector('.photocard-topic-pill');
+        if (topicPill) {
+          topicPill.style.display = 'inline-flex';
+          topicPill.style.alignItems = 'center';
+          topicPill.style.justifyContent = 'center';
         }
-      }
-      const headline = clonedDoc.querySelector('.photocard-headline');
-      if (headline) {
-        const fontSize = parseFloat(window.getComputedStyle(headline).fontSize) || 28;
-        headline.style.position = 'relative';
-        headline.style.top = '-' + Math.round(fontSize * 0.25) + 'px';
-      }
-      const attrSpans = clonedDoc.querySelectorAll('.pc-attr-tag span');
-      attrSpans.forEach(s => {
-        s.style.position = 'relative';
-        s.style.top = '-8px';
-      });
-      const summary = clonedDoc.querySelector('.photocard-summary');
-      if (summary) {
-        summary.style.position = 'relative';
-        summary.style.top = '-5px';
-      }
-      // 3. Footer Banner elements
-      const badge = clonedDoc.getElementById('photocard-footer-badge-display') || clonedDoc.querySelector('.photocard-footer-badge');
-      if (badge) {
-        badge.style.position = 'static';
-        badge.style.top = '0';
-        const badgeSpan = badge.querySelector('span');
-        if (badgeSpan) {
-          badgeSpan.style.position = 'relative';
-          badgeSpan.style.top = '-8px';
-          badgeSpan.style.display = 'inline-block';
+        const topic = clonedCard.querySelector('.photocard-topic-pill span');
+        if (topic) {
+          topic.style.position = 'relative';
+          topic.style.top = '-8px';
+          topic.style.display = 'inline-block';
+          topic.style.verticalAlign = 'middle';
         }
-      }
+        const slidePill = clonedCard.querySelector('.pc-story-slide-pill span');
+        if (slidePill) {
+          slidePill.style.position = 'relative';
+          slidePill.style.top = '-8px';
+          slidePill.style.display = 'inline-block';
+          slidePill.style.verticalAlign = 'middle';
+        }
+        const dateLine = clonedCard.querySelector('.photocard-date-line');
+        if (dateLine) {
+          dateLine.style.position = 'static';
+          dateLine.style.top = '0';
+          dateLine.style.display = 'inline-flex';
+          dateLine.style.alignItems = 'center';
+          dateLine.style.justifyContent = 'center';
+          dateLine.style.lineHeight = '1';
+          dateLine.style.marginBottom = '16px';
+          let dateSpan = dateLine.querySelector('span');
+          if (!dateSpan) {
+            dateLine.innerHTML = `<span>${escapeHtml(dateLine.textContent.trim())}</span>`;
+            dateSpan = dateLine.querySelector('span');
+          }
+          if (dateSpan) {
+            dateSpan.style.position = 'relative';
+            dateSpan.style.top = '-8px';
+            dateSpan.style.display = 'inline-block';
+            dateSpan.style.verticalAlign = 'middle';
+            dateSpan.style.lineHeight = '1';
+          }
+        }
+        const headline = clonedCard.querySelector('.photocard-headline');
+        if (headline) {
+          const fontSize = parseFloat(window.getComputedStyle(headline).fontSize) || 28;
+          headline.style.position = 'relative';
+          headline.style.top = '-' + Math.round(fontSize * 0.25) + 'px';
+        }
+        const storyBannerLabel = clonedCard.querySelector('.pc-story-title-label');
+        if (storyBannerLabel) {
+          storyBannerLabel.style.position = 'relative';
+          storyBannerLabel.style.top = '-4px';
+        }
+        const attrSpans = clonedCard.querySelectorAll('.pc-attr-tag span');
+        attrSpans.forEach(s => {
+          s.style.position = 'relative';
+          s.style.top = '-8px';
+        });
+        const summary = clonedCard.querySelector('.photocard-summary');
+        if (summary) {
+          summary.style.position = 'relative';
+          summary.style.top = '-5px';
+        }
 
-      const callout = clonedDoc.getElementById('photocard-footer-callout-display') || clonedDoc.querySelector('.photocard-footer-callout');
-      if (callout) {
-        callout.style.position = 'static';
-        callout.style.top = '0';
-        callout.style.whiteSpace = 'nowrap';
-        callout.style.overflow = 'visible';
-        callout.style.textOverflow = 'clip';
-        const calloutSpan = callout.querySelector('span');
-        if (calloutSpan) {
-          calloutSpan.style.position = 'relative';
-          calloutSpan.style.top = '-8px';
-          calloutSpan.style.display = 'inline-block';
+        // Footer Banner elements
+        const badge = clonedCard.querySelector('.photocard-footer-badge');
+        if (badge) {
+          badge.style.position = 'static';
+          badge.style.top = '0';
+          const badgeSpan = badge.querySelector('span');
+          if (badgeSpan) {
+            badgeSpan.style.position = 'relative';
+            badgeSpan.style.top = '-8px';
+            badgeSpan.style.display = 'inline-block';
+          }
         }
-      }
 
-      const domain = clonedDoc.getElementById('photocard-footer-domain-display') || clonedDoc.querySelector('.photocard-footer-domain');
-      if (domain) {
-        domain.style.position = 'static';
-        domain.style.top = '0';
-        domain.style.overflow = 'visible';
-        const domainSpan = domain.querySelector('span');
-        if (domainSpan) {
-          domainSpan.style.position = 'relative';
-          domainSpan.style.top = '-8px';
-          domainSpan.style.display = 'inline-block';
+        const callout = clonedCard.querySelector('.photocard-footer-callout');
+        if (callout) {
+          callout.style.position = 'static';
+          callout.style.top = '0';
+          callout.style.whiteSpace = 'nowrap';
+          callout.style.overflow = 'visible';
+          callout.style.textOverflow = 'clip';
+          const calloutSpan = callout.querySelector('span');
+          if (calloutSpan) {
+            calloutSpan.style.position = 'relative';
+            calloutSpan.style.top = '-8px';
+            calloutSpan.style.display = 'inline-block';
+          }
+        }
+
+        const domain = clonedCard.querySelector('.photocard-footer-domain');
+        if (domain) {
+          domain.style.position = 'static';
+          domain.style.top = '0';
+          domain.style.overflow = 'visible';
+          const domainSpan = domain.querySelector('span');
+          if (domainSpan) {
+            domainSpan.style.position = 'relative';
+            domainSpan.style.top = '-8px';
+            domainSpan.style.display = 'inline-block';
+          }
         }
       }
     }
@@ -8846,8 +9415,7 @@ async function generatePhotocardExportCanvas() {
 }
 
 /**
- * Downloads the photocard as a crisp 1080px wide HD PNG (540px canvas at scale: 2).
- * Works reliably on mobile and desktop using Blob downloads with DataURL fallback.
+ * Downloads the currently active photocard as a crisp 1080px wide HD PNG.
  */
 async function downloadPhotocardHD() {
   const downloadBtns = [
@@ -8869,18 +9437,24 @@ async function downloadPhotocardHD() {
       `;
     });
 
-    const canvas = await generatePhotocardExportCanvas();
+    const activeCard = (currentPhotocardCardIndex === 0)
+      ? dom.photocardCanvas
+      : (generatedStoryCards[currentPhotocardCardIndex - 1]?.element || dom.photocardCanvas);
+
+    const canvas = await generatePhotocardExportCanvas(activeCard);
     if (!canvas) return;
 
     const safeTitle = (currentPhotocardPost?.slug || currentPhotocardPost?.title || 'news-card')
       .toLowerCase()
       .replace(/[^a-z0-9_-]+/g, '-')
       .slice(0, 40);
-    const filename = `photocard-${safeTitle}-${Date.now()}.png`;
+
+    const partTag = currentPhotocardCardIndex === 0 ? '01-cover' : `0${currentPhotocardCardIndex + 1}-story-part-${currentPhotocardCardIndex}`;
+    const filename = `photocard-${safeTitle}-${partTag}-${Date.now()}.png`;
 
     let downloaded = false;
 
-    // 1. Try modern Blob download (optimal for mobile & desktop)
+    // 1. Try modern Blob download
     if (canvas.toBlob) {
       try {
         await new Promise((resolve) => {
@@ -8890,16 +9464,7 @@ async function downloadPhotocardHD() {
               return;
             }
             try {
-              const blobUrl = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = blobUrl;
-              a.download = filename;
-              document.body.appendChild(a);
-              a.click();
-              setTimeout(() => {
-                document.body.removeChild(a);
-                URL.revokeObjectURL(blobUrl);
-              }, 2000);
+              triggerBlobDownload(blob, filename);
               downloaded = true;
             } catch (_) {}
             resolve();
@@ -8921,10 +9486,116 @@ async function downloadPhotocardHD() {
       setTimeout(() => document.body.removeChild(a), 500);
     }
 
-    showToast('🎉 HD Photocard downloaded!', 'success');
+    const cardLabel = currentPhotocardCardIndex === 0 ? 'Cover Card' : `Story Card Part ${currentPhotocardCardIndex}`;
+    showToast(`🎉 ${cardLabel} downloaded! (${canvas.width}×${canvas.height}px HD)`, 'success');
   } catch (err) {
     console.error('Failed to generate photocard canvas:', err);
     showToast('Failed to export photocard. If the image is blocked, click "Replace Card Image" to select a photo from your PC.', 'error');
+  } finally {
+    originalStates.forEach(({ btn, html }) => {
+      btn.disabled = false;
+      btn.innerHTML = html;
+    });
+  }
+}
+
+/**
+ * Downloads all carousel cards (Cover + all Story Slides) with matching dimensions.
+ * Bundles into a ZIP file using JSZip (or sequential download if JSZip unavailable).
+ */
+async function downloadAllPhotocardsCarousel() {
+  const allBtns = [
+    dom.photocardDownloadAllBtn,
+    dom.photocardDownloadAllBtnBottom
+  ].filter(Boolean);
+
+  const originalStates = allBtns.map(btn => ({ btn, html: btn.innerHTML }));
+
+  try {
+    const totalCards = 1 + (storyCardsEnabled ? generatedStoryCards.length : 0);
+    const safeTitle = (currentPhotocardPost?.slug || currentPhotocardPost?.title || 'news-card')
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, '-')
+      .slice(0, 40);
+
+    const originalActive = currentPhotocardCardIndex;
+    const cardsToExport = [
+      { element: dom.photocardCanvas, name: `01-cover-${safeTitle}.png` }
+    ];
+
+    if (storyCardsEnabled) {
+      generatedStoryCards.forEach((s, idx) => {
+        cardsToExport.push({
+          element: s.element,
+          name: `0${idx + 2}-story-part-${idx + 1}-${safeTitle}.png`
+        });
+      });
+    }
+
+    const exportedBlobs = [];
+    let exportDimensions = { width: 1080, height: 1350 };
+
+    for (let i = 0; i < cardsToExport.length; i++) {
+      allBtns.forEach(btn => {
+        btn.disabled = true;
+        btn.innerHTML = `
+          <svg class="pc-spinner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+            <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+            <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"></path>
+          </svg>
+          <span>Rendering ${i + 1}/${cardsToExport.length}...</span>
+        `;
+      });
+
+      setActivePhotocardCard(i);
+      await new Promise(r => requestAnimationFrame(() => setTimeout(r, 60)));
+
+      const canvas = await generatePhotocardExportCanvas(cardsToExport[i].element);
+      if (!canvas) throw new Error(`Failed to render card ${i + 1}`);
+
+      exportDimensions = { width: canvas.width, height: canvas.height };
+
+      const blob = await new Promise(res => {
+        canvas.toBlob(res, 'image/png');
+      });
+
+      exportedBlobs.push({ name: cardsToExport[i].name, blob });
+    }
+
+    // Restore active card view
+    setActivePhotocardCard(originalActive);
+
+    // If JSZip is available, zip them together
+    if (typeof window.JSZip !== 'undefined') {
+      allBtns.forEach(btn => {
+        btn.innerHTML = `
+          <svg class="pc-spinner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+            <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+            <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"></path>
+          </svg>
+          <span>Creating ZIP...</span>
+        `;
+      });
+
+      const zip = new window.JSZip();
+      exportedBlobs.forEach(item => {
+        zip.file(item.name, item.blob);
+      });
+
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      triggerBlobDownload(zipBlob, `photocard-${safeTitle}-instagram-carousel.zip`);
+      showToast(`🎉 All ${cardsToExport.length} carousel cards downloaded in ZIP! Same dimensions (${exportDimensions.width}×${exportDimensions.height}px)`, 'success');
+    } else {
+      // Sequential download fallback
+      for (const item of exportedBlobs) {
+        triggerBlobDownload(item.blob, item.name);
+        await new Promise(r => setTimeout(r, 400));
+      }
+      showToast(`🎉 All ${cardsToExport.length} carousel cards downloaded! Same dimensions (${exportDimensions.width}×${exportDimensions.height}px)`, 'success');
+    }
+  } catch (err) {
+    console.error('Failed to export carousel cards:', err);
+    showToast('Failed to export carousel cards. Please try downloading individual cards.', 'error');
   } finally {
     originalStates.forEach(({ btn, html }) => {
       btn.disabled = false;
@@ -8950,7 +9621,11 @@ async function copyPhotocardToClipboard() {
       btn.innerHTML = `<span>Copying...</span>`;
     });
 
-    const canvas = await generatePhotocardExportCanvas();
+    const activeCard = (currentPhotocardCardIndex === 0)
+      ? dom.photocardCanvas
+      : (generatedStoryCards[currentPhotocardCardIndex - 1]?.element || dom.photocardCanvas);
+
+    const canvas = await generatePhotocardExportCanvas(activeCard);
     if (!canvas) return;
 
     canvas.toBlob(async (blob) => {
@@ -8960,7 +9635,8 @@ async function copyPhotocardToClipboard() {
           await navigator.clipboard.write([
             new ClipboardItem({ 'image/png': blob })
           ]);
-          showToast('📋 Photocard copied to clipboard!', 'success');
+          const cardLabel = currentPhotocardCardIndex === 0 ? 'Cover Card' : `Story Card ${currentPhotocardCardIndex}`;
+          showToast(`📋 ${cardLabel} copied to clipboard!`, 'success');
         } catch (clipErr) {
           console.warn('Clipboard write error:', clipErr);
           showToast('Direct image clipboard copy is restricted in this environment. Please use Download HD.', 'info');
@@ -9352,8 +10028,65 @@ function initEventListeners() {
   });
   dom.photocardDownloadBtn?.addEventListener('click', downloadPhotocardHD);
   dom.photocardDownloadBtnBottom?.addEventListener('click', downloadPhotocardHD);
+  dom.photocardDownloadAllBtn?.addEventListener('click', downloadAllPhotocardsCarousel);
+  dom.photocardDownloadAllBtnBottom?.addEventListener('click', downloadAllPhotocardsCarousel);
   dom.photocardCopyClipboardBtn?.addEventListener('click', copyPhotocardToClipboard);
   dom.photocardCopyClipboardBtnBottom?.addEventListener('click', copyPhotocardToClipboard);
+
+  // Photocard Studio Carousel Navigator (Previous / Next Buttons)
+  dom.pcCardPrevBtn?.addEventListener('click', () => {
+    setActivePhotocardCard(currentPhotocardCardIndex - 1);
+  });
+  dom.pcCardNextBtn?.addEventListener('click', () => {
+    setActivePhotocardCard(currentPhotocardCardIndex + 1);
+  });
+
+  // Story Slides Controls
+  dom.pcEnableStoryToggle?.addEventListener('change', (e) => {
+    storyCardsEnabled = Boolean(e.target.checked);
+    refreshPhotocardCarousel();
+  });
+
+  dom.pcSliderStorySize?.addEventListener('input', (e) => {
+    storyFontSize = parseInt(e.target.value, 10) || 16;
+    if (dom.pcStorySizeVal) dom.pcStorySizeVal.textContent = `${storyFontSize}px`;
+    refreshPhotocardCarousel();
+  });
+
+  let storyDebounceTimer = null;
+  dom.pcStoryContentEditor?.addEventListener('input', (e) => {
+    clearTimeout(storyDebounceTimer);
+    storyDebounceTimer = setTimeout(() => {
+      storyContentOverride = e.target.value;
+      refreshPhotocardCarousel();
+    }, 250);
+  });
+
+  dom.pcResetStoryContentBtn?.addEventListener('click', () => {
+    storyContentOverride = null;
+    if (dom.pcStoryContentEditor && currentPhotocardPost) {
+      dom.pcStoryContentEditor.value = currentPhotocardPost.content || '';
+    }
+    refreshPhotocardCarousel();
+    showToast('Story text reset to original article content.', 'info');
+  });
+
+  // Keyboard navigation inside Photocard Studio (Left / Right arrow to switch slides)
+  window.addEventListener('keydown', (e) => {
+    if (dom.photocardModal && !dom.photocardModal.classList.contains('hidden')) {
+      const activeEl = document.activeElement;
+      if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
+        return;
+      }
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setActivePhotocardCard(currentPhotocardCardIndex - 1);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        setActivePhotocardCard(currentPhotocardCardIndex + 1);
+      }
+    }
+  });
 
   // Photocard Image Source / Credit Input
   dom.pcImageSourceInput?.addEventListener('input', () => {
@@ -9386,6 +10119,7 @@ function initEventListeners() {
     dom.pcDateToggleBn?.classList.remove('active');
     const formatted = formatPhotocardDate(currentPhotocardPost?.created_at, 'en');
     if (dom.photocardDateDisplay) dom.photocardDateDisplay.innerHTML = '<span>' + escapeHtml(formatted) + '</span>';
+    refreshPhotocardCarousel();
   });
 
   dom.pcDateToggleBn?.addEventListener('click', () => {
@@ -9394,6 +10128,7 @@ function initEventListeners() {
     dom.pcDateToggleEn?.classList.remove('active');
     const formatted = formatPhotocardDate(currentPhotocardPost?.created_at, 'bn');
     if (dom.photocardDateDisplay) dom.photocardDateDisplay.innerHTML = '<span>' + escapeHtml(formatted) + '</span>';
+    refreshPhotocardCarousel();
   });
 
   // Headline Highlight Color Swatches
@@ -9460,6 +10195,7 @@ function initEventListeners() {
     const size = dom.pcSliderHeadlineSize.value;
     if (dom.pcHeadlineSizeVal) dom.pcHeadlineSizeVal.textContent = `${size}px`;
     if (dom.photocardHeadlineDisplay) dom.photocardHeadlineDisplay.style.fontSize = `${size}px`;
+    refreshPhotocardCarousel();
     adjustPhotocardPreviewScale();
   });
 
@@ -9844,6 +10580,9 @@ window.openPostByIdOrSlug = openPostByIdOrSlug;
 window.openPhotocardStudio = openPhotocardStudio;
 window.closePhotocardStudio = closePhotocardStudio;
 window.downloadPhotocardHD = downloadPhotocardHD;
+window.downloadAllPhotocardsCarousel = downloadAllPhotocardsCarousel;
+window.refreshPhotocardCarousel = refreshPhotocardCarousel;
+window.setActivePhotocardCard = setActivePhotocardCard;
 window.selectTopic = selectTopic;
 window.filterByTopic = filterByTopic;
 window.expandTopics = expandTopics;

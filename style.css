@@ -10293,7 +10293,7 @@ input[type="datetime-local"] {
   max-width: 540px !important;
   max-height: none !important;
   box-sizing: border-box !important;
-  display: block !important;
+  display: block;
   background: var(--pc-body-bg, #FFFEF0) !important;
   overflow: hidden !important;
   position: relative !important;
@@ -10301,6 +10301,30 @@ input[type="datetime-local"] {
   box-shadow: 8px 8px 0px var(--pc-border, #0A0A0A);
   border: 3px solid var(--pc-border, #0A0A0A);
   text-align: left;
+}
+
+/* Story cards must match Card 1's exact pixel height.
+   These rules let the JS inline `setProperty('height',…,'important')` win. */
+.photocard-canvas.photocard-story-canvas {
+  height: auto;
+  min-height: 0;
+  max-height: none;
+}
+
+/* Card visibility controls for Instagram multi-card carousel */
+.photocard-canvas.pc-card-hidden,
+.photocard-story-canvas.pc-card-hidden {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.photocard-canvas.pc-card-active {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 /* ----------------------------------------------------------------------------
@@ -11132,6 +11156,415 @@ input[type="datetime-local"] {
     font-size: 0.78rem;
     min-height: 38px;
   }
+}
+
+/* ============================================================================
+   PHOTOCARD STUDIO: MULTI-CARD INSTAGRAM CAROUSEL & FULL STORY SYSTEM
+   ============================================================================ */
+
+/* Multi-Card Carousel Navigator */
+.pc-card-nav-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
+  padding: 0.35rem 0.2rem;
+  border-bottom: 1.5px solid var(--border-color);
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.pc-card-tabs-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding: 2px 4px;
+  flex: 1;
+  min-width: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pc-card-tabs-wrap::-webkit-scrollbar {
+  height: 4px;
+}
+
+.pc-card-tabs-wrap::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 2px;
+}
+
+.pc-card-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.65rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.pc-card-tab:hover {
+  background: var(--bg-elevated);
+  border-color: var(--ocean-primary);
+  transform: translateY(-1px);
+}
+
+.pc-card-tab.active {
+  background: var(--accent-yellow) !important;
+  color: #0A0A0A !important;
+  border-color: #0A0A0A !important;
+  box-shadow: 2px 2px 0 #0A0A0A !important;
+}
+
+.pc-card-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-color);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.pc-card-nav-btn:hover:not(:disabled) {
+  background: var(--ocean-primary);
+  color: #FFFFFF;
+}
+
+.pc-card-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Action button rows */
+.pc-actions-primary-row {
+  display: flex;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.pc-download-all-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: var(--accent-yellow) !important;
+  color: #0A0A0A !important;
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.pc-download-all-btn:hover:not(:disabled) {
+  background: #FFE000 !important;
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-md);
+}
+
+.pc-download-all-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+/* Story Canvas Container */
+.photocard-story-cards-container {
+  display: contents;
+}
+
+/* Story Card Canvas - exact same width & theme variables as .photocard-canvas.
+   height/min-height/max-height are set per-card via JS inline style with !important
+   so each story card locks to exactly the same pixel height as Card 1. */
+.photocard-story-canvas {
+  width: 540px !important;
+  min-width: 540px !important;
+  max-width: 540px !important;
+  /* Override the .photocard-canvas height:auto so JS inline height wins */
+  height: var(--pc-story-card-height, auto);
+  box-sizing: border-box !important;
+  display: flex;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  background: var(--pc-body-bg, #FFFEF0) !important;
+  overflow: hidden !important;
+  position: relative !important;
+  font-family: 'Space Grotesk', 'Anek Bangla', 'Hind Siliguri', -apple-system, sans-serif !important;
+  box-shadow: 8px 8px 0px var(--pc-border, #0A0A0A);
+  border: 3px solid var(--pc-border, #0A0A0A);
+  text-align: left;
+}
+
+.photocard-story-canvas.pc-card-active {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Slide Indicator Pill in Story Card Header */
+.pc-story-slide-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 26px !important;
+  padding: 0 9px !important;
+  box-sizing: border-box !important;
+  border: 2px solid var(--pc-border, #0A0A0A) !important;
+  box-shadow: 2px 2px 0 var(--pc-border, #0A0A0A) !important;
+  background: var(--pc-header-highlight, #0066FF) !important;
+  color: #FFFFFF !important;
+  font-family: 'Space Mono', monospace !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  margin-left: 8px !important;
+}
+
+.pc-story-slide-pill span {
+  display: inline-block !important;
+  vertical-align: middle !important;
+  line-height: 1 !important;
+}
+
+/* Story Card Body */
+.photocard-story-body {
+  flex: 1 1 auto !important;
+  padding: 20px 24px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  overflow: hidden !important;
+  color: var(--pc-text-dark, #0A0A0A) !important;
+  font-size: var(--pc-story-font-size, 16px) !important;
+  line-height: 1.6 !important;
+  text-align: left !important;
+}
+
+/* Story Title Banner on Slide 1 */
+.pc-story-title-banner {
+  border-bottom: 2px dashed var(--pc-border, #0A0A0A);
+  padding-bottom: 10px;
+  margin-bottom: 2px;
+  flex-shrink: 0;
+}
+
+.pc-story-title-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--pc-header-highlight, #0066FF);
+  display: block;
+  margin-bottom: 3px;
+  line-height: 1;
+}
+
+.pc-story-title-text {
+  font-family: 'Space Grotesk', 'Anek Bangla', 'Hind Siliguri', sans-serif !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  line-height: 1.3 !important;
+  color: var(--pc-text-dark, #0A0A0A) !important;
+  margin: 0 !important;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Story Content Typography Elements */
+.photocard-story-body h1,
+.photocard-story-body h2,
+.photocard-story-body h3,
+.photocard-story-body h4 {
+  font-family: 'Space Grotesk', 'Anek Bangla', 'Hind Siliguri', sans-serif !important;
+  font-weight: 800 !important;
+  line-height: 1.3 !important;
+  color: var(--pc-text-dark, #0A0A0A) !important;
+  margin: 2px 0 !important;
+}
+
+.photocard-story-body h2 {
+  font-size: 1.22em !important;
+  color: var(--pc-accent-color, #0066FF) !important;
+}
+
+.photocard-story-body h3 {
+  font-size: 1.1em !important;
+}
+
+.photocard-story-body p {
+  margin: 0 !important;
+  color: var(--pc-text-dark, #0A0A0A) !important;
+  word-break: break-word !important;
+}
+
+.photocard-story-body strong,
+.photocard-story-body b {
+  font-weight: 700 !important;
+  color: var(--pc-text-dark, #0A0A0A) !important;
+}
+
+.photocard-story-body ul,
+.photocard-story-body ol {
+  margin: 0 !important;
+  padding-left: 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 5px !important;
+}
+
+.photocard-story-body li {
+  color: var(--pc-text-dark, #0A0A0A) !important;
+  margin: 0 !important;
+}
+
+.photocard-story-body blockquote {
+  margin: 0 !important;
+  padding: 6px 12px !important;
+  border-left: 3.5px solid var(--pc-accent-color, #0066FF) !important;
+  background: rgba(0, 0, 0, 0.04) !important;
+  font-style: italic !important;
+  color: var(--pc-text-dark, #0A0A0A) !important;
+}
+
+.photocard-canvas.theme-dark .photocard-story-body blockquote,
+.photocard-canvas.theme-cyberpunk .photocard-story-body blockquote {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.photocard-story-body code {
+  font-family: 'Space Mono', monospace !important;
+  font-size: 0.88em !important;
+  background: rgba(0, 0, 0, 0.08) !important;
+  padding: 1px 4px !important;
+  border-radius: 2px !important;
+}
+
+/* Bengali support in Story cards */
+.photocard-story-canvas.is-bangla .photocard-story-body {
+  font-family: 'Hind Siliguri', 'Anek Bangla', sans-serif !important;
+  line-height: 1.65 !important;
+}
+
+.photocard-story-canvas.is-bangla .pc-story-title-text,
+.photocard-story-canvas.is-bangla h1,
+.photocard-story-canvas.is-bangla h2,
+.photocard-story-canvas.is-bangla h3 {
+  font-family: 'Anek Bangla', 'Hind Siliguri', sans-serif !important;
+}
+
+/* Section 4 Controls */
+.pc-story-settings-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.pc-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.pc-toggle-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  cursor: pointer;
+  flex: 1;
+}
+
+.pc-checkbox-toggle {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--ocean-primary);
+  flex-shrink: 0;
+}
+
+.pc-story-status-box {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.65rem;
+  background: var(--bg-elevated);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.pc-story-status-icon {
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.pc-story-editor-details {
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  overflow: hidden;
+}
+
+.pc-story-editor-summary {
+  padding: 0.45rem 0.65rem;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+}
+
+.pc-story-editor-summary:hover {
+  background: var(--bg-surface);
+}
+
+.pc-editor-hint {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.pc-story-editor-body {
+  padding: 0.5rem 0.65rem;
+  border-top: 1.5px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  background: var(--bg-surface);
 }
 
 /* ==========================================================================
