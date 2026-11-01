@@ -130,6 +130,33 @@ function initDOM() {
   dom.adminView = document.getElementById('admin-view');
   dom.profileView = document.getElementById('profile-view');
   dom.publicProfileView = document.getElementById('public-profile-view');
+  dom.manageView = document.getElementById('manage-view');
+
+  // Manage View elements
+  dom.manageBackBtn = document.getElementById('manage-back-btn');
+  dom.manageCreateBtn = document.getElementById('manage-create-btn');
+  dom.manageRefreshBtn = document.getElementById('manage-refresh-btn');
+  dom.managePostsGrid = document.getElementById('manage-posts-grid');
+  dom.managePostsCount = document.getElementById('manage-posts-count');
+  dom.managePagination = document.getElementById('manage-pagination');
+  dom.managePaginationPrev = document.getElementById('manage-pagination-prev');
+  dom.managePaginationNext = document.getElementById('manage-pagination-next');
+  dom.managePaginationPages = document.getElementById('manage-pagination-pages');
+  dom.managePaginationInfo = document.getElementById('manage-pagination-info');
+  dom.manageEmptyState = document.getElementById('manage-empty-state');
+  dom.manageCreateFirstBtn = document.getElementById('manage-create-first-btn');
+  dom.adminManageBtn = document.getElementById('admin-manage-btn');
+  // Card preview elements
+  dom.previewCardElement = document.getElementById('preview-card-element');
+  dom.previewCardImageWrap = document.getElementById('preview-card-image-wrap');
+  dom.previewCardTopicRow = document.getElementById('preview-card-topic-row');
+  dom.previewCardTopic = document.getElementById('preview-card-topic');
+  dom.previewCardTitle = document.getElementById('preview-card-title');
+  dom.previewCardSummary = document.getElementById('preview-card-summary');
+  dom.previewCardDate = document.getElementById('preview-card-date');
+  dom.previewCardTimeAgo = document.getElementById('preview-card-time-ago');
+  dom.previewCardAvatar = document.getElementById('preview-card-avatar');
+  dom.previewCardHandle = document.getElementById('preview-card-handle');
 
   // Home View elements
   dom.postsGrid = document.getElementById('posts-grid');
@@ -3296,6 +3323,7 @@ function returnToHomeView() {
   dom.adminView?.classList.add('hidden');
   dom.profileView?.classList.add('hidden');
   dom.publicProfileView?.classList.add('hidden');
+  dom.manageView?.classList.add('hidden');
   dom.homeView?.classList.remove('hidden');
 
   collapseTopics();
@@ -3444,6 +3472,15 @@ function handleAppNavigation() {
     return;
   }
 
+  if (hash === '#/manage') {
+    if (currentUserRole === 'admin') {
+      openManageView();
+    } else {
+      returnToHomeView();
+    }
+    return;
+  }
+
   if (hash.startsWith('#/post/')) {
     const identifier = decodeURIComponent(hash.replace('#/post/', '')).trim();
     if (identifier) {
@@ -3458,7 +3495,7 @@ function handleAppNavigation() {
     if (urlParams.get('post')) {
       return;
     }
-    if (!dom.articleView?.classList.contains('hidden') || !dom.adminView?.classList.contains('hidden') || !dom.profileView?.classList.contains('hidden') || !dom.publicProfileView?.classList.contains('hidden')) {
+    if (!dom.articleView?.classList.contains('hidden') || !dom.adminView?.classList.contains('hidden') || !dom.manageView?.classList.contains('hidden') || !dom.profileView?.classList.contains('hidden') || !dom.publicProfileView?.classList.contains('hidden')) {
       returnToHomeView();
     }
   }
@@ -3801,6 +3838,7 @@ function openAdminView() {
   dom.articleView?.classList.add('hidden');
   dom.profileView?.classList.add('hidden');
   dom.publicProfileView?.classList.add('hidden');
+  dom.manageView?.classList.add('hidden');
   dom.adminView?.classList.remove('hidden');
 
   const basePath = getAppBasePath() || '/';
@@ -3817,6 +3855,269 @@ function openAdminView() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
   loadAdminPosts();
+  updateAdminCardPreview();
+}
+
+// ============================================================================
+// MANAGE VIEW
+// ============================================================================
+
+const MANAGE_POSTS_PER_PAGE = 9;
+let manageCurrentPage = 1;
+let managePosts = [];
+
+function openManageView() {
+  if (currentUserRole !== 'admin') {
+    alert('Access denied: Publisher privileges required.');
+    returnToHomeView();
+    return;
+  }
+
+  currentPublicProfileUser = null;
+
+  dom.homeView?.classList.add('hidden');
+  dom.articleView?.classList.add('hidden');
+  dom.profileView?.classList.add('hidden');
+  dom.publicProfileView?.classList.add('hidden');
+  dom.adminView?.classList.add('hidden');
+  dom.manageView?.classList.remove('hidden');
+
+  try {
+    if (window.location.hash !== '#/manage') {
+      window.location.hash = '#/manage';
+    }
+  } catch (e) {
+    window.location.hash = '#/manage';
+  }
+  document.title = 'Manage Posts — BartaWire';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  loadManagePosts();
+}
+
+async function loadManagePosts() {
+  if (dom.managePostsCount) dom.managePostsCount.textContent = 'Loading...';
+  dom.manageRefreshBtn?.classList.add('spinning');
+
+  try {
+    if (supabaseClient) {
+      const { data, error } = await supabaseClient
+        .from('posts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.warn('Could not load manage posts:', error.message);
+        managePosts = (allPosts && allPosts.length > 0) ? allPosts : [];
+      } else {
+        managePosts = (data && data.length > 0) ? data : ((allPosts && allPosts.length > 0) ? allPosts : []);
+      }
+    } else {
+      managePosts = (allPosts && allPosts.length > 0) ? allPosts : [];
+    }
+
+    // Also sync adminPosts for edit operations
+    adminPosts = managePosts;
+
+    renderManagePostsGrid(managePosts);
+  } catch (err) {
+    console.error('Failed to load manage posts:', err);
+    managePosts = allPosts || [];
+    renderManagePostsGrid(managePosts);
+  } finally {
+    dom.manageRefreshBtn?.classList.remove('spinning');
+  }
+}
+
+function renderManagePostsGrid(posts) {
+  if (!dom.managePostsGrid) return;
+  dom.managePostsGrid.innerHTML = '';
+
+  const total = posts.length;
+  const published = posts.filter(p => p.is_published).length;
+  const drafts = total - published;
+
+  if (dom.managePostsCount) {
+    dom.managePostsCount.textContent = `${total} total • ${published} published • ${drafts} drafts`;
+  }
+
+  if (total === 0) {
+    if (dom.manageEmptyState) dom.manageEmptyState.classList.remove('hidden');
+    if (dom.managePagination) dom.managePagination.classList.add('hidden');
+    return;
+  }
+
+  if (dom.manageEmptyState) dom.manageEmptyState.classList.add('hidden');
+
+  const totalPages = Math.ceil(total / MANAGE_POSTS_PER_PAGE) || 1;
+  if (manageCurrentPage > totalPages) manageCurrentPage = totalPages;
+  if (manageCurrentPage < 1) manageCurrentPage = 1;
+
+  const startIndex = (manageCurrentPage - 1) * MANAGE_POSTS_PER_PAGE;
+  const pagePosts = posts.slice(startIndex, startIndex + MANAGE_POSTS_PER_PAGE);
+
+  const fragment = document.createDocumentFragment();
+
+  pagePosts.forEach(post => {
+    const isBangla = isBanglaPost(post);
+    const card = document.createElement('article');
+    card.className = `post-card manage-post-card${isBangla ? ' is-bangla-post' : ''}`;
+    if (isBangla) card.setAttribute('lang', 'bn');
+    card.dataset.id = post.id;
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('title', `Manage: ${post.title || 'Untitled'}`);
+
+    const isPublished = Boolean(post.is_published);
+    const statusClass = isPublished ? 'status-published' : 'status-draft';
+    const statusText = isPublished ? 'Published' : 'Draft';
+    const isAuthor = Boolean(currentUser && post.author_id && post.author_id === currentUser.id);
+
+    const thumbWrap = document.createElement('div');
+    thumbWrap.className = 'card-image-wrap manage-card-image-wrap';
+
+    const statusBadge = document.createElement('span');
+    statusBadge.className = `status-badge ${statusClass} admin-card-badge`;
+    statusBadge.textContent = statusText;
+
+    if (post.cover_image && typeof post.cover_image === 'string' && post.cover_image.trim() !== '') {
+      const img = document.createElement('img');
+      img.className = 'card-image';
+      img.src = post.cover_image;
+      img.alt = post.title || 'Post thumbnail';
+      img.loading = 'lazy';
+      img.onerror = () => {
+        thumbWrap.innerHTML = getPlaceholderIconSvg();
+        thumbWrap.appendChild(statusBadge);
+      };
+      thumbWrap.appendChild(img);
+    } else {
+      thumbWrap.innerHTML = getPlaceholderIconSvg();
+    }
+    thumbWrap.appendChild(statusBadge);
+
+    const body = document.createElement('div');
+    body.className = 'card-body manage-card-body';
+
+    const timeAgo = formatTimeAgo(post.created_at);
+    const dateFormatted = formatDate(post.created_at);
+
+    body.innerHTML = `
+      <h3 class="card-title ${isBanglaText(post.title) ? 'is-bangla' : ''}">${escapeHtml(post.title || 'Untitled Post')}</h3>
+      <div class="card-meta">
+        ${post.topic ? `<span class="admin-topic-tag">${escapeHtml(post.topic)}</span><span class="card-dot">•</span>` : ''}
+        <span class="card-date">${dateFormatted}</span>
+        <span class="card-dot">•</span>
+        <span class="card-reading-time">${timeAgo || '0 days ago'}</span>
+      </div>
+      <p class="card-summary ${isBanglaText(post.summary) ? 'is-bangla' : ''}">${escapeHtml(post.summary || 'No summary provided.')}</p>
+      <div class="manage-card-actions">
+        ${isAuthor ? `
+          <button type="button" class="manage-action-btn manage-btn-edit" data-id="${post.id}" title="Edit this post">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            Edit
+          </button>
+          <button type="button" class="manage-action-btn manage-btn-delete" data-id="${post.id}" title="Delete this post">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            Delete
+          </button>
+        ` : `<span class="role-badge role-visitor" style="font-size:0.68rem;">Author Only</span>`}
+        <button type="button" class="manage-action-btn manage-btn-view" data-id="${post.id}" title="View article">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          View
+        </button>
+      </div>
+    `;
+
+    // Clicking card (not buttons) opens edit if author, otherwise view
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('button')) return;
+      if (isAuthor) {
+        openAdminView();
+        setTimeout(() => editPost(post.id), 100);
+      } else {
+        openArticleView(post);
+      }
+    });
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        card.click();
+      }
+    });
+
+    if (isAuthor) {
+      body.querySelector('.manage-btn-edit')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openAdminView();
+        setTimeout(() => editPost(post.id), 100);
+      });
+      body.querySelector('.manage-btn-delete')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        deletePost(post.id).then(() => loadManagePosts()).catch(() => {});
+      });
+    }
+
+    body.querySelector('.manage-btn-view')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openArticleView(post);
+    });
+
+    card.appendChild(thumbWrap);
+    card.appendChild(body);
+    fragment.appendChild(card);
+  });
+
+  dom.managePostsGrid.appendChild(fragment);
+
+  // Render pagination
+  renderManagePagination(total);
+}
+
+function renderManagePagination(total) {
+  const totalPages = Math.ceil(total / MANAGE_POSTS_PER_PAGE) || 1;
+
+  if (!dom.managePagination) return;
+
+  if (totalPages <= 1) {
+    dom.managePagination.classList.add('hidden');
+    return;
+  }
+
+  dom.managePagination.classList.remove('hidden');
+
+  if (dom.managePaginationPrev) dom.managePaginationPrev.disabled = manageCurrentPage <= 1;
+  if (dom.managePaginationNext) dom.managePaginationNext.disabled = manageCurrentPage >= totalPages;
+
+  if (dom.managePaginationPages) {
+    dom.managePaginationPages.innerHTML = '';
+    const maxVisible = 5;
+    let startPage = Math.max(1, manageCurrentPage - Math.floor(maxVisible / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+    if (endPage - startPage < maxVisible - 1) startPage = Math.max(1, endPage - maxVisible + 1);
+
+    for (let p = startPage; p <= endPage; p++) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'pagination-btn pagination-page-btn' + (p === manageCurrentPage ? ' active' : '');
+      btn.textContent = p;
+      btn.addEventListener('click', () => {
+        manageCurrentPage = p;
+        renderManagePostsGrid(managePosts);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      dom.managePaginationPages.appendChild(btn);
+    }
+  }
+
+  const startItem = (manageCurrentPage - 1) * MANAGE_POSTS_PER_PAGE + 1;
+  const endItem = Math.min(manageCurrentPage * MANAGE_POSTS_PER_PAGE, total);
+  if (dom.managePaginationInfo) {
+    dom.managePaginationInfo.textContent = `Showing ${startItem}–${endItem} of ${total} posts`;
+  }
 }
 
 /**
@@ -4229,6 +4530,9 @@ async function handleAdminPostSubmit(e) {
 
     await loadAdminPosts();
     await loadPosts();
+    if (dom.manageView && !dom.manageView.classList.contains('hidden')) {
+      await loadManagePosts();
+    }
   } catch (err) {
     console.error('Save post error:', err);
     showAdminMsg(err.message || 'Failed to save post.', 'error');
@@ -4289,6 +4593,7 @@ function editPost(postId) {
   if (dom.adminBottomResetBtn) dom.adminBottomResetBtn.textContent = 'Cancel Edit';
 
   updateAdminPreview();
+  updateAdminCardPreview();
   updateEditorWordCount();
 
   dom.adminPostForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -4328,6 +4633,7 @@ function resetAdminEditor() {
   dom.adminBottomDeleteBtn?.classList.add('hidden');
   if (dom.adminBottomResetBtn) dom.adminBottomResetBtn.textContent = 'Clear Form';
   updateAdminPreview();
+  updateAdminCardPreview();
   updateEditorWordCount();
   setEditorTab('write');
 }
@@ -4375,6 +4681,9 @@ async function deletePost(postId) {
     }
     if (currentUserRole === 'admin') {
       await loadAdminPosts();
+      if (dom.manageView && !dom.manageView.classList.contains('hidden')) {
+        await loadManagePosts();
+      }
     }
     await loadPosts();
     if (activePost && activePost.id === postId) {
@@ -4673,6 +4982,84 @@ function updateAdminPreview() {
   // If in split view, sync preview scroll to follow cursor/writing scroll position
   if (dom.editorViewContainer?.classList.contains('split-view')) {
     requestAnimationFrame(syncSplitScroll);
+  }
+}
+
+/**
+ * Updates the live home card preview on the Create page
+ */
+function updateAdminCardPreview() {
+  if (!dom.previewCardTitle) return;
+
+  const title = dom.adminTitle?.value?.trim() || 'Your Article Title';
+  const summary = dom.adminSummary?.value?.trim() || 'Your article summary will appear here...';
+  const topic = dom.adminTopic?.value?.trim() || '';
+  const coverImage = dom.adminCoverImage?.value?.trim() || '';
+
+  // Title
+  dom.previewCardTitle.textContent = title;
+  const titleBangla = isBanglaText(title);
+  dom.previewCardTitle.classList.toggle('is-bangla', titleBangla);
+
+  // Summary
+  dom.previewCardSummary.textContent = summary;
+  const summaryBangla = isBanglaText(summary);
+  dom.previewCardSummary.classList.toggle('is-bangla', summaryBangla);
+
+  // Card element Bangla font class
+  if (dom.previewCardElement) {
+    dom.previewCardElement.classList.toggle('is-bangla-post', titleBangla || summaryBangla);
+    if (titleBangla || summaryBangla) {
+      dom.previewCardElement.setAttribute('lang', 'bn');
+    } else {
+      dom.previewCardElement.removeAttribute('lang');
+    }
+  }
+
+  // Topic
+  if (dom.previewCardTopic) {
+    dom.previewCardTopic.textContent = topic || 'General';
+  }
+  if (dom.previewCardTopicRow) {
+    dom.previewCardTopicRow.style.display = topic ? '' : 'none';
+  }
+
+  // Cover image
+  if (dom.previewCardImageWrap) {
+    if (coverImage) {
+      const safeUrl = escapeHtml(coverImage);
+      dom.previewCardImageWrap.innerHTML = `<img class="card-image" src="${safeUrl}" alt="${escapeHtml(title)}" onerror="this.onerror=null;this.parentElement.innerHTML=getPlaceholderIconSvg ? getPlaceholderIconSvg() : ''">`;
+    } else {
+      dom.previewCardImageWrap.innerHTML = getPlaceholderIconSvg ? getPlaceholderIconSvg() : '<div class="card-placeholder-image" aria-hidden="true"><span style="font-size:1.5rem">🖼️</span></div>';
+    }
+  }
+
+  // Date and Time Ago
+  const customDateVal = dom.adminCustomDate?.value;
+  const dateObj = customDateVal ? new Date(customDateVal) : new Date();
+  if (dom.previewCardDate) {
+    dom.previewCardDate.textContent = formatDate(dateObj) || 'Today';
+  }
+  if (dom.previewCardTimeAgo) {
+    dom.previewCardTimeAgo.textContent = formatTimeAgo(dateObj) || '0 days ago';
+  }
+
+  // Author & Avatar
+  const authorName = currentProfile?.display_name || 'Publisher';
+  const handle = currentProfile?.username || (authorName ? authorName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '') : 'publisher');
+
+  if (dom.previewCardHandle) {
+    dom.previewCardHandle.textContent = `@${handle}`;
+  }
+
+  if (dom.previewCardAvatar) {
+    const avatarUrl = currentProfile?.avatar_url;
+    const initial = (authorName || 'P').trim()[0]?.toUpperCase() || 'P';
+    if (avatarUrl && avatarUrl.trim() !== '') {
+      dom.previewCardAvatar.innerHTML = `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(authorName)}" class="card-author-avatar-img" onerror="this.onerror=null;this.parentElement.innerHTML='<span class=\\'card-author-avatar-fallback\\'>${escapeHtml(initial)}</span>';">`;
+    } else {
+      dom.previewCardAvatar.innerHTML = `<span class="card-author-avatar-fallback">${escapeHtml(initial)}</span>`;
+    }
   }
 }
 
@@ -5843,6 +6230,7 @@ function updateCoverPreview(forceUrl) {
     dom.adminCoverPreviewImg.src = '';
     dom.adminCoverPreview.classList.remove('preview-error');
     if (dom.adminCoverClearBtn) dom.adminCoverClearBtn.classList.add('hidden');
+    updateAdminCardPreview();
     return;
   }
 
@@ -5850,6 +6238,7 @@ function updateCoverPreview(forceUrl) {
   dom.adminCoverPreviewImg.src = url;
   dom.adminCoverPreview.classList.remove('hidden');
   if (dom.adminCoverClearBtn) dom.adminCoverClearBtn.classList.remove('hidden');
+  updateAdminCardPreview();
 }
 
 /**
@@ -5860,6 +6249,7 @@ function clearCoverImage() {
   if (dom.adminCoverFile) dom.adminCoverFile.value = '';
   updateCoverPreview('');
   hideCoverStatus();
+  updateAdminCardPreview();
 }
 
 // ============================================================================
@@ -9900,7 +10290,7 @@ function initEventListeners() {
   dom.bottomBackBtn?.addEventListener('click', returnToHomeView);
   dom.brandLogo?.addEventListener('click', (e) => {
     e.preventDefault();
-    if (!dom.articleView?.classList.contains('hidden') || !dom.adminView?.classList.contains('hidden') || !dom.profileView?.classList.contains('hidden') || !dom.publicProfileView?.classList.contains('hidden')) {
+    if (!dom.articleView?.classList.contains('hidden') || !dom.adminView?.classList.contains('hidden') || !dom.manageView?.classList.contains('hidden') || !dom.profileView?.classList.contains('hidden') || !dom.publicProfileView?.classList.contains('hidden')) {
       returnToHomeView();
     }
   });
@@ -10596,10 +10986,12 @@ function initEventListeners() {
     if (dom.editorViewContainer?.classList.contains('split-view') || currentEditorTab === 'preview') {
       updateAdminPreview();
     }
+    updateAdminCardPreview();
   });
   dom.adminSummary?.addEventListener('input', () => {
     dom.adminSummary.classList.toggle('is-bangla', isBanglaText(dom.adminSummary.value));
     updateSummaryWordLimit();
+    updateAdminCardPreview();
   });
   dom.adminSummary?.addEventListener('keydown', (e) => {
     if (e.key === 'Backspace' || e.key === 'Delete' || e.key.startsWith('Arrow') || e.ctrlKey || e.metaKey || e.altKey || e.key === 'Tab') {
@@ -10627,6 +11019,7 @@ function initEventListeners() {
       targetDate.setDate(targetDate.getDate() - days);
       if (dom.adminCustomDate) {
         dom.adminCustomDate.value = formatDatetimeLocal(targetDate);
+        updateAdminCardPreview();
       }
     });
   });
@@ -10634,12 +11027,42 @@ function initEventListeners() {
   dom.adminClearDateBtn?.addEventListener('click', () => {
     if (dom.adminCustomDate) {
       dom.adminCustomDate.value = '';
+      updateAdminCardPreview();
     }
   });
+
+  dom.adminCustomDate?.addEventListener('input', updateAdminCardPreview);
+  dom.adminCustomDate?.addEventListener('change', updateAdminCardPreview);
 
   // Admin Cover Image URL input & Live Preview
   dom.adminCoverImage?.addEventListener('input', () => updateCoverPreview());
   dom.adminCoverImage?.addEventListener('change', () => updateCoverPreview());
+
+  // Live card preview - topic and cover
+  dom.adminTopic?.addEventListener('change', updateAdminCardPreview);
+  dom.adminCoverImage?.addEventListener('input', updateAdminCardPreview);
+
+  // Manage View navigation
+  dom.adminManageBtn?.addEventListener('click', openManageView);
+  dom.manageBackBtn?.addEventListener('click', returnToHomeView);
+  dom.manageCreateBtn?.addEventListener('click', openAdminView);
+  dom.manageCreateFirstBtn?.addEventListener('click', openAdminView);
+  dom.manageRefreshBtn?.addEventListener('click', loadManagePosts);
+  dom.managePaginationPrev?.addEventListener('click', () => {
+    if (manageCurrentPage > 1) {
+      manageCurrentPage--;
+      renderManagePostsGrid(managePosts);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+  dom.managePaginationNext?.addEventListener('click', () => {
+    const totalPages = Math.ceil(managePosts.length / MANAGE_POSTS_PER_PAGE) || 1;
+    if (manageCurrentPage < totalPages) {
+      manageCurrentPage++;
+      renderManagePostsGrid(managePosts);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
 
   // Admin Cover Image Upload (Auto-WebP)
   dom.adminUploadBtn?.addEventListener('click', () => {

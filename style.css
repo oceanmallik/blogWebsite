@@ -11885,3 +11885,158 @@ input[type="datetime-local"] {
 
 
 
+
+/* ============================================================
+   MANAGE VIEW - 3x3 Post Grid
+   ============================================================ */
+
+.manage-posts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--border);
+}
+
+.manage-posts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 900px) {
+  .manage-posts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 580px) {
+  .manage-posts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.manage-post-card {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+}
+
+.manage-post-card:hover {
+  transform: translateY(-2px);
+}
+
+.manage-card-body {
+  padding: 0.9rem 1rem;
+}
+
+.manage-card-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--border);
+}
+
+.manage-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.65rem;
+  border: 1.5px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.manage-action-btn:hover {
+  background: var(--bg-elevated);
+  border-color: var(--text-primary);
+}
+
+.manage-btn-edit:hover {
+  background: var(--accent-yellow, #fbbf24);
+  border-color: var(--accent-yellow, #fbbf24);
+  color: #000;
+}
+
+.manage-btn-delete:hover {
+  background: var(--color-danger, #ef4444);
+  border-color: var(--color-danger, #ef4444);
+  color: #fff;
+}
+
+.manage-btn-view:hover {
+  background: var(--color-info, #3b82f6);
+  border-color: var(--color-info, #3b82f6);
+  color: #fff;
+}
+
+/* ============================================================
+   CREATE PAGE - Live Card Preview
+   ============================================================ */
+
+.admin-card-preview-card {
+  background: var(--bg-surface);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 85px;
+}
+
+@media (max-width: 900px) {
+  .admin-card-preview-card {
+    position: static;
+  }
+}
+
+.card-preview-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.6rem;
+  background: var(--accent-yellow);
+  color: #000;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-sm, 3px);
+}
+
+.admin-card-preview-body {
+  padding: 1.5rem;
+  background: var(--bg-elevated);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  flex: 1;
+}
+
+.preview-post-card {
+  width: 100%;
+  max-width: 380px;
+  cursor: default;
+  box-shadow: var(--shadow-md);
+  margin: 0 auto;
+  pointer-events: none;
+}
+
+.preview-post-card:hover {
+  transform: none;
+}

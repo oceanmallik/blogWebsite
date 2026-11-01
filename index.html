@@ -606,6 +606,17 @@
             </svg>
             <span>New Post</span>
           </button>
+          <button type="button" id="admin-manage-btn" class="btn-sm btn-outline" title="Manage all posts">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <line x1="8" y1="6" x2="21" y2="6"></line>
+              <line x1="8" y1="12" x2="21" y2="12"></line>
+              <line x1="8" y1="18" x2="21" y2="18"></line>
+              <line x1="3" y1="6" x2="3.01" y2="6"></line>
+              <line x1="3" y1="12" x2="3.01" y2="12"></line>
+              <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
+            <span>Manage</span>
+          </button>
           <div class="admin-header-badge">
             <span class="role-badge role-admin">👑 Publisher</span>
           </div>
@@ -802,46 +813,46 @@
             </div>
           </div>
 
-          <!-- Posts Management List Card (Right Column) -->
-          <div class="admin-posts-card">
-            <div class="posts-card-header">
+          <!-- Live Home Card Preview Card (Right Column) -->
+          <div class="admin-editor-card admin-card-preview-card">
+            <div class="editor-card-header">
               <div>
-                <h2 class="editor-heading">All Posts &amp; Drafts</h2>
-                <span id="admin-posts-count" class="admin-count-text">Loading posts...</span>
+                <h2 class="editor-heading">Home Card Preview</h2>
+                <span class="field-hint">Live preview of how your post appears on the home screen</span>
               </div>
-              <button id="admin-refresh-posts-btn" class="btn-sm btn-outline" title="Reload posts">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-                  <path d="M23 4v6h-6"></path>
-                  <path d="M1 20v-6h6"></path>
-                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                </svg>
-                <span>Refresh</span>
-              </button>
+              <span class="card-preview-badge">Live Preview</span>
             </div>
-
-            <!-- Admin Posts Table / List -->
-            <div id="admin-posts-list" class="admin-posts-list">
-              <!-- Dynamically populated rows -->
-            </div>
-
-            <!-- Admin Posts Pagination Controls -->
-            <div id="admin-pagination" class="admin-pagination-bar">
-              <button type="button" id="admin-pagination-prev" class="pagination-btn" disabled title="Previous page">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13" aria-hidden="true">
-                  <polyline points="15 18 9 12 15 6"></polyline>
-                </svg>
-                <span>Previous</span>
-              </button>
-              <div id="admin-pagination-info" class="pagination-info">
-                <span>Page <strong id="admin-page-current">1</strong> of <strong id="admin-page-total">1</strong></span>
-                <span id="admin-page-range" class="pagination-range-text">(0 posts)</span>
-              </div>
-              <button type="button" id="admin-pagination-next" class="pagination-btn" title="Next page">
-                <span>Next</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13" aria-hidden="true">
-                  <polyline points="9 18 15 12 9 6"></polyline>
-                </svg>
-              </button>
+            <div class="admin-card-preview-body">
+              <article class="post-card preview-post-card" id="preview-card-element">
+                <div class="card-image-wrap" id="preview-card-image-wrap">
+                  <!-- Dynamically populated -->
+                </div>
+                <div class="card-body" id="preview-card-body">
+                  <div class="card-topic-row" id="preview-card-topic-row">
+                    <button type="button" class="card-topic-badge" id="preview-card-topic">Technology</button>
+                  </div>
+                  <div class="card-meta">
+                    <span class="card-date" id="preview-card-date">Just now</span>
+                    <span class="card-dot">•</span>
+                    <span class="card-reading-time card-time-ago" id="preview-card-time-ago">0 days ago</span>
+                  </div>
+                  <h3 class="card-title" id="preview-card-title">Your Article Title</h3>
+                  <p class="card-summary" id="preview-card-summary">Your article summary will appear here...</p>
+                  <div class="card-footer">
+                    <span class="card-footer-author card-author-pill">
+                      <span class="card-author-avatar" id="preview-card-avatar"></span>
+                      <span class="card-author-text">by <span class="author-handle" id="preview-card-handle">@publisher</span></span>
+                    </span>
+                    <span class="read-more-link" aria-hidden="true">
+                      <span>Read article</span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+              </article>
             </div>
           </div>
         </div>
@@ -1028,6 +1039,88 @@
           </div>
         </div>
       </form>
+    </section>
+
+    <!-- ==============================================
+         MANAGE VIEW: All Posts & Drafts Management
+         ============================================== -->
+    <section id="manage-view" class="view hidden">
+      <!-- Manage Top Bar -->
+      <div class="admin-top-bar">
+        <button id="manage-back-btn" class="back-btn" aria-label="Back to Blog">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span>Back to Blog</span>
+        </button>
+        <div class="admin-top-right">
+          <button type="button" id="manage-create-btn" class="btn-sm btn-primary admin-new-btn" title="Create a new article">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>New Post</span>
+          </button>
+          <div class="admin-header-badge">
+            <span class="role-badge role-admin">👑 Publisher</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manage Intro -->
+      <div class="admin-intro">
+        <h1 class="admin-title">Manage Posts</h1>
+        <p class="admin-subtitle">View, edit, and manage all your published articles and drafts.</p>
+      </div>
+
+      <!-- Posts Grid Header -->
+      <div class="manage-posts-header">
+        <span id="manage-posts-count" class="admin-count-text">Loading posts...</span>
+        <button id="manage-refresh-btn" class="btn-sm btn-outline" title="Reload posts">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <path d="M23 4v6h-6"></path>
+            <path d="M1 20v-6h6"></path>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+          <span>Refresh</span>
+        </button>
+      </div>
+
+      <!-- 3x3 Posts Grid -->
+      <div id="manage-posts-grid" class="manage-posts-grid">
+        <!-- Dynamically populated 3x3 grid of post cards -->
+      </div>
+
+      <!-- Manage Pagination Controls -->
+      <nav id="manage-pagination" class="posts-pagination hidden" aria-label="Manage posts pagination">
+        <div class="pagination-container">
+          <button type="button" id="manage-pagination-prev" class="pagination-btn pagination-nav-btn" aria-label="Previous page">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" aria-hidden="true">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            <span>Previous</span>
+          </button>
+          <div id="manage-pagination-pages" class="pagination-pages" role="navigation" aria-label="Page navigation">
+            <!-- Dynamic page numbers -->
+          </div>
+          <button type="button" id="manage-pagination-next" class="pagination-btn pagination-nav-btn" aria-label="Next page">
+            <span>Next</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+        <div class="pagination-info" id="manage-pagination-info"></div>
+      </nav>
+
+      <!-- Empty State -->
+      <div id="manage-empty-state" class="state-container hidden">
+        <div class="state-icon">📝</div>
+        <h2 class="state-title">No posts yet</h2>
+        <p class="state-desc">You haven't created any articles yet. Click "New Post" to get started.</p>
+        <button id="manage-create-first-btn" class="btn-primary">Create Your First Post</button>
+      </div>
     </section>
 
     <!-- ==============================================
