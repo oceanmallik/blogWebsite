@@ -4838,16 +4838,24 @@ input[type="datetime-local"] {
    Profile View
    -------------------------------------------------------------------------- */
 .nav-user-chip {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  background: transparent;
-  border: none;
-  padding: 0;
+  gap: 0.55rem;
+  background: var(--bg-surface);
+  border: var(--border-width) solid var(--border-color);
+  padding: 0.25rem 0.65rem 0.25rem 0.35rem;
+  box-shadow: var(--shadow-xs);
   cursor: pointer;
   color: inherit;
   font: inherit;
   text-align: left;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+.nav-user-chip:hover {
+  transform: translate(-1.5px, -1.5px);
+  box-shadow: var(--shadow-sm);
+  background: var(--bg-elevated);
 }
 
 .nav-user-chip:hover .nav-user-name {
@@ -12274,4 +12282,321 @@ input[type="datetime-local"] {
   background: transparent;
   color: var(--text-muted);
   border-style: dashed;
+}
+
+/* ============================================================
+   1A. USER ACCOUNT DROPDOWN MENU
+   ============================================================ */
+
+.nav-user-profile-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.nav-user-chevron {
+  display: inline-block;
+  stroke: currentColor;
+  transition: transform var(--transition-fast);
+  margin-left: 0.2rem;
+  opacity: 0.7;
+}
+
+.nav-user-chip[aria-expanded="true"] .nav-user-chevron {
+  transform: rotate(180deg);
+  opacity: 1;
+}
+
+.nav-user-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 260px;
+  background: var(--bg-surface);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  z-index: 10000;
+  padding: 0.4rem 0;
+  animation: dropdownFadeIn 0.12s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-header {
+  padding: 0.75rem 1rem 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-color);
+  margin-top: -0.4rem;
+  margin-bottom: 0.3rem;
+}
+
+.dropdown-user-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.dropdown-name {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown-handle {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown-divider {
+  height: 1.5px;
+  background: var(--border-color);
+  margin: 0.35rem 0;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.dropdown-item svg {
+  flex-shrink: 0;
+  stroke: currentColor;
+}
+
+.dropdown-item:hover {
+  background: var(--accent-yellow);
+  color: #0A0A0A;
+}
+
+.dropdown-item-danger {
+  color: var(--accent-coral);
+}
+
+.dropdown-item-danger:hover {
+  background: var(--accent-coral);
+  color: #FFFFFF;
+}
+
+/* ============================================================
+   4A. ZEN WRITING MODE (DISTRACTION-FREE FULLSCREEN)
+   ============================================================ */
+
+.admin-content-standalone-card.zen-mode {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: var(--bg-surface) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  padding: 1.25rem 2.5rem 1.5rem !important;
+}
+
+.admin-content-standalone-card.zen-mode .standalone-editor-header {
+  border-bottom: var(--border-width) solid var(--border-color);
+  padding-bottom: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.admin-content-standalone-card.zen-mode .standalone-content-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 70px);
+}
+
+.admin-content-standalone-card.zen-mode .editor-view-container {
+  flex: 1;
+  height: 100%;
+}
+
+.admin-content-standalone-card.zen-mode .editor-pane {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-content-standalone-card.zen-mode .editor-textarea {
+  flex: 1;
+  max-width: 920px;
+  margin: 0 auto;
+  width: 100%;
+  font-size: 1.15rem;
+  line-height: 1.8;
+  padding: 1.5rem 1.75rem;
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  background: var(--bg-elevated);
+}
+
+.admin-content-standalone-card.zen-mode .editor-preview-content {
+  max-width: 920px;
+  margin: 0 auto;
+  width: 100%;
+  font-size: 1.1rem;
+  line-height: 1.8;
+}
+
+.zen-toggle-btn.active {
+  background: var(--accent-lime) !important;
+  color: #0A0A0A !important;
+  border-color: var(--border-color) !important;
+}
+
+/* ============================================================
+   5A. CONTRIBUTORS SORT & FILTER PILLS
+   ============================================================ */
+
+.contributors-sort-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.35rem;
+  flex-wrap: wrap;
+}
+
+.contributors-sort-label {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.contributors-sort-pills {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.contrib-sort-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.35rem 0.75rem;
+  border: var(--border-width) solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.contrib-sort-pill:hover {
+  transform: translate(-1.5px, -1.5px);
+  box-shadow: var(--shadow-sm);
+  background: var(--bg-elevated);
+}
+
+.contrib-sort-pill.active {
+  background: var(--accent-yellow);
+  color: #0A0A0A;
+  box-shadow: var(--shadow-xs);
+}
+
+[data-theme="dark"] .contrib-sort-pill.active,
+[data-theme="cyberpunk"] .contrib-sort-pill.active {
+  background: var(--accent-yellow);
+  color: #0A0A0A;
+}
+
+/* ============================================================
+   6B. KEYBOARD SHORTCUT KBD BADGE
+   ============================================================ */
+
+.search-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  border: 1.5px solid var(--border-color);
+  border-radius: 3px;
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  margin-left: auto;
+  margin-right: 0.4rem;
+  pointer-events: none;
+  box-shadow: 1px 1px 0px var(--border-color);
+  transition: opacity var(--transition-fast);
+}
+
+.search-container:focus-within .search-kbd {
+  opacity: 0.3;
+}
+
+/* ============================================================
+   6C. TACTILE BUTTON DEPRESS PHYSICS (NEO-BRUTALISM)
+   ============================================================ */
+
+button:active:not(:disabled),
+.btn-primary:active:not(:disabled),
+.btn-outline:active:not(:disabled),
+.btn-sm:active:not(:disabled),
+.card-admin-btn:active,
+.topic-pill:active,
+.nav-admin-btn:active,
+.theme-toggle-btn:active,
+.back-btn:active,
+.auth-tab-btn:active,
+.pagination-btn:active:not(:disabled),
+.filter-btn:active,
+.btn-refresh:active,
+.hero-btn:active,
+.dropdown-item:active,
+.contrib-sort-pill:active,
+.editor-tab-btn:active,
+.nav-user-chip:active,
+.verified-badge:active {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 1px 1px 0px var(--border-color) !important;
+  transition: transform 0.04s ease, box-shadow 0.04s ease !important;
 }

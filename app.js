@@ -162,6 +162,8 @@ function initDOM() {
   dom.contributorsEmptyState = document.getElementById('contributors-empty-state');
   dom.contributorsEmptyDesc = document.getElementById('contributors-empty-desc');
   dom.contributorsClearSearchBtn = document.getElementById('contributors-clear-search-btn');
+  dom.contributorsSortBar = document.getElementById('contributors-sort-pills');
+  dom.contributorsSortPills = document.querySelectorAll('.contrib-sort-pill');
 
   // Manage View elements
   dom.manageBackBtn = document.getElementById('manage-back-btn');
@@ -360,6 +362,18 @@ function initDOM() {
   dom.navAdminBtn = document.getElementById('nav-admin-btn');
   dom.navLogoutBtn = document.getElementById('nav-logout-btn');
 
+  // Nav User Dropdown Elements (1A)
+  dom.navUserDropdown = document.getElementById('nav-user-dropdown');
+  dom.dropdownUserName = document.getElementById('dropdown-user-name');
+  dom.dropdownUserHandle = document.getElementById('dropdown-user-handle');
+  dom.dropdownUserBadge = document.getElementById('dropdown-user-badge');
+  dom.dropdownWriterSection = document.getElementById('dropdown-writer-section');
+  dom.dropdownItemPublic = document.getElementById('dropdown-item-public');
+  dom.dropdownItemSettings = document.getElementById('dropdown-item-settings');
+  dom.dropdownItemCreate = document.getElementById('dropdown-item-create');
+  dom.dropdownItemManage = document.getElementById('dropdown-item-manage');
+  dom.dropdownItemLogout = document.getElementById('dropdown-item-logout');
+
   // Comments Section Elements
   dom.commentsSection = document.getElementById('comments-section');
   dom.commentsCount = document.getElementById('comments-count');
@@ -461,6 +475,8 @@ function initDOM() {
   dom.editorTabWrite = document.getElementById('editor-tab-write');
   dom.editorTabPreview = document.getElementById('editor-tab-preview');
   dom.editorToggleSplit = document.getElementById('editor-toggle-split');
+  dom.adminZenBtn = document.getElementById('admin-zen-btn');
+  dom.adminContentStandaloneCard = document.querySelector('.admin-content-standalone-card');
   dom.editorViewContainer = document.getElementById('editor-view-container');
   dom.editorWritePane = document.getElementById('editor-write-pane');
   dom.editorPreviewPane = document.getElementById('editor-preview-pane');
@@ -967,10 +983,11 @@ function updateAuthUI() {
     if (dom.navUserProfile) dom.navUserProfile.classList.remove('hidden');
 
     const displayName = getEffectiveDisplayName(currentProfile, currentUser);
-    const username = currentProfile?.username ? `@${currentProfile.username}` : '';
+    const rawUsername = String(currentProfile?.username || '').trim().replace(/^@+/, '');
+    const formattedHandle = rawUsername ? `@${rawUsername}` : '';
     if (dom.navUserName) {
       dom.navUserName.textContent = displayName;
-      dom.navUserName.title = `${displayName}${username ? ` (${username})` : ''} • ${currentUser.email || ''}`;
+      dom.navUserName.title = `${displayName}${formattedHandle ? ` (${formattedHandle})` : ''} • ${currentUser.email || ''}`;
     }
 
     // Avatar
@@ -998,15 +1015,23 @@ function updateAuthUI() {
       updateRoleBadge(dom.navUserRole, role);
     }
 
-    // Admin button visible ONLY for admin / publisher
+    // Top Create a post button is removed from top navbar, protect admin view route access
     if (dom.navAdminBtn) {
+      dom.navAdminBtn.classList.add('hidden');
+    }
+    if (!isAdmin && dom.adminView && !dom.adminView.classList.contains('hidden')) {
+      returnToHomeView();
+    }
+
+    // Update user dropdown menu items (1A)
+    if (dom.dropdownUserName) dom.dropdownUserName.textContent = displayName;
+    if (dom.dropdownUserHandle) dom.dropdownUserHandle.textContent = formattedHandle || (currentUser.email || '');
+    if (dom.dropdownUserBadge) updateRoleBadge(dom.dropdownUserBadge, role);
+    if (dom.dropdownWriterSection) {
       if (isAdmin) {
-        dom.navAdminBtn.classList.remove('hidden');
+        dom.dropdownWriterSection.classList.remove('hidden');
       } else {
-        dom.navAdminBtn.classList.add('hidden');
-        if (dom.adminView && !dom.adminView.classList.contains('hidden')) {
-          returnToHomeView();
-        }
+        dom.dropdownWriterSection.classList.add('hidden');
       }
     }
 
@@ -1042,6 +1067,7 @@ function updateAuthUI() {
     }
   } else {
     // Logged out
+    closeUserDropdown();
     if (dom.navUserProfile) dom.navUserProfile.classList.add('hidden');
     if (dom.navLoginBtn) dom.navLoginBtn.classList.remove('hidden');
     if (dom.navAdminBtn) dom.navAdminBtn.classList.add('hidden');
@@ -1098,6 +1124,60 @@ function updateAuthUI() {
   }
 
   updateCommentFormAuthUI();
+}
+
+// ----------------------------------------------------------------------------
+// User Account Dropdown Menu (1A)
+// ----------------------------------------------------------------------------
+
+function toggleUserDropdown(forceState) {
+  if (!dom.navUserDropdown) return;
+  const isCurrentlyOpen = !dom.navUserDropdown.classList.contains('hidden');
+  const shouldOpen = typeof forceState === 'boolean' ? forceState : !isCurrentlyOpen;
+
+  if (shouldOpen) {
+    dom.navUserDropdown.classList.remove('hidden');
+    dom.navUserChip?.setAttribute('aria-expanded', 'true');
+  } else {
+    dom.navUserDropdown.classList.add('hidden');
+    dom.navUserChip?.setAttribute('aria-expanded', 'false');
+  }
+}
+
+function closeUserDropdown() {
+  toggleUserDropdown(false);
+}
+
+// ----------------------------------------------------------------------------
+// Zen Writing Mode (4A)
+// ----------------------------------------------------------------------------
+
+let isZenMode = false;
+
+function toggleZenMode(forceState) {
+  const container = dom.adminContentStandaloneCard || document.querySelector('.admin-content-standalone-card');
+  if (!container) return;
+
+  isZenMode = typeof forceState === 'boolean' ? forceState : !isZenMode;
+  const zenBtn = dom.adminZenBtn || document.getElementById('admin-zen-btn');
+  const expandIcon = zenBtn?.querySelector('.zen-icon-expand');
+  const compressIcon = zenBtn?.querySelector('.zen-icon-compress');
+  const label = zenBtn?.querySelector('.zen-btn-label');
+
+  if (isZenMode) {
+    container.classList.add('zen-mode');
+    zenBtn?.classList.add('active');
+    expandIcon?.classList.add('hidden');
+    compressIcon?.classList.remove('hidden');
+    if (label) label.textContent = 'Exit Zen';
+    showToast('Zen Mode active (Distraction-Free) • Press Esc to exit', 'info');
+  } else {
+    container.classList.remove('zen-mode');
+    zenBtn?.classList.remove('active');
+    expandIcon?.classList.remove('hidden');
+    compressIcon?.classList.add('hidden');
+    if (label) label.textContent = 'Zen Mode';
+  }
 }
 
 /**
@@ -1247,7 +1327,9 @@ function createVerifiedBadge(displayName, username, size = 16) {
   return btn;
 }
 
-function getTopContributors(limit = 3) {
+let currentContributorSort = 'score';
+
+function getTopContributors(limit = 3, sortBy = currentContributorSort) {
   const contributorMap = new Map();
 
   const getOrCreateContributor = (userId, initialProfile = null) => {
@@ -1276,6 +1358,7 @@ function getTopContributors(limit = 3) {
         cached?.is_verified ||
         initialProfile?.is_verified
       );
+      let createdAt = initialProfile?.created_at || cached?.created_at || '';
 
       if (!name) {
         name = username || 'Contributor';
@@ -1292,6 +1375,7 @@ function getTopContributors(limit = 3) {
         role,
         bio,
         isVerified,
+        created_at: createdAt,
         postCount: 0,
         commentCount: 0,
         score: 0
@@ -1313,7 +1397,8 @@ function getTopContributors(limit = 3) {
   });
 
   // 2. Process posts (10 points per article)
-  allPosts.forEach(post => {
+  const postsPool = (window.allPosts && window.allPosts.length > 0) ? window.allPosts : allPosts;
+  postsPool.forEach(post => {
     const prof = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
     const authorId = post.author_id || prof?.id || 'demo-author';
     const cached = authorId ? authorProfilesCache.get(authorId) : null;
@@ -1325,6 +1410,7 @@ function getTopContributors(limit = 3) {
       avatar_url: (isSelf && currentProfile?.avatar_url) ? currentProfile.avatar_url : (prof?.avatar_url || post.author_avatar || cached?.avatar_url),
       role: (isSelf && currentProfile?.role) ? currentProfile.role : (prof?.role || cached?.role || 'admin'),
       bio: (isSelf && currentProfile?.bio) ? currentProfile.bio : (prof?.bio || cached?.bio || ''),
+      created_at: prof?.created_at || cached?.created_at || post.created_at || '',
       is_verified: Boolean(
         (isSelf && currentProfile?.is_verified) ||
         prof?.is_verified ||
@@ -1354,6 +1440,9 @@ function getTopContributors(limit = 3) {
     if (initialProf.is_verified) {
       entry.isVerified = true;
     }
+    if (!entry.created_at && initialProf.created_at) {
+      entry.created_at = initialProf.created_at;
+    }
   });
 
   // 3. Process comments (1 point per comment)
@@ -1375,6 +1464,7 @@ function getTopContributors(limit = 3) {
       if (currentProfile.username) entry.username = currentProfile.username;
       if (currentProfile.avatar_url) entry.avatarUrl = currentProfile.avatar_url;
       if (currentProfile.bio) entry.bio = currentProfile.bio;
+      if (currentProfile.created_at) entry.created_at = currentProfile.created_at;
       if (currentProfile.is_verified) entry.isVerified = true;
     }
 
@@ -1391,6 +1481,9 @@ function getTopContributors(limit = 3) {
       if (!entry.bio && cachedEntry.bio) {
         entry.bio = cachedEntry.bio;
       }
+      if (cachedEntry.created_at && !entry.created_at) {
+        entry.created_at = cachedEntry.created_at;
+      }
       if (cachedEntry.is_verified) {
         entry.isVerified = true;
       }
@@ -1405,6 +1498,7 @@ function getTopContributors(limit = 3) {
       avatarUrl: '',
       role: 'admin',
       bio: '',
+      created_at: new Date().toISOString(),
       isVerified: true,
       postCount: 1,
       commentCount: 0,
@@ -1412,8 +1506,25 @@ function getTopContributors(limit = 3) {
     });
   }
 
-  // Sort by score desc, then postCount desc, then commentCount desc, then name
+  // Sort according to requested sortBy (5A)
   const sorted = Array.from(contributorMap.values()).sort((a, b) => {
+    if (sortBy === 'articles') {
+      if (b.postCount !== a.postCount) return b.postCount - a.postCount;
+      if (b.score !== a.score) return b.score - a.score;
+      return (a.name || '').localeCompare(b.name || '');
+    }
+    if (sortBy === 'comments') {
+      if (b.commentCount !== a.commentCount) return b.commentCount - a.commentCount;
+      if (b.score !== a.score) return b.score - a.score;
+      return (a.name || '').localeCompare(b.name || '');
+    }
+    if (sortBy === 'newest') {
+      const dateA = new Date(a.created_at || 0).getTime();
+      const dateB = new Date(b.created_at || 0).getTime();
+      if (dateB !== dateA) return dateB - dateA;
+      return b.score - a.score;
+    }
+    // Default: 'score' desc
     if (b.score !== a.score) return b.score - a.score;
     if (b.postCount !== a.postCount) return b.postCount - a.postCount;
     if (b.commentCount !== a.commentCount) return b.commentCount - a.commentCount;
@@ -1593,6 +1704,8 @@ function renderTopWritersList() {
 let allContributorsList = [];
 
 async function openContributorsView() {
+  if (isZenMode) toggleZenMode(false);
+  closeUserDropdown();
   currentPublicProfileUser = null;
 
   dom.homeView?.classList.add('hidden');
@@ -1673,10 +1786,21 @@ async function loadAllContributors() {
   }
 }
 
+function setContributorSort(sortKey) {
+  currentContributorSort = sortKey;
+  const pills = dom.contributorsSortPills || document.querySelectorAll('.contrib-sort-pill');
+  pills.forEach(pill => {
+    const isThis = pill.dataset.sort === sortKey;
+    pill.classList.toggle('active', isThis);
+    pill.setAttribute('aria-selected', String(isThis));
+  });
+  renderContributorsPage();
+}
+
 function renderContributorsPage() {
   if (!dom.contributorsList) return;
 
-  allContributorsList = getTopContributors(0); // full list of all users
+  allContributorsList = getTopContributors(0, currentContributorSort); // sorted list of all users (5A)
   applyContributorsFilter();
 }
 
@@ -1711,7 +1835,8 @@ function applyContributorsFilter() {
     } else {
       const activeCount = allContributorsList.filter(c => c.score > 0).length;
       const zeroCount = total - activeCount;
-      dom.contributorsCountText.textContent = `${total} total members • ${activeCount} active • ${zeroCount} new`;
+      const sortLabel = currentContributorSort === 'articles' ? 'by articles' : currentContributorSort === 'comments' ? 'by comments' : currentContributorSort === 'newest' ? 'newest first' : 'by score';
+      dom.contributorsCountText.textContent = `${total} members (${sortLabel}) • ${activeCount} active • ${zeroCount} new`;
     }
   }
 
@@ -3382,6 +3507,8 @@ function resetArticleMetaTags() {
  * @param {boolean} updateHash - Whether to update window.location.hash
  */
 async function openArticleView(post, updateHash = true) {
+  if (isZenMode) toggleZenMode(false);
+  closeUserDropdown();
   if (!post) return;
 
   // 1. Resolve full post object if missing essential fields (content, author_id, created_at)
@@ -3635,6 +3762,8 @@ function getAppBasePath() {
  * Restores home view and hides article & admin views
  */
 function returnToHomeView() {
+  if (isZenMode) toggleZenMode(false);
+  closeUserDropdown();
   activePost = null;
   currentPublicProfileUser = null;
 
@@ -4151,6 +4280,7 @@ async function deleteComment(commentId) {
 // ============================================================================
 
 function openAdminView() {
+  closeUserDropdown();
   if (currentUserRole !== 'admin') {
     alert('Access denied: Publisher privileges required.');
     returnToHomeView();
@@ -4193,6 +4323,8 @@ let manageCurrentPage = 1;
 let managePosts = [];
 
 function openManageView() {
+  if (isZenMode) toggleZenMode(false);
+  closeUserDropdown();
   if (currentUserRole !== 'admin') {
     alert('Access denied: Publisher privileges required.');
     returnToHomeView();
@@ -6801,6 +6933,8 @@ function toggleTheme() {
  * Opens and renders the user profile view
  */
 async function openProfileView() {
+  if (isZenMode) toggleZenMode(false);
+  closeUserDropdown();
   if (!currentUser) {
     openAuthModal('signin');
     returnToHomeView();
@@ -8125,6 +8259,8 @@ let publicProfileRequestId = 0;
  * @param {boolean} [updateHash=true] - Whether to update the hash URL
  */
 async function openPublicProfileView(userIdentifier, fallbackUsername, fallbackName, updateHash = true) {
+  if (isZenMode) toggleZenMode(false);
+  closeUserDropdown();
   if (!userIdentifier && !fallbackUsername && !fallbackName) {
     returnToHomeView();
     return;
@@ -10695,13 +10831,82 @@ function initEventListeners() {
 
   // Profile View Event Listeners
   dom.profileBackBtn?.addEventListener('click', returnToHomeView);
-  dom.navUserChip?.addEventListener('click', () => {
+  dom.navUserChip?.addEventListener('click', (e) => {
+    e.stopPropagation();
     if (currentUser) {
-      openPublicProfileView(currentUser.id, currentProfile?.username, currentProfile?.display_name);
+      toggleUserDropdown();
     } else {
       openAuthModal('signin');
     }
   });
+
+  // User Dropdown navigation items (1A)
+  dom.dropdownItemPublic?.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeUserDropdown();
+    if (currentUser) {
+      openPublicProfileView(currentUser.id, currentProfile?.username, currentProfile?.display_name);
+    }
+  });
+
+  dom.dropdownItemSettings?.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeUserDropdown();
+    openProfileView();
+  });
+
+  dom.dropdownItemCreate?.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeUserDropdown();
+    openAdminView();
+  });
+
+  dom.dropdownItemManage?.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeUserDropdown();
+    openManageView();
+  });
+
+  dom.dropdownItemLogout?.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeUserDropdown();
+    handleSignOut();
+  });
+
+  // Close user dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (dom.navUserDropdown && !dom.navUserDropdown.classList.contains('hidden')) {
+      const isInside = e.target.closest('#nav-user-dropdown') || e.target.closest('#nav-user-chip');
+      if (!isInside) {
+        closeUserDropdown();
+      }
+    }
+  });
+
+  // Zen Writing Mode toggle button (4A)
+  dom.adminZenBtn?.addEventListener('click', () => {
+    toggleZenMode();
+  });
+
+  // Contributor Sort Pills (5A)
+  dom.contributorsSortPills?.forEach(pill => {
+    pill.addEventListener('click', () => {
+      const sortKey = pill.dataset.sort;
+      if (sortKey) {
+        setContributorSort(sortKey);
+      }
+    });
+  });
+
+  // Search shortcut badge click
+  document.querySelectorAll('.search-kbd').forEach(kbd => {
+    kbd.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const input = kbd.parentElement?.querySelector('input');
+      input?.focus();
+    });
+  });
+
   dom.navProfileBtn?.addEventListener('click', () => {
     if (currentUser) {
       openPublicProfileView(currentUser.id, currentProfile?.username, currentProfile?.display_name);
@@ -11622,23 +11827,93 @@ function initEventListeners() {
     returnToHomeView();
   });
 
-  // Escape key closes open modals
+  // Helper to focus active search input (6B)
+  function focusActiveSearch() {
+    if (dom.contributorsView && !dom.contributorsView.classList.contains('hidden')) {
+      dom.contributorsSearchInput?.focus();
+      dom.contributorsSearchInput?.select?.();
+      return;
+    }
+    if (dom.homeView?.classList.contains('hidden')) {
+      returnToHomeView();
+    }
+    setTimeout(() => {
+      dom.searchInput?.focus();
+      dom.searchInput?.select?.();
+      dom.searchInput?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+    }, 50);
+  }
+
+  // 6B: Global Keyboard Shortcuts: '/', 'Cmd/Ctrl + K', and 'Escape'
   window.addEventListener('keydown', (e) => {
+    const activeEl = document.activeElement;
+    const isTyping = activeEl && (
+      activeEl.tagName === 'INPUT' ||
+      activeEl.tagName === 'TEXTAREA' ||
+      activeEl.isContentEditable ||
+      Boolean(activeEl.closest?.('[contenteditable="true"]'))
+    );
+
+    // Cmd/Ctrl + K to focus search
+    if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey) && !e.altKey) {
+      if (dom.editorBodyTextarea && activeEl === dom.editorBodyTextarea) {
+        return; // Preserve markdown editor's insertLink shortcut
+      }
+      e.preventDefault();
+      focusActiveSearch();
+      return;
+    }
+
+    // '/' to focus search when not actively typing in an input
+    if (e.key === '/' && !isTyping && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      e.preventDefault();
+      focusActiveSearch();
+      return;
+    }
+
+    // Escape key closes open modals, Zen mode, user dropdown, or topics drawer
     if (e.key === 'Escape') {
+      if (isZenMode) {
+        e.preventDefault();
+        toggleZenMode(false);
+        return;
+      }
+      if (dom.navUserDropdown && !dom.navUserDropdown.classList.contains('hidden')) {
+        e.preventDefault();
+        closeUserDropdown();
+        return;
+      }
       if (dom.avatarCropModal && !dom.avatarCropModal.classList.contains('hidden')) {
         closeAvatarCropModal();
-      } else if (dom.photoUploadModal && !dom.photoUploadModal.classList.contains('hidden')) {
+        return;
+      }
+      if (dom.photoUploadModal && !dom.photoUploadModal.classList.contains('hidden')) {
         closePhotoUploadModal();
-      } else if (dom.verifiedInfoModal && !dom.verifiedInfoModal.classList.contains('hidden')) {
+        return;
+      }
+      if (dom.verifiedInfoModal && !dom.verifiedInfoModal.classList.contains('hidden')) {
         closeVerifiedInfoModal();
-      } else if (dom.authModal && !dom.authModal.classList.contains('hidden')) {
+        return;
+      }
+      if (dom.authModal && !dom.authModal.classList.contains('hidden')) {
         closeAuthModal();
-      } else if (dom.writerModal && !dom.writerModal.classList.contains('hidden')) {
+        return;
+      }
+      if (dom.writerModal && !dom.writerModal.classList.contains('hidden')) {
         closeWriterModal();
-      } else if (dom.topWritersModal && !dom.topWritersModal.classList.contains('hidden')) {
+        return;
+      }
+      if (dom.topWritersModal && !dom.topWritersModal.classList.contains('hidden')) {
         closeTopWritersModal();
-      } else if (dom.photocardModal && !dom.photocardModal.classList.contains('hidden')) {
+        return;
+      }
+      if (dom.photocardModal && !dom.photocardModal.classList.contains('hidden')) {
         closePhotocardStudio();
+        return;
+      }
+      if (isTopicsExpanded()) {
+        collapseTopics();
+        return;
       }
     }
   });
@@ -11669,6 +11944,14 @@ window.resolveOgImageUrl = resolveOgImageUrl;
 window.goToPage = goToPage;
 window.renderPagination = renderPagination;
 window.checkInitialPostQuery = checkInitialPostQuery;
+window.toggleUserDropdown = toggleUserDropdown;
+window.closeUserDropdown = closeUserDropdown;
+window.toggleZenMode = toggleZenMode;
+window.setContributorSort = setContributorSort;
+window.getTopContributors = getTopContributors;
+window.authorProfilesCache = authorProfilesCache;
+window.updateAuthUI = updateAuthUI;
+window.setCurrentUserForTesting = (user, profile) => { currentUser = user; currentProfile = profile; };
 
 /**
  * On initial page load, checks if ?post= is present in window.location.search,
