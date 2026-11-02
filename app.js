@@ -278,6 +278,15 @@ function initDOM() {
   dom.copyFeedback = document.getElementById('copy-feedback');
   dom.articlePhotocardBtn = document.getElementById('article-photocard-btn');
   dom.sidebarPhotocardBtn = document.getElementById('sidebar-photocard-btn');
+  dom.articlePrintBtn = document.getElementById('article-print-btn');
+  dom.sidebarPrintBtn = document.getElementById('sidebar-print-btn');
+  dom.articlePrintUrl = document.getElementById('article-print-url');
+  dom.articlePrintFooterUrl = document.getElementById('article-print-footer-url');
+  dom.articlePrintAuthor = document.getElementById('article-print-author');
+  dom.articlePrintDate = document.getElementById('article-print-date');
+  dom.articlePrintTopic = document.getElementById('article-print-topic');
+  dom.articlePrintReadtime = document.getElementById('article-print-readtime');
+  dom.articlePrintTimestamp = document.getElementById('article-print-timestamp');
 
   // Photocard Studio Elements
   dom.photocardModal = document.getElementById('photocard-modal');
@@ -3502,6 +3511,47 @@ function resetArticleMetaTags() {
 }
 
 /**
+ * Updates print masthead, byline, and citation footer with the active article details.
+ * @param {object} post - The post to generate print metadata for
+ */
+function updatePrintMetadata(post) {
+  if (!post) return;
+
+  const currentUrl = (typeof window !== 'undefined' && window.location) ? window.location.href : '';
+  const authorName = post.author_name || dom.articleAuthorName?.textContent || 'BartaWire Contributor';
+  const rawAuthorUsername = String(post.author_username || dom.articleAuthorUsername?.textContent || '').trim().replace(/^@+/, '');
+  const authorHandle = rawAuthorUsername ? `@${rawAuthorUsername}` : '';
+  const authorString = `Written by ${authorName}${authorHandle ? ` (${authorHandle})` : ''}`;
+
+  const formattedDate = (typeof formatDate === 'function' ? formatDate(post.created_at) : '') || (dom.articleDate?.textContent || '');
+  const readingTime = typeof calculateReadingTime === 'function' ? calculateReadingTime(post.content || '') : '3 min read';
+  const topic = post.topic || dom.articleTopicVal?.textContent || 'General';
+
+  const now = new Date();
+  const printTimestamp = `Printed on ${now.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })} at ${now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}`;
+
+  if (dom.articlePrintUrl) dom.articlePrintUrl.textContent = currentUrl;
+  if (dom.articlePrintFooterUrl) dom.articlePrintFooterUrl.textContent = currentUrl;
+  if (dom.articlePrintAuthor) dom.articlePrintAuthor.textContent = authorString;
+  if (dom.articlePrintDate) dom.articlePrintDate.textContent = formattedDate;
+  if (dom.articlePrintTopic) dom.articlePrintTopic.textContent = `Topic: ${topic}`;
+  if (dom.articlePrintReadtime) dom.articlePrintReadtime.textContent = `~${readingTime}`;
+  if (dom.articlePrintTimestamp) dom.articlePrintTimestamp.textContent = printTimestamp;
+}
+
+/**
+ * Triggers clean print dialog for the current article
+ */
+function printArticle() {
+  if (!activePost) {
+    showToast('Please open an article first to print.', 'error');
+    return;
+  }
+  updatePrintMetadata(activePost);
+  window.print();
+}
+
+/**
  * Displays full article view and hides home grid
  * @param {object} post - Post object to display
  * @param {boolean} updateHash - Whether to update window.location.hash
@@ -3681,6 +3731,7 @@ async function openArticleView(post, updateHash = true) {
 
   // Dynamic OpenGraph and Twitter meta tags injection for social media sharing
   updateArticleMetaTags(post);
+  updatePrintMetadata(post);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -11198,6 +11249,13 @@ function initEventListeners() {
     if (activePost) openPhotocardStudio(activePost);
   });
 
+  // Print Article Triggers
+  dom.articlePrintBtn?.addEventListener('click', printArticle);
+  dom.sidebarPrintBtn?.addEventListener('click', printArticle);
+  window.addEventListener('beforeprint', () => {
+    if (activePost) updatePrintMetadata(activePost);
+  });
+
   // Photocard Studio Modal Actions
   dom.photocardModalCloseBtn?.addEventListener('click', closePhotocardStudio);
   dom.photocardDoneBtn?.addEventListener('click', closePhotocardStudio);
@@ -11864,6 +11922,15 @@ function initEventListeners() {
       return;
     }
 
+    // Cmd/Ctrl + P while on article view prints the article cleanly
+    if ((e.key === 'p' || e.key === 'P') && (e.metaKey || e.ctrlKey) && !e.altKey) {
+      if (dom.articleView && !dom.articleView.classList.contains('hidden') && activePost) {
+        e.preventDefault();
+        printArticle();
+        return;
+      }
+    }
+
     // '/' to focus search when not actively typing in an input
     if (e.key === '/' && !isTyping && !e.metaKey && !e.ctrlKey && !e.altKey) {
       e.preventDefault();
@@ -11951,6 +12018,9 @@ window.setContributorSort = setContributorSort;
 window.getTopContributors = getTopContributors;
 window.authorProfilesCache = authorProfilesCache;
 window.updateAuthUI = updateAuthUI;
+window.printArticle = printArticle;
+window.updatePrintMetadata = updatePrintMetadata;
+window.setActivePostForTesting = (post) => { activePost = post; };
 window.setCurrentUserForTesting = (user, profile) => { currentUser = user; currentProfile = profile; };
 
 /**

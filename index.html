@@ -48,7 +48,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=9.3">
+  <link rel="stylesheet" href="style.css?v=9.4">
 </head>
 <body>
   <!-- Header / Navigation -->
@@ -407,6 +407,14 @@
         </button>
 
         <div class="article-actions">
+          <button type="button" id="article-print-btn" class="article-share-btn article-print-btn" title="🖨️ Print article or save as clean PDF (Ctrl/Cmd + P)" aria-label="Print article">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true">
+              <polyline points="6 9 6 2 18 2 18 9"></polyline>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+              <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            <span>Print</span>
+          </button>
           <button type="button" id="article-photocard-btn" class="article-share-btn article-photocard-btn" title="📸 Generate Social Media Photocard (1080x1350)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true">
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
@@ -471,6 +479,14 @@
 
             <div class="sidebar-section sidebar-share-section">
               <span class="sidebar-label">Share &amp; Export</span>
+              <button type="button" id="sidebar-print-btn" class="sidebar-share-btn sidebar-print-btn" title="🖨️ Print article or save as clean PDF (Ctrl/Cmd + P)" aria-label="Print article">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                  <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                  <rect x="6" y="14" width="12" height="8"></rect>
+                </svg>
+                <span>Print / PDF</span>
+              </button>
               <button type="button" id="sidebar-photocard-btn" class="sidebar-share-btn sidebar-photocard-btn" title="📸 Generate Social Media Photocard (1080x1350)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
                   <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
@@ -491,6 +507,18 @@
 
         <!-- Right Main Column: Content, Media & Comments -->
         <div class="article-main-col">
+          <!-- Print-Only Masthead Banner -->
+          <div class="article-print-masthead">
+            <div class="print-masthead-top">
+              <div class="print-masthead-brand">
+                <span class="print-brand-title">BartaWire</span>
+                <span class="print-brand-tagline"> — Your Daily News Dose</span>
+              </div>
+              <span id="article-print-timestamp" class="print-masthead-timestamp"></span>
+            </div>
+            <div id="article-print-url" class="print-masthead-url"></div>
+          </div>
+
           <!-- Article Cover Image Banner (Post photo appears first) -->
           <div id="article-cover-wrap" class="article-cover-wrapper hidden">
             <img id="article-cover" class="article-cover-image" src="" alt="Post cover image">
@@ -530,6 +558,17 @@
             <h1 id="article-title" class="article-title"></h1>
             <p id="article-summary" class="article-summary-lead"></p>
 
+            <!-- Print-Only Editorial Byline -->
+            <div class="article-print-byline">
+              <span id="article-print-author" class="print-byline-item"></span>
+              <span class="print-byline-sep">•</span>
+              <span id="article-print-date" class="print-byline-item"></span>
+              <span class="print-byline-sep">•</span>
+              <span id="article-print-topic" class="print-byline-item"></span>
+              <span class="print-byline-sep">•</span>
+              <span id="article-print-readtime" class="print-byline-item"></span>
+            </div>
+
             <!-- Mobile-only compact author info (visible strictly on mobile screens after post summary) -->
             <div id="article-mobile-author" class="article-mobile-author" aria-label="Author Information">
               <div class="mobile-author-chip" id="article-mobile-author-chip" role="button" tabindex="0" title="View author's public profile">
@@ -557,6 +596,15 @@
 
           <!-- Full Article Content Body -->
           <div id="article-content" class="article-body"></div>
+
+          <!-- Print-Only Footer / Citation -->
+          <div class="article-print-footer">
+            <div class="print-footer-content">
+              <span class="print-footer-title">Published on BartaWire — Your Daily News Dose</span>
+              <span id="article-print-footer-url" class="print-footer-url"></span>
+              <span class="print-footer-copy">&copy; 2026 BartaWire. All rights reserved.</span>
+            </div>
+          </div>
 
           <!-- Comments Section -->
           <section id="comments-section" class="comments-section">
@@ -2811,7 +2859,7 @@
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
   <!-- Application Logic -->
-  <script src="app.js?v=9.8"></script>
+  <script src="app.js?v=9.9"></script>
 </body>
 </html>
 
