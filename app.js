@@ -1356,6 +1356,9 @@ function getTopContributors(limit = 3, sortBy = currentContributorSort) {
       let avatarUrl = (isSelf && currentProfile?.avatar_url)
         ? currentProfile.avatar_url
         : (initialProfile?.avatar_url || cached?.avatar_url || '');
+      let coverUrl = (isSelf && currentProfile?.cover_url)
+        ? currentProfile.cover_url
+        : (initialProfile?.cover_url || cached?.cover_url || '');
       let role = (isSelf && currentProfile?.role)
         ? currentProfile.role
         : (initialProfile?.role || cached?.role || 'reader');
@@ -1381,6 +1384,7 @@ function getTopContributors(limit = 3, sortBy = currentContributorSort) {
         name,
         username,
         avatarUrl,
+        coverUrl,
         role,
         bio,
         isVerified,
@@ -1417,6 +1421,7 @@ function getTopContributors(limit = 3, sortBy = currentContributorSort) {
       display_name: (isSelf && currentProfile?.display_name) ? currentProfile.display_name : (prof?.display_name || post.author_name || cached?.display_name),
       username: (isSelf && currentProfile?.username) ? currentProfile.username : (prof?.username || post.author_username || cached?.username),
       avatar_url: (isSelf && currentProfile?.avatar_url) ? currentProfile.avatar_url : (prof?.avatar_url || post.author_avatar || cached?.avatar_url),
+      cover_url: (isSelf && currentProfile?.cover_url) ? currentProfile.cover_url : (prof?.cover_url || cached?.cover_url || post.cover_image || ''),
       role: (isSelf && currentProfile?.role) ? currentProfile.role : (prof?.role || cached?.role || 'admin'),
       bio: (isSelf && currentProfile?.bio) ? currentProfile.bio : (prof?.bio || cached?.bio || ''),
       created_at: prof?.created_at || cached?.created_at || post.created_at || '',
@@ -1430,6 +1435,10 @@ function getTopContributors(limit = 3, sortBy = currentContributorSort) {
     const entry = getOrCreateContributor(authorId, initialProf);
     entry.postCount += 1;
     entry.score += ARTICLE_GRADE_POINTS;
+
+    if (!entry.coverUrl && (initialProf.cover_url || post.cover_image)) {
+      entry.coverUrl = initialProf.cover_url || post.cover_image;
+    }
 
     if ((entry.name === 'Contributor' || entry.name === 'Ocean Author') && initialProf.display_name) {
       entry.name = initialProf.display_name;
@@ -1472,6 +1481,7 @@ function getTopContributors(limit = 3, sortBy = currentContributorSort) {
       if (currentProfile.display_name) entry.name = currentProfile.display_name;
       if (currentProfile.username) entry.username = currentProfile.username;
       if (currentProfile.avatar_url) entry.avatarUrl = currentProfile.avatar_url;
+      if (currentProfile.cover_url) entry.coverUrl = currentProfile.cover_url;
       if (currentProfile.bio) entry.bio = currentProfile.bio;
       if (currentProfile.created_at) entry.created_at = currentProfile.created_at;
       if (currentProfile.is_verified) entry.isVerified = true;
@@ -1487,6 +1497,9 @@ function getTopContributors(limit = 3, sortBy = currentContributorSort) {
       if (!entry.avatarUrl && cachedEntry.avatar_url) {
         entry.avatarUrl = cachedEntry.avatar_url;
       }
+      if (!entry.coverUrl && cachedEntry.cover_url) {
+        entry.coverUrl = cachedEntry.cover_url;
+      }
       if (!entry.bio && cachedEntry.bio) {
         entry.bio = cachedEntry.bio;
       }
@@ -1499,12 +1512,27 @@ function getTopContributors(limit = 3, sortBy = currentContributorSort) {
     }
   });
 
+  // Fallback: if contributor still has no coverUrl, check if any authored post has cover_image
+  contributorMap.forEach(entry => {
+    if (!entry.coverUrl) {
+      const authoredPost = postsPool.find(p => {
+        const prof = Array.isArray(p.profiles) ? p.profiles[0] : p.profiles;
+        const aId = p.author_id || prof?.id;
+        return aId === entry.id && p.cover_image;
+      });
+      if (authoredPost && authoredPost.cover_image) {
+        entry.coverUrl = authoredPost.cover_image;
+      }
+    }
+  });
+
   if (contributorMap.size === 0) {
     contributorMap.set('demo-author', {
       id: 'demo-author',
       name: 'Ocean Author',
       username: 'ocean_author',
       avatarUrl: '',
+      coverUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80',
       role: 'admin',
       bio: '',
       created_at: new Date().toISOString(),
@@ -1589,8 +1617,10 @@ function renderHeroTopWriters() {
 
     const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
     const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+    const hasCover = Boolean(writer.coverUrl && String(writer.coverUrl).trim() !== '');
 
     item.innerHTML = `
+      ${hasCover ? `<div class="hero-writer-cover" style="background-image: url('${escapeHtml(String(writer.coverUrl).trim())}');" aria-hidden="true"></div>` : ''}
       <div class="hero-writer-left">
         <span class="hero-writer-rank ${rankClass}">${rankIcon}</span>
         <div class="hero-writer-avatar">${avatarHtml}</div>
@@ -1873,6 +1903,11 @@ function applyContributorsFilter() {
     card.setAttribute('tabindex', '0');
     card.title = `View @${writer.username}'s public profile`;
 
+    const hasCover = Boolean(writer.coverUrl && String(writer.coverUrl).trim() !== '');
+    if (hasCover) {
+      card.classList.add('has-cover');
+    }
+
     const initials = (writer.name || 'M')
       .split(' ')
       .filter(Boolean)
@@ -1903,6 +1938,7 @@ function applyContributorsFilter() {
     const bioText = writer.bio ? escapeHtml(writer.bio) : '';
 
     card.innerHTML = `
+      ${hasCover ? `<div class="contributor-card-cover" style="background-image: url('${escapeHtml(String(writer.coverUrl).trim())}');" aria-hidden="true"></div>` : ''}
       <div class="contributor-card-header">
         <div class="contributor-avatar">${avatarHtml}</div>
         <div class="contributor-info">
@@ -12016,6 +12052,8 @@ window.closeUserDropdown = closeUserDropdown;
 window.toggleZenMode = toggleZenMode;
 window.setContributorSort = setContributorSort;
 window.getTopContributors = getTopContributors;
+window.renderContributorsPage = renderContributorsPage;
+window.applyContributorsFilter = applyContributorsFilter;
 window.authorProfilesCache = authorProfilesCache;
 window.updateAuthUI = updateAuthUI;
 window.printArticle = printArticle;
