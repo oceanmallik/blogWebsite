@@ -1508,28 +1508,34 @@
           <div class="public-profile-info">
             <div class="public-profile-title-row">
               <h1 id="public-profile-name" class="public-profile-name">Member</h1>
-              <div class="public-profile-badges-wrap">
-                <!-- Redesigned Verified Creator Badge -->
-                <button type="button" id="public-profile-verified-badge" class="profile-badge-pill badge-verified hidden" title="Verified Creator • Click to learn more" aria-label="Verified Creator">
-                  <span class="badge-icon-wrap badge-verified-icon">
-                    <svg viewBox="0 0 20 20" width="13" height="13" fill="currentColor" aria-hidden="true">
-                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                    </svg>
-                  </span>
-                  <span class="badge-text">Verified</span>
+              <div class="public-profile-badges-wrap" id="public-profile-badges-wrap">
+                <!-- Verified Creator Badge (Icon-only, no tag name text) -->
+                <button type="button" id="public-profile-verified-badge" class="verified-badge-btn hidden" title="Verified Creator • Click to learn more" aria-label="Verified Creator">
+                  <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" class="verified-badge-svg">
+                    <path fill="#0284c7" stroke="#000000" stroke-width="0.8" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"></path>
+                    <path fill="#FFFFFF" d="M10.54 16.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"></path>
+                  </svg>
                 </button>
 
-                <!-- Redesigned Supporter Badge -->
-                <span id="public-profile-supporter-badge" class="profile-badge-pill badge-supporter hidden" title="BartaWire Pizza Supporter">
-                  <span class="badge-pizza-emoji" aria-hidden="true">🍕</span>
-                  <span id="public-profile-supporter-text" class="badge-text">Supporter</span>
-                </span>
+                <!-- Supporter Badge (Icon-only, no tag name text) -->
+                <button type="button" id="public-profile-supporter-badge" class="supporter-badge-btn hidden" title="BartaWire Pizza Supporter • Click to view supporters" aria-label="BartaWire Pizza Supporter">
+                  <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" class="verified-badge-svg supporter-badge-svg">
+                    <path fill="#f59e0b" stroke="#000000" stroke-width="0.8" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"></path>
+                    <path fill="#FFFFFF" d="M12 7c-2.4 0-4.6.4-5.7 1.1-.1.4 4.8 9.6 5.7 9.9.9-.3 5.8-9.5 5.7-9.9C16.6 7.4 14.4 7 12 7zm0 2.2c1.4 0 2.8.2 3.5.5L12 15.6 8.5 9.7c.7-.3 2.1-.5 3.5-.5z"></path>
+                    <circle cx="12" cy="11.4" r="0.85" fill="#FFFFFF"></circle>
+                    <circle cx="10.5" cy="13.2" r="0.7" fill="#FFFFFF"></circle>
+                    <circle cx="13.5" cy="13.2" r="0.7" fill="#FFFFFF"></circle>
+                  </svg>
+                </button>
 
-                <!-- Redesigned Role / Writer / Member Badge -->
-                <span id="public-profile-role-badge" class="role-badge role-visitor">
-                  <span class="role-badge-icon"></span>
-                  <span class="role-badge-text">Member</span>
+                <!-- Author / Publisher Badge (Icon-only, no tag name text) -->
+                <span id="public-profile-author-badge" class="author-badge-btn hidden" title="Author &amp; Publisher • Independent Journalist on BartaWire" aria-label="Author">
+                  <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" class="verified-badge-svg author-badge-svg">
+                    <path fill="#7c3aed" stroke="#000000" stroke-width="0.8" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"></path>
+                    <path fill="#FFFFFF" d="M15.8 6.5a1.41 1.41 0 0 1 2 2L9.5 16.8l-2.8.7.7-2.8L15.8 6.5zm-6.2 9l-.3 1.2 1.2-.3 6.3-6.3-.9-.9-6.3 6.3z"></path>
+                  </svg>
                 </span>
+                <span id="public-profile-role-badge" class="hidden"></span>
               </div>
             </div>
             
@@ -1553,6 +1559,10 @@
               <span id="public-stat-pizzas-taka" class="profile-stat-sub">0৳</span>
               <span class="profile-stat-lbl">Pizzas Donated</span>
             </div>
+            <div class="profile-stat-box profile-stat-achievements-btn" id="public-stat-achievements-wrap" role="button" tabindex="0" title="View Achievements">
+              <span id="public-stat-achievements" class="profile-stat-num">🏆 0/15</span>
+              <span class="profile-stat-lbl">Achievements</span>
+            </div>
           </div>
         </div>
 
@@ -1567,45 +1577,6 @@
           </div>
           <div class="supporter-tier-right">
             <span id="public-supporter-tier-badge" class="supporter-tier-rank tier-bronze">Supporter</span>
-          </div>
-        </div>
-
-        <!-- TOP ACHIEVEMENT DASHBOARD -->
-        <div class="public-hero-achievements-deck">
-          <div class="public-achievements-header-bar">
-            <div class="achievements-header-left">
-              <div class="achievements-trophy-icon" aria-hidden="true">🏆</div>
-              <div class="achievements-header-titles">
-                <div class="achievements-title-row">
-                  <h3 class="achievements-main-heading">Achievements Dashboard</h3>
-                  <span id="public-achievements-count" class="profile-achievements-count-pill">0 / 15 Unlocked</span>
-                </div>
-                <span class="achievements-subheading">Milestone badges earned through publishing, discussions &amp; community support</span>
-              </div>
-            </div>
-
-            <div class="achievements-header-right">
-              <div class="achievements-progress-wrap" title="Achievement Completion Rate">
-                <div class="achievements-progress-track">
-                  <div id="public-achievements-progress-bar" class="achievements-progress-fill" style="width: 0%;"></div>
-                </div>
-              </div>
-
-              <!-- Quick Filter Tabs -->
-              <div class="achievements-filter-pills" role="tablist" aria-label="Filter achievements">
-                <button type="button" class="ach-filter-pill active" data-filter="all">All (15)</button>
-                <button type="button" class="ach-filter-pill" data-filter="unlocked">Unlocked</button>
-                <button type="button" class="ach-filter-pill" data-filter="locked">Locked</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Achievements Grid (Full Width Responsive Grid on Top) -->
-          <div id="public-achievements-grid" class="public-hero-achievements-grid">
-            <div class="achievement-skeleton">
-              <div class="achievement-skeleton-icon"></div>
-              <div class="achievement-skeleton-bar"></div>
-            </div>
           </div>
         </div>
       </div>
@@ -1714,6 +1685,13 @@
                 </svg>
                 <span>Comments (<strong id="public-tab-comments-count">0</strong>)</span>
               </button>
+              <button type="button" id="public-tab-achievements" class="public-tab-btn" role="tab" aria-selected="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                  <circle cx="12" cy="8" r="7"></circle>
+                  <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                </svg>
+                <span>Achievements (<strong id="public-tab-achievements-count">0/15</strong>)</span>
+              </button>
             </div>
 
             <!-- Posts Pane -->
@@ -1741,6 +1719,47 @@
                 <div class="state-icon">💬</div>
                 <h3 class="state-title">No comments yet</h3>
                 <p class="state-desc">This member has not posted any comments in discussions yet.</p>
+              </div>
+            </div>
+
+            <!-- Achievements Pane -->
+            <div id="public-pane-achievements" class="public-tab-pane hidden">
+              <div class="public-pane-achievements-card">
+                <div class="public-achievements-header-bar">
+                  <div class="achievements-header-left">
+                    <div class="achievements-trophy-icon" aria-hidden="true">🏆</div>
+                    <div class="achievements-header-titles">
+                      <div class="achievements-title-row">
+                        <h3 class="achievements-main-heading">Achievements</h3>
+                        <span id="public-achievements-count" class="profile-achievements-count-pill">0 / 15 Unlocked</span>
+                      </div>
+                      <span class="achievements-subheading">Milestones earned through publishing, discussions &amp; community support</span>
+                    </div>
+                  </div>
+
+                  <div class="achievements-header-right">
+                    <div class="achievements-progress-wrap" title="Achievement Completion Rate">
+                      <div class="achievements-progress-track">
+                        <div id="public-achievements-progress-bar" class="achievements-progress-fill" style="width: 0%;"></div>
+                      </div>
+                    </div>
+
+                    <!-- Quick Filter Tabs -->
+                    <div class="achievements-filter-pills" role="tablist" aria-label="Filter achievements">
+                      <button type="button" class="ach-filter-pill active" data-filter="all">All (15)</button>
+                      <button type="button" class="ach-filter-pill" data-filter="unlocked">Unlocked</button>
+                      <button type="button" class="ach-filter-pill" data-filter="locked">Locked</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Achievements Grid -->
+                <div id="public-achievements-grid" class="public-hero-achievements-grid">
+                  <div class="achievement-skeleton">
+                    <div class="achievement-skeleton-icon"></div>
+                    <div class="achievement-skeleton-bar"></div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1801,17 +1820,35 @@
 
           <div class="profile-name-badge-row">
             <h2 id="profile-identity-name" class="profile-identity-name">Member</h2>
-            <span id="profile-identity-supporter-badge" class="supporter-badge hidden" title="BartaWire Pizza Supporter">🍕 SUPPORTER</span>
-            <!-- Crisp icon-only VERIFIED check mark badge (Clickable to learn more & get verified) -->
-            <button type="button" id="profile-identity-verified-badge" class="verified-badge verified-check-btn hidden" title="Verified Creator • Click to learn more" aria-label="Verified Creator">
-              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" class="verified-badge-svg">
-                <path fill="#0284c7" stroke="#000000" stroke-width="0.8" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"></path>
-                <path fill="#FFFFFF" d="M10.54 16.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"></path>
-              </svg>
-            </button>
+            <div class="profile-identity-badges-wrap" id="profile-identity-badges-wrap">
+              <!-- Verified Creator Badge (Icon-only, no tag name text) -->
+              <button type="button" id="profile-identity-verified-badge" class="verified-badge-btn hidden" title="Verified Creator • Click to learn more" aria-label="Verified Creator">
+                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" class="verified-badge-svg">
+                  <path fill="#0284c7" stroke="#000000" stroke-width="0.8" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"></path>
+                  <path fill="#FFFFFF" d="M10.54 16.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"></path>
+                </svg>
+              </button>
+              <!-- Supporter Badge (Icon-only, no tag name text) -->
+              <button type="button" id="profile-identity-supporter-badge" class="supporter-badge-btn hidden" title="BartaWire Pizza Supporter • Click to view supporters" aria-label="BartaWire Pizza Supporter">
+                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" class="verified-badge-svg supporter-badge-svg">
+                  <path fill="#f59e0b" stroke="#000000" stroke-width="0.8" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"></path>
+                  <path fill="#FFFFFF" d="M12 7c-2.4 0-4.6.4-5.7 1.1-.1.4 4.8 9.6 5.7 9.9.9-.3 5.8-9.5 5.7-9.9C16.6 7.4 14.4 7 12 7zm0 2.2c1.4 0 2.8.2 3.5.5L12 15.6 8.5 9.7c.7-.3 2.1-.5 3.5-.5z"></path>
+                  <circle cx="12" cy="11.4" r="0.85" fill="#FFFFFF"></circle>
+                  <circle cx="10.5" cy="13.2" r="0.7" fill="#FFFFFF"></circle>
+                  <circle cx="13.5" cy="13.2" r="0.7" fill="#FFFFFF"></circle>
+                </svg>
+              </button>
+              <!-- Author / Publisher Badge (Icon-only, no tag name text) -->
+              <span id="profile-identity-author-badge" class="author-badge-btn hidden" title="Author &amp; Publisher • Independent Journalist on BartaWire" aria-label="Author">
+                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" class="verified-badge-svg author-badge-svg">
+                  <path fill="#7c3aed" stroke="#000000" stroke-width="0.8" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"></path>
+                  <path fill="#FFFFFF" d="M15.8 6.5a1.41 1.41 0 0 1 2 2L9.5 16.8l-2.8.7.7-2.8L15.8 6.5zm-6.2 9l-.3 1.2 1.2-.3 6.3-6.3-.9-.9-6.3 6.3z"></path>
+                </svg>
+              </span>
+            </div>
           </div>
           <span id="profile-identity-username" class="profile-identity-username"></span>
-          <div class="profile-role-wrap">
+          <div class="profile-role-wrap hidden">
             <span id="profile-identity-role" class="role-badge role-visitor">Visitor</span>
           </div>
 

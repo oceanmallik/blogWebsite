@@ -550,6 +550,7 @@ function initDOM() {
   dom.profileAvatarBadge = document.getElementById('profile-avatar-badge');
   dom.profileIdentityName = document.getElementById('profile-identity-name');
   dom.profileIdentitySupporterBadge = document.getElementById('profile-identity-supporter-badge');
+  dom.profileIdentityAuthorBadge = document.getElementById('profile-identity-author-badge');
   dom.profileIdentityUsername = document.getElementById('profile-identity-username');
   dom.profileIdentityRole = document.getElementById('profile-identity-role');
   dom.profileIdentityEmail = document.getElementById('profile-identity-email');
@@ -563,11 +564,6 @@ function initDOM() {
   dom.profileStatPizzas = document.getElementById('profile-stat-pizzas');
   dom.profileStatPizzasTaka = document.getElementById('profile-stat-pizzas-taka');
   dom.profileStatStatus = document.getElementById('profile-stat-status');
-  dom.profileSupporterTier = document.getElementById('profile-supporter-tier');
-  dom.profileSupporterTierDesc = document.getElementById('profile-supporter-tier-desc');
-  dom.profileSupporterTierBadge = document.getElementById('profile-supporter-tier-badge');
-  dom.profileAchievementsGrid = document.getElementById('profile-achievements-grid');
-  dom.profileAchievementsCount = document.getElementById('profile-achievements-count');
   dom.profileSupporterTier = document.getElementById('profile-supporter-tier');
   dom.profileSupporterTierDesc = document.getElementById('profile-supporter-tier-desc');
   dom.profileSupporterTierBadge = document.getElementById('profile-supporter-tier-badge');
@@ -645,6 +641,7 @@ function initDOM() {
   dom.publicProfileSupporterBadge = document.getElementById('public-profile-supporter-badge');
   dom.publicProfileUsername = document.getElementById('public-profile-username');
   dom.publicProfileVerifiedBadge = document.getElementById('public-profile-verified-badge');
+  dom.publicProfileAuthorBadge = document.getElementById('public-profile-author-badge');
   dom.publicProfileRoleBadge = document.getElementById('public-profile-role-badge');
   dom.publicProfileJoined = document.getElementById('public-profile-joined');
   dom.publicProfileStatusPill = document.getElementById('public-profile-status-pill');
@@ -666,12 +663,17 @@ function initDOM() {
   dom.publicStatComments = document.getElementById('public-stat-comments');
   dom.publicStatPizzas = document.getElementById('public-stat-pizzas');
   dom.publicStatPizzasTaka = document.getElementById('public-stat-pizzas-taka');
+  dom.publicStatAchievementsWrap = document.getElementById('public-stat-achievements-wrap');
+  dom.publicStatAchievements = document.getElementById('public-stat-achievements');
   dom.publicTabPosts = document.getElementById('public-tab-posts');
   dom.publicTabComments = document.getElementById('public-tab-comments');
+  dom.publicTabAchievements = document.getElementById('public-tab-achievements');
   dom.publicTabPostsCount = document.getElementById('public-tab-posts-count');
   dom.publicTabCommentsCount = document.getElementById('public-tab-comments-count');
+  dom.publicTabAchievementsCount = document.getElementById('public-tab-achievements-count');
   dom.publicPanePosts = document.getElementById('public-pane-posts');
   dom.publicPaneComments = document.getElementById('public-pane-comments');
+  dom.publicPaneAchievements = document.getElementById('public-pane-achievements');
   dom.publicPostsLoading = document.getElementById('public-posts-loading');
   dom.publicPostsGrid = document.getElementById('public-posts-grid');
   dom.publicPostsEmpty = document.getElementById('public-posts-empty');
@@ -1372,13 +1374,13 @@ function closeTopWritersModal() {
 }
 
 /**
- * Creates an authentic verified badge button with rosette seal SVG.
+ * Creates an authentic verified badge button with rosette seal SVG (no tag name text).
  * Clicking it opens the Verified Creator Information modal.
  */
 function createVerifiedBadge(displayName, username, size = 16) {
   const btn = document.createElement('button');
   btn.type = 'button';
-  btn.className = 'verified-badge verified-check-btn';
+  btn.className = 'verified-badge-btn verified-badge verified-check-btn';
   btn.title = 'Verified Creator • Click to learn more';
   btn.setAttribute('aria-label', 'Verified Creator');
   btn.innerHTML = `
@@ -1398,6 +1400,56 @@ function createVerifiedBadge(displayName, username, size = 16) {
     }
   });
   return btn;
+}
+
+/**
+ * Creates an authentic supporter badge button with golden rosette seal SVG (no tag name text).
+ * Clicking it opens the Supporters view / leaderboard.
+ */
+function createSupporterBadge(pizzasDonated = 1, size = 16) {
+  const pCount = Number(pizzasDonated) || 1;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'supporter-badge-btn comment-supporter-badge';
+  btn.title = `BartaWire Pizza Supporter • ${pCount} ${pCount === 1 ? 'pizza' : 'pizzas'} donated (${pCount * PIZZA_PRICE_BDT}৳) • Click to view supporters`;
+  btn.setAttribute('aria-label', `Supporter • ${pCount} pizzas donated`);
+  btn.innerHTML = `
+    <svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" class="verified-badge-svg supporter-badge-svg">
+      <path fill="#f59e0b" stroke="#000000" stroke-width="0.8" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"></path>
+      <path fill="#FFFFFF" d="M12 7c-2.4 0-4.6.4-5.7 1.1-.1.4 4.8 9.6 5.7 9.9.9-.3 5.8-9.5 5.7-9.9C16.6 7.4 14.4 7 12 7zm0 2.2c1.4 0 2.8.2 3.5.5L12 15.6 8.5 9.7c.7-.3 2.1-.5 3.5-.5z"></path>
+      <circle cx="12" cy="11.4" r="0.85" fill="#FFFFFF"></circle>
+      <circle cx="10.5" cy="13.2" r="0.7" fill="#FFFFFF"></circle>
+      <circle cx="13.5" cy="13.2" r="0.7" fill="#FFFFFF"></circle>
+    </svg>
+  `;
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openSupportersView();
+  });
+  btn.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.stopPropagation();
+    }
+  });
+  return btn;
+}
+
+/**
+ * Creates an authentic author/publisher badge icon with royal violet rosette seal SVG (no tag name text).
+ */
+function createAuthorBadge(size = 16) {
+  const badge = document.createElement('span');
+  badge.className = 'author-badge-btn comment-author-badge';
+  badge.title = 'Author & Publisher • Independent Journalist on BartaWire';
+  badge.setAttribute('aria-label', 'Author & Publisher');
+  badge.innerHTML = `
+    <svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" class="verified-badge-svg author-badge-svg">
+      <path fill="#7c3aed" stroke="#000000" stroke-width="0.8" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"></path>
+      <path fill="#FFFFFF" d="M15.8 6.5a1.41 1.41 0 0 1 2 2L9.5 16.8l-2.8.7.7-2.8L15.8 6.5zm-6.2 9l-.3 1.2 1.2-.3 6.3-6.3-.9-.9-6.3 6.3z"></path>
+    </svg>
+  `;
+  return badge;
 }
 
 let currentContributorSort = 'score';
@@ -2336,12 +2388,20 @@ function renderTopSupportersLeaderboard(supporters) {
       </div>
     `;
 
-    // Verified badge
-    if (supporter.is_verified) {
-      const nameRow = item.querySelector('.supporter-name-row');
-      if (nameRow) {
-        const vBadge = createVerifiedBadge(displayName, rawUsername, 16);
+    const nameRow = item.querySelector('.supporter-name-row');
+    if (nameRow) {
+      if (supporter.is_verified) {
+        const vBadge = createVerifiedBadge(displayName, rawUsername, 15);
         nameRow.appendChild(vBadge);
+      }
+      if (pizzas > 0) {
+        const sBadge = createSupporterBadge(pizzas, 15);
+        nameRow.appendChild(sBadge);
+      }
+      const isWriter = (supporter.role === 'admin' || supporter.role === 'publisher');
+      if (isWriter) {
+        const aBadge = createAuthorBadge(15);
+        nameRow.appendChild(aBadge);
       }
     }
 
@@ -3756,6 +3816,18 @@ function renderArticleAuthor(author) {
       vBtn.style.marginLeft = '0.35rem';
       dom.articleAuthorName.appendChild(vBtn);
     }
+    const pizzasDonated = Number(author?.pizzas_donated || 0);
+    if (pizzasDonated > 0) {
+      const sBadge = createSupporterBadge(pizzasDonated, 18);
+      sBadge.style.marginLeft = '0.25rem';
+      dom.articleAuthorName.appendChild(sBadge);
+    }
+    const isWriter = (author?.role === 'admin' || author?.role === 'publisher');
+    if (isWriter) {
+      const aBadge = createAuthorBadge(18);
+      aBadge.style.marginLeft = '0.25rem';
+      dom.articleAuthorName.appendChild(aBadge);
+    }
   }
 
   if (dom.articleAuthorUsername) {
@@ -3795,6 +3867,18 @@ function renderArticleAuthor(author) {
       const vBtn = createVerifiedBadge(name, username, 15);
       vBtn.style.marginLeft = '0.3rem';
       dom.articleMobileAuthorName.appendChild(vBtn);
+    }
+    const pizzasDonated = Number(author?.pizzas_donated || 0);
+    if (pizzasDonated > 0) {
+      const sBadge = createSupporterBadge(pizzasDonated, 15);
+      sBadge.style.marginLeft = '0.2rem';
+      dom.articleMobileAuthorName.appendChild(sBadge);
+    }
+    const isWriter = (author?.role === 'admin' || author?.role === 'publisher');
+    if (isWriter) {
+      const aBadge = createAuthorBadge(15);
+      aBadge.style.marginLeft = '0.2rem';
+      dom.articleMobileAuthorName.appendChild(aBadge);
     }
   }
 
@@ -4618,15 +4702,7 @@ function createCommentCardElement(comment) {
 
   if (isVerified) {
     const verifiedBadge = createVerifiedBadge(displayName, username, 16);
-    verifiedBadge.classList.add('comment-verified-badge');
     authorNameRow.appendChild(verifiedBadge);
-  }
-
-  if (commentRole === 'admin') {
-    const roleBadge = document.createElement('span');
-    updateRoleBadge(roleBadge, 'admin');
-    roleBadge.classList.add('comment-role-badge');
-    authorNameRow.appendChild(roleBadge);
   }
 
   // Look up supporter status (pizzas_donated > 0)
@@ -4637,11 +4713,14 @@ function createCommentCardElement(comment) {
     0
   );
   if (pizzasDonated > 0) {
-    const supporterBadge = document.createElement('span');
-    supporterBadge.className = 'supporter-badge comment-supporter-badge';
-    supporterBadge.title = `BartaWire Pizza Supporter • ${pizzasDonated} ${pizzasDonated === 1 ? 'pizza' : 'pizzas'} donated`;
-    supporterBadge.textContent = '🍕 SUPPORTER';
+    const supporterBadge = createSupporterBadge(pizzasDonated, 16);
     authorNameRow.appendChild(supporterBadge);
+  }
+
+  // Author / Publisher badge (icon-only, no tag name text)
+  if (commentRole === 'admin' || commentRole === 'publisher') {
+    const authorBadge = createAuthorBadge(16);
+    authorNameRow.appendChild(authorBadge);
   }
 
   const time = document.createElement('span');
@@ -7568,7 +7647,7 @@ async function populateProfileView() {
     updateRoleBadge(dom.profileHeaderRole, role);
   }
 
-  // Verified badge on identity card
+  // Verified badge on identity card (icon-only, no tag name text)
   if (dom.profileIdentityVerifiedBadge) {
     if (profile.is_verified) {
       dom.profileIdentityVerifiedBadge.classList.remove('hidden');
@@ -7577,14 +7656,25 @@ async function populateProfileView() {
     }
   }
 
-  // Supporter badge on identity card
+  // Supporter badge on identity card (icon-only, no tag name text)
   const pizzasDonated = Number(profile.pizzas_donated || 0);
   if (dom.profileIdentitySupporterBadge) {
     if (pizzasDonated > 0) {
       dom.profileIdentitySupporterBadge.classList.remove('hidden');
-      dom.profileIdentitySupporterBadge.title = `BartaWire Pizza Supporter • ${pizzasDonated} ${pizzasDonated === 1 ? 'pizza' : 'pizzas'} donated (${pizzasDonated * PIZZA_PRICE_BDT}৳)`;
+      dom.profileIdentitySupporterBadge.title = `BartaWire Pizza Supporter • ${pizzasDonated} ${pizzasDonated === 1 ? 'pizza' : 'pizzas'} donated (${pizzasDonated * PIZZA_PRICE_BDT}৳) • Click to view supporters`;
     } else {
       dom.profileIdentitySupporterBadge.classList.add('hidden');
+    }
+  }
+
+  // Author badge on identity card (icon-only, no tag name text)
+  const isWriter = role === 'admin' || role === 'publisher';
+  if (dom.profileIdentityAuthorBadge) {
+    if (isWriter) {
+      dom.profileIdentityAuthorBadge.classList.remove('hidden');
+      dom.profileIdentityAuthorBadge.title = 'Author & Publisher • Independent Journalist on BartaWire';
+    } else {
+      dom.profileIdentityAuthorBadge.classList.add('hidden');
     }
   }
 
@@ -7932,6 +8022,14 @@ function renderPublicAchievements(stats) {
   if (countEl) {
     countEl.textContent = `${unlockedCount} / ${total} (${pct}%)`;
     countEl.className = `profile-achievements-count-pill ${unlockedCount === total ? 'all-unlocked' : ''}`;
+  }
+
+  if (dom.publicTabAchievementsCount) {
+    dom.publicTabAchievementsCount.textContent = `${unlockedCount}/${total}`;
+  }
+
+  if (dom.publicStatAchievements) {
+    dom.publicStatAchievements.textContent = `🏆 ${unlockedCount}/${total}`;
   }
 
   if (progressBar) {
@@ -9319,23 +9417,25 @@ function renderPublicProfileHero(profile) {
     }
   }
 
-  // Supporter Badge Pill
+  // Supporter Badge (icon-only, no tag name text)
   const pizzasDonated = Number(profile.pizzas_donated || 0);
   if (dom.publicProfileSupporterBadge) {
     if (pizzasDonated > 0) {
       dom.publicProfileSupporterBadge.classList.remove('hidden');
-      let supporterText = 'Supporter';
-      let tierClass = 'tier-bronze';
-      if (pizzasDonated >= 20)      { supporterText = 'Platinum Patron'; tierClass = 'tier-platinum'; }
-      else if (pizzasDonated >= 10) { supporterText = 'Gold Supporter';  tierClass = 'tier-gold'; }
-      else if (pizzasDonated >= 5)  { supporterText = 'Silver Supporter';tierClass = 'tier-silver'; }
-      
-      const supporterTextEl = document.getElementById('public-profile-supporter-text');
-      if (supporterTextEl) supporterTextEl.textContent = supporterText;
-      dom.publicProfileSupporterBadge.className = `profile-badge-pill badge-supporter ${tierClass}`;
-      dom.publicProfileSupporterBadge.title = `BartaWire Pizza Supporter • ${pizzasDonated} ${pizzasDonated === 1 ? 'pizza' : 'pizzas'} donated (${pizzasDonated * PIZZA_PRICE_BDT}৳)`;
+      dom.publicProfileSupporterBadge.title = `BartaWire Pizza Supporter • ${pizzasDonated} ${pizzasDonated === 1 ? 'pizza' : 'pizzas'} donated (${pizzasDonated * PIZZA_PRICE_BDT}৳) • Click to view supporters`;
     } else {
       dom.publicProfileSupporterBadge.classList.add('hidden');
+    }
+  }
+
+  // Author Badge (icon-only, no tag name text)
+  const isWriter = role === 'admin' || role === 'publisher';
+  if (dom.publicProfileAuthorBadge) {
+    if (isWriter) {
+      dom.publicProfileAuthorBadge.classList.remove('hidden');
+      dom.publicProfileAuthorBadge.title = 'Author & Publisher • Independent Journalist on BartaWire';
+    } else {
+      dom.publicProfileAuthorBadge.classList.add('hidden');
     }
   }
 
@@ -9872,17 +9972,23 @@ async function loadPublicUserComments(profile, requestId) {
 }
 
 /**
- * Switches between Articles and Comments tabs in public profile
+ * Switches between Articles, Comments, and Achievements tabs in public profile
  */
 function setPublicProfileTab(tab) {
   const isPosts = tab === 'posts';
+  const isComments = tab === 'comments';
+  const isAchievements = tab === 'achievements';
+
   dom.publicTabPosts?.classList.toggle('active', isPosts);
   dom.publicTabPosts?.setAttribute('aria-selected', String(isPosts));
-  dom.publicTabComments?.classList.toggle('active', !isPosts);
-  dom.publicTabComments?.setAttribute('aria-selected', String(!isPosts));
+  dom.publicTabComments?.classList.toggle('active', isComments);
+  dom.publicTabComments?.setAttribute('aria-selected', String(isComments));
+  dom.publicTabAchievements?.classList.toggle('active', isAchievements);
+  dom.publicTabAchievements?.setAttribute('aria-selected', String(isAchievements));
 
   dom.publicPanePosts?.classList.toggle('hidden', !isPosts);
-  dom.publicPaneComments?.classList.toggle('hidden', isPosts);
+  dom.publicPaneComments?.classList.toggle('hidden', !isComments);
+  dom.publicPaneAchievements?.classList.toggle('hidden', !isAchievements);
 }
 
 /**
@@ -11677,6 +11783,21 @@ function initEventListeners() {
   dom.publicProfileEditBtn?.addEventListener('click', openProfileView);
   dom.publicTabPosts?.addEventListener('click', () => setPublicProfileTab('posts'));
   dom.publicTabComments?.addEventListener('click', () => setPublicProfileTab('comments'));
+  dom.publicTabAchievements?.addEventListener('click', () => setPublicProfileTab('achievements'));
+  dom.publicStatAchievementsWrap?.addEventListener('click', () => setPublicProfileTab('achievements'));
+  dom.publicStatAchievementsWrap?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setPublicProfileTab('achievements');
+    }
+  });
+
+  dom.publicProfileSupporterBadge?.addEventListener('click', () => {
+    openSupportersView();
+  });
+  dom.profileIdentitySupporterBadge?.addEventListener('click', () => {
+    openSupportersView();
+  });
 
   // Direct Profile Photo & Cover Edit buttons on Profile
   dom.publicProfileEditCoverBtn?.addEventListener('click', () => {
