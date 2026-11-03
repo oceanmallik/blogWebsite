@@ -48,7 +48,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=9.6">
+  <link rel="stylesheet" href="style.css?v=9.8">
 </head>
 <body>
   <!-- Header / Navigation -->
@@ -1340,82 +1340,36 @@
         </div>
       </div>
 
-      <!-- Supporters Intro -->
-      <div class="admin-intro supporters-intro">
-        <div class="hero-badge supporters-hero-badge">
-          <span class="pulse-dot"></span>
-          <span>Support BartaWire 🍕</span>
-        </div>
-        <h1 class="admin-title">BartaWire Pizza Supporters</h1>
-        <p class="admin-subtitle">Fueling independent journalism, technical writing &amp; community ideas — 1 slice at a time.</p>
-        <div class="contributors-grade-banner supporters-rate-banner">
-          🍕 1 Pizza = 50৳ • Powered by SupportKori
-        </div>
-      </div>
-
-      <!-- Callout Card: Auth Tips & SupportKori CTA -->
+      <!-- Redesigned Supporters Callout Header: The Box on Left of BartaWire Pizza Supporter Text, Single Donate Button on Right -->
       <div id="supporters-callout" class="supporters-callout-card">
-        <div class="callout-card-header">
-          <div class="callout-icon-box">🍕</div>
-          <div class="callout-header-text">
-            <h2 class="callout-title">Support BartaWire With Pizza</h2>
-            <p class="callout-subtitle">Help keep our servers humming, open-source writing alive, and writers caffeinated.</p>
+        <div class="supporters-header-left">
+          <!-- The Box: placed on the left of BartaWire Pizza Supporter text, not under -->
+          <div class="supporters-pizza-box" aria-hidden="true">
+            <span class="supporters-box-icon">🍕</span>
           </div>
-        </div>
 
-        <!-- Logged-in User Information Section -->
-        <div id="supporters-auth-info" class="supporters-auth-box hidden">
-          <div class="supporters-user-badge-row">
-            <span class="auth-status-indicator">Connected Account</span>
-            <span id="supporters-user-handle" class="supporters-handle-pill">@username</span>
-          </div>
-          <div class="supporters-email-row">
-            <span class="supporters-email-label">BartaWire Account Email:</span>
-            <div class="supporters-email-field">
-              <code id="supporters-user-email" class="supporters-email-value">user@example.com</code>
-              <button type="button" id="supporters-copy-email-btn" class="btn-sm btn-outline supporters-copy-btn" title="Copy your BartaWire email">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-                <span id="supporters-copy-email-text">Copy Email</span>
-              </button>
+          <div class="supporters-header-text">
+            <div class="supporters-tag-row">
+              <div class="hero-badge supporters-hero-badge">
+                <span class="pulse-dot"></span>
+                <span>BartaWire Pizza Supporter 🍕</span>
+              </div>
+              <span class="supporters-rate-pill">🍕 1 Pizza = 50৳ • Powered by SupportKori</span>
             </div>
-          </div>
-          <div class="supporters-tip-card">
-            <span class="tip-icon" aria-hidden="true">💡</span>
-            <div class="tip-content">
-              <strong>Tip:</strong> When paying on SupportKori, enter your BartaWire email or include your @username so pizzas are automatically credited to your profile!
-            </div>
+            <h1 class="admin-title supporters-main-title">BartaWire Pizza Supporters</h1>
+            <p class="admin-subtitle supporters-main-subtitle">Fueling independent journalism, technical writing &amp; community ideas — 1 slice at a time.</p>
           </div>
         </div>
 
-        <!-- Logged-out Guest Information Section -->
-        <div id="supporters-guest-info" class="supporters-guest-box">
-          <div class="supporters-guest-message">
-            <p><strong>Want your pizzas credited to your profile?</strong> Sign in to your BartaWire account first so we can link your donations, boost your stats, and grant you the exclusive <strong>🍕 SUPPORTER</strong> badge across the platform.</p>
-          </div>
-          <button type="button" id="supporters-login-btn" class="btn-sm btn-outline supporters-guest-login-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-              <polyline points="10 17 15 12 10 7"></polyline>
-              <line x1="15" y1="12" x2="3" y2="12"></line>
-            </svg>
-            <span>Sign In to Track Pizzas</span>
-          </button>
-        </div>
-
-        <!-- SupportKori CTA Button -->
-        <div class="supporters-cta-row">
-          <a id="supporters-donate-btn" href="https://supportkori.com/bartawire" target="_blank" rel="noopener noreferrer" class="btn-primary supporters-donate-btn" title="Open SupportKori to donate pizzas">
+        <div class="supporters-header-right">
+          <button type="button" id="supporters-donate-btn" class="btn-primary supporters-donate-btn" aria-haspopup="dialog" aria-controls="donate-pizza-modal" title="Open donation instructions & donate pizza">
             <span class="cta-pizza-icon">🍕</span>
-            <span>Donate Pizza with SupportKori (50৳)</span>
+            <span>Donate Pizza (50৳)</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16" aria-hidden="true">
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-              <polyline points="15 3 21 3 21 9"></polyline>
-              <line x1="10" y1="14" x2="21" y2="3"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
-          </a>
+          </button>
         </div>
       </div>
 
@@ -2993,6 +2947,132 @@
     </div>
   </div>
 
+  <!-- ==============================================
+       DONATE PIZZA MODAL (Step-by-Step Instructions & SupportKori Checkout)
+       ============================================== -->
+  <div id="donate-pizza-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="donate-modal-title">
+    <div class="modal-card donate-pizza-modal-card">
+      <div class="modal-header donate-pizza-modal-header">
+        <div class="donate-modal-title-wrap">
+          <div class="donate-modal-badge-seal">🍕</div>
+          <div>
+            <h3 id="donate-modal-title" class="donate-modal-title">Donate Pizza to BartaWire</h3>
+            <p class="donate-modal-subtitle">1 Pizza = 50৳ • Powered by SupportKori</p>
+          </div>
+        </div>
+        <button type="button" id="donate-modal-close-btn" class="modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <div class="modal-body donate-pizza-modal-body">
+        <!-- HIGH-VISIBILITY BOLDED CALLOUT BANNER: Write username or email for auto showing -->
+        <div class="donate-modal-important-banner">
+          <div class="important-banner-icon">⚡</div>
+          <div class="important-banner-content">
+            <h4 class="important-banner-title">IMPORTANT FOR AUTOMATIC SHOWING:</h4>
+            <p class="important-banner-desc">
+              When paying on SupportKori, <strong>write your BartaWire username or email in the donor note or email field</strong> so pizzas and your 🍕 SUPPORTER badge <strong>automatically show on your profile and comments!</strong>
+            </p>
+          </div>
+        </div>
+
+        <!-- Logged-in User Information Section -->
+        <div id="supporters-auth-info" class="donate-modal-auth-box hidden">
+          <div class="donate-modal-account-header">
+            <span class="auth-status-indicator">Connected BartaWire Account</span>
+            <span class="auto-link-badge">Auto-Credit Enabled</span>
+          </div>
+
+          <div class="donate-modal-fields-list">
+            <div class="donate-modal-field">
+              <div class="donate-field-top">
+                <label class="donate-field-label">Your Username (to paste on SupportKori):</label>
+              </div>
+              <div class="donate-field-control">
+                <code id="supporters-user-handle" class="donate-field-value">@username</code>
+                <button type="button" id="donate-modal-copy-username-btn" class="btn-sm btn-outline donate-copy-btn" title="Copy username">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  <span id="donate-modal-copy-username-text">Copy Username</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="donate-modal-field">
+              <div class="donate-field-top">
+                <label class="donate-field-label">Your Account Email (to paste on SupportKori):</label>
+              </div>
+              <div class="donate-field-control">
+                <code id="supporters-user-email" class="donate-field-value">user@example.com</code>
+                <button type="button" id="supporters-copy-email-btn" class="btn-sm btn-outline donate-copy-btn" title="Copy email">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  <span id="supporters-copy-email-text">Copy Email</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Logged-out Guest Information Section -->
+        <div id="supporters-guest-info" class="donate-modal-guest-box">
+          <div class="donate-guest-header">
+            <span class="guest-indicator">Not Signed In</span>
+            <button type="button" id="supporters-login-btn" class="btn-sm btn-outline donate-guest-login-btn">
+              <span>Sign In First</span>
+            </button>
+          </div>
+          <p class="donate-guest-desc">
+            You can donate right away without logging in! But if you want pizzas to <strong>automatically show on your profile &amp; comments</strong>, either <strong>sign in first</strong> or make sure to <strong>write your registered BartaWire username or email</strong> in SupportKori's payment form.
+          </p>
+        </div>
+
+        <!-- Step-by-Step Walkthrough Box -->
+        <div class="donate-steps-box">
+          <div class="donate-steps-header">
+            <span class="steps-heading">Quick 3-Step Guide</span>
+          </div>
+          <div class="donate-steps-list">
+            <div class="donate-step-item">
+              <span class="step-num">1</span>
+              <div class="step-text">
+                Click <strong>"Proceed to SupportKori"</strong> below to open the official donation checkout.
+              </div>
+            </div>
+            <div class="donate-step-item">
+              <span class="step-num">2</span>
+              <div class="step-text">
+                Choose pizza count (50৳ each) and <strong>enter your BartaWire username or email</strong> in the payment form.
+              </div>
+            </div>
+            <div class="donate-step-item">
+              <span class="step-num">3</span>
+              <div class="step-text">
+                Complete payment via bKash, Nagad, Rocket, or Card. Your donation will automatically show on the leaderboard and unlock the <strong>🍕 SUPPORTER</strong> badge!
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer donate-pizza-modal-footer">
+        <button type="button" id="donate-modal-cancel-btn" class="btn-secondary">Cancel</button>
+        <a id="donate-modal-proceed-btn" href="https://supportkori.com/bartawire" target="_blank" rel="noopener noreferrer" class="btn-primary donate-proceed-cta">
+          <span class="cta-pizza-icon">🍕</span>
+          <span>Proceed to SupportKori (50৳)</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16" aria-hidden="true">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
   <!-- Global Floating Scroll-To-Top Button -->
   <button id="scroll-top-btn" class="scroll-top-btn floating-top-btn" title="Back to top" aria-label="Scroll to top">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -3054,7 +3134,7 @@
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
   <!-- Application Logic -->
-  <script src="app.js?v=10.1"></script>
+  <script src="app.js?v=10.3"></script>
 </body>
 </html>
 

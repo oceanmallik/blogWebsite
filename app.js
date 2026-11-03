@@ -181,6 +181,14 @@ function initDOM() {
   dom.supportersLeaderboardEmpty = document.getElementById('supporters-leaderboard-empty');
   dom.supportersFeedEmpty = document.getElementById('supporters-feed-empty');
 
+  // Donate Pizza Modal elements
+  dom.donatePizzaModal = document.getElementById('donate-pizza-modal');
+  dom.donateModalCloseBtn = document.getElementById('donate-modal-close-btn');
+  dom.donateModalCancelBtn = document.getElementById('donate-modal-cancel-btn');
+  dom.donateModalProceedBtn = document.getElementById('donate-modal-proceed-btn');
+  dom.donateModalCopyUsernameBtn = document.getElementById('donate-modal-copy-username-btn');
+  dom.donateModalCopyUsernameText = document.getElementById('donate-modal-copy-username-text');
+
   // Contributors View elements
   dom.contributorsBackBtn = document.getElementById('contributors-back-btn');
   dom.contributorsRefreshBtn = document.getElementById('contributors-refresh-btn');
@@ -2069,9 +2077,10 @@ async function openSupportersView() {
 }
 
 function updateSupportersCallout() {
-  if (!dom.supportersCallout) return;
-
-  if (dom.supportersDonateBtn) {
+  if (dom.donateModalProceedBtn) {
+    dom.donateModalProceedBtn.href = SUPPORTKORI_URL;
+  }
+  if (dom.supportersDonateBtn && dom.supportersDonateBtn.tagName === 'A') {
     dom.supportersDonateBtn.href = SUPPORTKORI_URL;
   }
 
@@ -2096,6 +2105,47 @@ function updateSupportersCallout() {
   }
 }
 
+function openDonatePizzaModal() {
+  if (!dom.donatePizzaModal) return;
+  updateSupportersCallout();
+  dom.donatePizzaModal.classList.remove('hidden');
+  if (document.body?.style) document.body.style.overflow = 'hidden';
+}
+
+function closeDonatePizzaModal() {
+  if (!dom.donatePizzaModal) return;
+  dom.donatePizzaModal.classList.add('hidden');
+  if (document.body?.style) document.body.style.overflow = '';
+}
+
+async function handleSupportersCopyUsername() {
+  const usernameText = dom.supportersUserHandle?.textContent || '';
+  const cleanUsername = usernameText.replace(/^@+/, '').trim() || (currentProfile?.username || '');
+  if (!cleanUsername) return;
+
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(cleanUsername);
+    } else {
+      const temp = document.createElement('textarea');
+      temp.value = cleanUsername;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      document.body.removeChild(temp);
+    }
+    if (dom.donateModalCopyUsernameText) {
+      dom.donateModalCopyUsernameText.textContent = 'Copied!';
+      setTimeout(() => {
+        if (dom.donateModalCopyUsernameText) dom.donateModalCopyUsernameText.textContent = 'Copy';
+      }, 2000);
+    }
+    showToast(`Username "${cleanUsername}" copied! Write it on SupportKori so pizzas are credited to your profile.`, 'success');
+  } catch (err) {
+    showToast('Could not copy username to clipboard', 'info');
+  }
+}
+
 async function handleSupportersCopyEmail() {
   const emailToCopy = currentUser?.email || dom.supportersUserEmail?.textContent || '';
   if (!emailToCopy) return;
@@ -2117,7 +2167,7 @@ async function handleSupportersCopyEmail() {
         if (dom.supportersCopyEmailText) dom.supportersCopyEmailText.textContent = 'Copy Email';
       }, 2000);
     }
-    showToast('BartaWire email copied! Paste it into SupportKori so pizzas are credited to your profile.', 'success');
+    showToast('BartaWire email copied! Write or paste it into SupportKori so pizzas are credited to your profile.', 'success');
   } catch (err) {
     showToast('Could not copy email to clipboard', 'info');
   }
@@ -12156,10 +12206,23 @@ function initEventListeners() {
   });
   dom.supportersBackBtn?.addEventListener('click', returnToHomeView);
   dom.supportersRefreshBtn?.addEventListener('click', loadSupportersData);
+  dom.supportersDonateBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openDonatePizzaModal();
+  });
+  dom.donateModalCloseBtn?.addEventListener('click', closeDonatePizzaModal);
+  dom.donateModalCancelBtn?.addEventListener('click', closeDonatePizzaModal);
+  dom.donatePizzaModal?.addEventListener('click', (e) => {
+    if (e.target === dom.donatePizzaModal) {
+      closeDonatePizzaModal();
+    }
+  });
+  dom.donateModalCopyUsernameBtn?.addEventListener('click', handleSupportersCopyUsername);
+  dom.supportersCopyEmailBtn?.addEventListener('click', handleSupportersCopyEmail);
   dom.supportersLoginBtn?.addEventListener('click', () => {
+    closeDonatePizzaModal();
     openAuthModal('signin');
   });
-  dom.supportersCopyEmailBtn?.addEventListener('click', handleSupportersCopyEmail);
 
   // Admin Cover Image Upload (Auto-WebP)
   dom.adminUploadBtn?.addEventListener('click', () => {
@@ -12443,6 +12506,10 @@ function initEventListeners() {
         closePhotocardStudio();
         return;
       }
+      if (dom.donatePizzaModal && !dom.donatePizzaModal.classList.contains('hidden')) {
+        closeDonatePizzaModal();
+        return;
+      }
       if (isTopicsExpanded()) {
         collapseTopics();
         return;
@@ -12490,6 +12557,9 @@ window.renderTopSupportersLeaderboard = renderTopSupportersLeaderboard;
 window.renderRecentSupportFeed = renderRecentSupportFeed;
 window.updateSupportersCallout = updateSupportersCallout;
 window.handleSupportersCopyEmail = handleSupportersCopyEmail;
+window.handleSupportersCopyUsername = handleSupportersCopyUsername;
+window.openDonatePizzaModal = openDonatePizzaModal;
+window.closeDonatePizzaModal = closeDonatePizzaModal;
 window.authorProfilesCache = authorProfilesCache;
 window.updateAuthUI = updateAuthUI;
 window.printArticle = printArticle;
