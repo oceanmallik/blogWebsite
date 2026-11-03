@@ -1529,13 +1529,12 @@
                 </button>
 
                 <!-- Author / Publisher Badge (Icon-only, no tag name text) -->
-                <span id="public-profile-author-badge" class="author-badge-btn hidden" title="Author &amp; Publisher • Independent Journalist on BartaWire" aria-label="Author">
+                <button type="button" id="public-profile-author-badge" class="author-badge-btn hidden" title="Author &amp; Publisher • Click to view author details" aria-label="Author and Publisher">
                   <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" class="verified-badge-svg author-badge-svg">
                     <path fill="#7c3aed" stroke="#000000" stroke-width="0.8" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"></path>
                     <path fill="#FFFFFF" d="M15.8 6.5a1.41 1.41 0 0 1 2 2L9.5 16.8l-2.8.7.7-2.8L15.8 6.5zm-6.2 9l-.3 1.2 1.2-.3 6.3-6.3-.9-.9-6.3 6.3z"></path>
                   </svg>
-                </span>
-                <span id="public-profile-role-badge" class="hidden"></span>
+                </button>
               </div>
             </div>
             
@@ -1544,24 +1543,69 @@
             </div>
           </div>
 
-          <!-- Activity Summary Stats -->
-          <div class="public-profile-stats">
-            <div class="profile-stat-box">
-              <span id="public-stat-posts" class="profile-stat-num">0</span>
-              <span class="profile-stat-lbl">Articles</span>
+          <!-- Activity Summary Stats Deck -->
+          <div class="public-profile-stats" id="public-profile-stats" aria-label="Creator Activity Statistics">
+            <!-- Articles -->
+            <div class="stat-card stat-card-articles profile-stat-box" title="Published Articles">
+              <div class="stat-card-body">
+                <span id="public-stat-posts" class="stat-card-number profile-stat-num">0</span>
+                <span class="stat-card-label profile-stat-lbl">Articles</span>
+              </div>
+              <div class="stat-card-icon stat-icon-articles" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+              </div>
             </div>
-            <div class="profile-stat-box">
-              <span id="public-stat-comments" class="profile-stat-num">0</span>
-              <span class="profile-stat-lbl">Comments</span>
+
+            <!-- Comments -->
+            <div class="stat-card stat-card-comments profile-stat-box" title="Discussions & Comments">
+              <div class="stat-card-body">
+                <span id="public-stat-comments" class="stat-card-number profile-stat-num">0</span>
+                <span class="stat-card-label profile-stat-lbl">Comments</span>
+              </div>
+              <div class="stat-card-icon stat-icon-comments" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+              </div>
             </div>
-            <div class="profile-stat-box" id="public-stat-pizzas-wrap">
-              <span id="public-stat-pizzas" class="profile-stat-num">🍕 0</span>
-              <span id="public-stat-pizzas-taka" class="profile-stat-sub">0৳</span>
-              <span class="profile-stat-lbl">Pizzas Donated</span>
+
+            <!-- Pizzas Donated -->
+            <div class="stat-card stat-card-pizzas profile-stat-box" id="public-stat-pizzas-wrap" title="Pizzas Donated to Independent Journalism">
+              <div class="stat-card-body">
+                <span id="public-stat-pizzas" class="stat-card-number profile-stat-num">0</span>
+                <span class="stat-card-label profile-stat-lbl">Pizzas Donated</span>
+              </div>
+              <div class="stat-card-icon stat-icon-pizzas" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 21.5L3.5 6.5C8 4.2 16 4.2 20.5 6.5L12 21.5z"></path>
+                  <path d="M4.8 8.2C8.5 6.6 15.5 6.6 19.2 8.2"></path>
+                  <circle cx="12" cy="12" r="1.3" fill="currentColor"></circle>
+                  <circle cx="9.5" cy="15.8" r="1.1" fill="currentColor"></circle>
+                  <circle cx="14.5" cy="15.8" r="1.1" fill="currentColor"></circle>
+                </svg>
+              </div>
             </div>
-            <div class="profile-stat-box profile-stat-achievements-btn" id="public-stat-achievements-wrap" role="button" tabindex="0" title="View Achievements">
-              <span id="public-stat-achievements" class="profile-stat-num">🏆 0/15</span>
-              <span class="profile-stat-lbl">Achievements</span>
+
+            <!-- Achievements -->
+            <div class="stat-card stat-card-achievements stat-card-clickable profile-stat-box profile-stat-achievements-btn" id="public-stat-achievements-wrap" role="button" tabindex="0" title="Click to view Achievements tab">
+              <div class="stat-card-body">
+                <span id="public-stat-achievements" class="stat-card-number profile-stat-num">0 / 15</span>
+                <span class="stat-card-label profile-stat-lbl">Achievements</span>
+              </div>
+              <div class="stat-card-icon stat-icon-achievements" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                  <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                  <path d="M4 4h16v6a6 6 0 0 1-12 0V4z"></path>
+                  <path d="M12 16v3"></path>
+                  <path d="M8 21h8"></path>
+                </svg>
+              </div>
             </div>
           </div>
         </div>
@@ -1839,12 +1883,12 @@
                 </svg>
               </button>
               <!-- Author / Publisher Badge (Icon-only, no tag name text) -->
-              <span id="profile-identity-author-badge" class="author-badge-btn hidden" title="Author &amp; Publisher • Independent Journalist on BartaWire" aria-label="Author">
+              <button type="button" id="profile-identity-author-badge" class="author-badge-btn hidden" title="Author &amp; Publisher • Click to view author details" aria-label="Author and Publisher">
                 <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" class="verified-badge-svg author-badge-svg">
                   <path fill="#7c3aed" stroke="#000000" stroke-width="0.8" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"></path>
                   <path fill="#FFFFFF" d="M15.8 6.5a1.41 1.41 0 0 1 2 2L9.5 16.8l-2.8.7.7-2.8L15.8 6.5zm-6.2 9l-.3 1.2 1.2-.3 6.3-6.3-.9-.9-6.3 6.3z"></path>
                 </svg>
-              </span>
+              </button>
             </div>
           </div>
           <span id="profile-identity-username" class="profile-identity-username"></span>
@@ -1890,20 +1934,52 @@
             </div>
           </div>
 
-          <!-- Activity Stats -->
-          <div class="profile-stats-grid">
-            <div class="profile-stat-box">
-              <span id="profile-stat-comments" class="profile-stat-num">0</span>
-              <span class="profile-stat-lbl">Comments</span>
+          <!-- Activity Stats Deck -->
+          <div class="profile-stats-grid" aria-label="Account Activity Statistics">
+            <!-- Comments -->
+            <div class="stat-card stat-card-comments profile-stat-box" title="Discussions & Comments">
+              <div class="stat-card-body">
+                <span id="profile-stat-comments" class="stat-card-number profile-stat-num">0</span>
+                <span class="stat-card-label profile-stat-lbl">Comments</span>
+              </div>
+              <div class="stat-card-icon stat-icon-comments" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+              </div>
             </div>
-            <div class="profile-stat-box" id="profile-stat-posts-wrap">
-              <span id="profile-stat-posts" class="profile-stat-num">0</span>
-              <span class="profile-stat-lbl">Posts Authored</span>
+
+            <!-- Posts Authored -->
+            <div class="stat-card stat-card-articles profile-stat-box" id="profile-stat-posts-wrap" title="Published Articles">
+              <div class="stat-card-body">
+                <span id="profile-stat-posts" class="stat-card-number profile-stat-num">0</span>
+                <span class="stat-card-label profile-stat-lbl">Articles</span>
+              </div>
+              <div class="stat-card-icon stat-icon-articles" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+              </div>
             </div>
-            <div class="profile-stat-box" id="profile-stat-pizzas-wrap">
-              <span id="profile-stat-pizzas" class="profile-stat-num">🍕 0</span>
-              <span id="profile-stat-pizzas-taka" class="profile-stat-sub">0৳</span>
-              <span class="profile-stat-lbl">Pizzas Donated</span>
+
+            <!-- Pizzas Donated -->
+            <div class="stat-card stat-card-pizzas profile-stat-box" id="profile-stat-pizzas-wrap" title="Pizzas Donated to Independent Journalism">
+              <div class="stat-card-body">
+                <span id="profile-stat-pizzas" class="stat-card-number profile-stat-num">0</span>
+                <span class="stat-card-label profile-stat-lbl">Pizzas Donated</span>
+              </div>
+              <div class="stat-card-icon stat-icon-pizzas" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 21.5L3.5 6.5C8 4.2 16 4.2 20.5 6.5L12 21.5z"></path>
+                  <path d="M4.8 8.2C8.5 6.6 15.5 6.6 19.2 8.2"></path>
+                  <circle cx="12" cy="12" r="1.3" fill="currentColor"></circle>
+                  <circle cx="9.5" cy="15.8" r="1.1" fill="currentColor"></circle>
+                  <circle cx="14.5" cy="15.8" r="1.1" fill="currentColor"></circle>
+                </svg>
+              </div>
             </div>
           </div>
 
@@ -2655,6 +2731,86 @@
 
       <div class="modal-footer verified-modal-footer">
         <button type="button" id="verified-modal-done-btn" class="btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================================
+       AUTHOR & PUBLISHER INFO MODAL
+       ============================================== -->
+  <div id="author-info-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="author-modal-title">
+    <div class="modal-card author-modal-card">
+      <div class="modal-header author-modal-header">
+        <div class="author-modal-title-wrap">
+          <div class="author-modal-badge-seal">
+            <svg viewBox="0 0 24 24" width="36" height="36" aria-hidden="true" class="verified-badge-svg author-badge-svg">
+              <path fill="#7c3aed" stroke="#000000" stroke-width="0.8" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"></path>
+              <path fill="#FFFFFF" d="M15.8 6.5a1.41 1.41 0 0 1 2 2L9.5 16.8l-2.8.7.7-2.8L15.8 6.5zm-6.2 9l-.3 1.2 1.2-.3 6.3-6.3-.9-.9-6.3 6.3z"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 id="author-modal-title" class="author-modal-title">Author &amp; Publisher</h3>
+            <p class="author-modal-subtitle">Editorial Contributor &amp; Journalist</p>
+          </div>
+        </div>
+        <button id="author-modal-close-btn" class="modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <div class="modal-body author-modal-body">
+        <div class="author-status-banner">
+          <div class="author-status-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="24" height="24" aria-hidden="true">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+          </div>
+          <div class="author-status-text">
+            <p class="author-status-heading" id="author-modal-username">Author &amp; Publisher</p>
+            <p class="author-status-desc">
+              This contributor is an authorized author and publisher on BartaWire. They have editorial privileges to write, publish, and curate verified journalism and in-depth articles.
+            </p>
+          </div>
+        </div>
+
+        <div class="author-apply-box">
+          <div class="author-apply-header">
+            <span class="author-apply-tag">✦ BartaWire Editorial Program</span>
+            <h4 class="author-apply-title">Want to become an author?</h4>
+          </div>
+          <p class="author-apply-desc">
+            BartaWire is an independent, community-driven publication. If you have stories to tell, research to share, or investigative reporting, apply for publisher status:
+          </p>
+
+          <div class="writer-email-box author-email-box">
+            <div class="writer-email-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20" aria-hidden="true">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </div>
+            <a href="mailto:oceanmallik@oceanmallik.com?subject=Author%20Access%20Request%20-%20BartaWire" id="author-email-link" class="writer-email-address" title="Send writer application to oceanmallik@oceanmallik.com">
+              oceanmallik@oceanmallik.com
+            </a>
+            <button type="button" id="author-copy-email-btn" class="writer-copy-btn" title="Copy email address">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span id="author-copy-feedback">Copy</span>
+            </button>
+          </div>
+
+          <div class="author-modal-actions">
+            <a href="mailto:oceanmallik@oceanmallik.com?subject=Author%20Access%20Request%20-%20BartaWire" class="btn-primary writer-mail-action-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="15" height="15" aria-hidden="true">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+              <span>Email Ocean Mallik</span>
+            </a>
+            <button type="button" id="author-modal-done-btn" class="btn-secondary">Close</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

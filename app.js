@@ -721,6 +721,16 @@ function initDOM() {
   dom.verifiedCopyEmailBtn = document.getElementById('verified-copy-email-btn');
   dom.verifiedCopyFeedback = document.getElementById('verified-copy-feedback');
   dom.verifiedEmailLink = document.getElementById('verified-email-link');
+
+  // Author & Publisher Info Modal Elements
+  dom.authorInfoModal = document.getElementById('author-info-modal');
+  dom.authorModalTitle = document.getElementById('author-modal-title');
+  dom.authorModalUsername = document.getElementById('author-modal-username');
+  dom.authorModalCloseBtn = document.getElementById('author-modal-close-btn');
+  dom.authorModalDoneBtn = document.getElementById('author-modal-done-btn');
+  dom.authorCopyEmailBtn = document.getElementById('author-copy-email-btn');
+  dom.authorCopyFeedback = document.getElementById('author-copy-feedback');
+  dom.authorEmailLink = document.getElementById('author-email-link');
 }
 
 // ============================================================================
@@ -7672,7 +7682,7 @@ async function populateProfileView() {
   if (dom.profileIdentityAuthorBadge) {
     if (isWriter) {
       dom.profileIdentityAuthorBadge.classList.remove('hidden');
-      dom.profileIdentityAuthorBadge.title = 'Author & Publisher • Independent Journalist on BartaWire';
+      dom.profileIdentityAuthorBadge.title = 'Author & Publisher • Click to view author details';
     } else {
       dom.profileIdentityAuthorBadge.classList.add('hidden');
     }
@@ -7680,7 +7690,7 @@ async function populateProfileView() {
 
   // Pizzas Donated Stat Box
   if (dom.profileStatPizzas) {
-    dom.profileStatPizzas.textContent = `🍕 ${pizzasDonated}`;
+    dom.profileStatPizzas.textContent = pizzasDonated;
   }
   if (dom.profileStatPizzasTaka) {
     dom.profileStatPizzasTaka.textContent = `${pizzasDonated * PIZZA_PRICE_BDT}৳`;
@@ -8029,7 +8039,7 @@ function renderPublicAchievements(stats) {
   }
 
   if (dom.publicStatAchievements) {
-    dom.publicStatAchievements.textContent = `🏆 ${unlockedCount}/${total}`;
+    dom.publicStatAchievements.textContent = `${unlockedCount} / ${total}`;
   }
 
   if (progressBar) {
@@ -8652,6 +8662,25 @@ function openVerifiedInfoModal(displayName, username) {
 
 function closeVerifiedInfoModal() {
   dom.verifiedInfoModal?.classList.add('hidden');
+}
+
+function openAuthorInfoModal(displayName, username) {
+  const name = displayName || 'This creator';
+  const handle = username ? `@${username}` : '';
+  const fullLabel = handle ? `${name} (${handle})` : name;
+
+  if (dom.authorModalUsername) {
+    dom.authorModalUsername.textContent = fullLabel;
+  }
+  if (dom.authorCopyFeedback) {
+    dom.authorCopyFeedback.textContent = 'Copy';
+  }
+
+  dom.authorInfoModal?.classList.remove('hidden');
+}
+
+function closeAuthorInfoModal() {
+  dom.authorInfoModal?.classList.add('hidden');
 }
 
 /**
@@ -9433,7 +9462,7 @@ function renderPublicProfileHero(profile) {
   if (dom.publicProfileAuthorBadge) {
     if (isWriter) {
       dom.publicProfileAuthorBadge.classList.remove('hidden');
-      dom.publicProfileAuthorBadge.title = 'Author & Publisher • Independent Journalist on BartaWire';
+      dom.publicProfileAuthorBadge.title = 'Author & Publisher • Click to view author details';
     } else {
       dom.publicProfileAuthorBadge.classList.add('hidden');
     }
@@ -9462,14 +9491,15 @@ function renderPublicProfileHero(profile) {
 
   // Pizzas Donated Stat Box
   if (dom.publicStatPizzas) {
-    dom.publicStatPizzas.textContent = `🍕 ${pizzasDonated}`;
+    dom.publicStatPizzas.textContent = pizzasDonated;
   }
   if (dom.publicStatPizzasTaka) {
     dom.publicStatPizzasTaka.textContent = `${pizzasDonated * PIZZA_PRICE_BDT}৳`;
   }
 
   if (dom.publicProfileRoleBadge) {
-    updateRoleBadge(dom.publicProfileRoleBadge, role);
+    dom.publicProfileRoleBadge.classList.add('hidden');
+    dom.publicProfileRoleBadge.innerHTML = '';
   }
   if (dom.publicProfileHeaderRole) {
     updateRoleBadge(dom.publicProfileHeaderRole, role);
@@ -11819,6 +11849,13 @@ function initEventListeners() {
     }
   });
 
+  // Author & Publisher badge buttons
+  dom.publicProfileAuthorBadge?.addEventListener('click', () => {
+    if (currentPublicProfileUser) {
+      openAuthorInfoModal(currentPublicProfileUser.display_name, currentPublicProfileUser.username);
+    }
+  });
+
   // Public profile achievement filter pills
   document.addEventListener('click', (e) => {
     const filterBtn = e.target.closest('.ach-filter-pill');
@@ -11834,6 +11871,12 @@ function initEventListeners() {
   dom.profileIdentityVerifiedBadge?.addEventListener('click', () => {
     if (currentProfile) {
       openVerifiedInfoModal(currentProfile.display_name, currentProfile.username);
+    }
+  });
+
+  dom.profileIdentityAuthorBadge?.addEventListener('click', () => {
+    if (currentProfile) {
+      openAuthorInfoModal(currentProfile.display_name, currentProfile.username);
     }
   });
   dom.articleAuthorProfileBtn?.addEventListener('click', () => {
@@ -12895,6 +12938,40 @@ function initEventListeners() {
     }
   });
 
+  // Author & Publisher Info Modal Listeners
+  dom.authorModalCloseBtn?.addEventListener('click', closeAuthorInfoModal);
+  dom.authorModalDoneBtn?.addEventListener('click', closeAuthorInfoModal);
+  dom.authorInfoModal?.addEventListener('click', (e) => {
+    if (e.target === dom.authorInfoModal) {
+      closeAuthorInfoModal();
+    }
+  });
+  dom.authorCopyEmailBtn?.addEventListener('click', async () => {
+    const emailToCopy = 'oceanmallik@oceanmallik.com';
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(emailToCopy);
+      } else {
+        const tempInput = document.createElement('input');
+        tempInput.value = emailToCopy;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+      }
+      if (dom.authorCopyFeedback) {
+        dom.authorCopyFeedback.textContent = 'Copied!';
+        setTimeout(() => {
+          if (dom.authorCopyFeedback) dom.authorCopyFeedback.textContent = 'Copy';
+        }, 2000);
+      }
+      showToast('Email address copied to clipboard!', 'info');
+    } catch (err) {
+      console.warn('Clipboard write error:', err);
+      showToast('Failed to copy email address', 'error');
+    }
+  });
+
   // Footer Brand Link
   dom.footerBrandLogo?.addEventListener('click', (e) => {
     e.preventDefault();
@@ -12976,6 +13053,10 @@ function initEventListeners() {
       }
       if (dom.verifiedInfoModal && !dom.verifiedInfoModal.classList.contains('hidden')) {
         closeVerifiedInfoModal();
+        return;
+      }
+      if (dom.authorInfoModal && !dom.authorInfoModal.classList.contains('hidden')) {
+        closeAuthorInfoModal();
         return;
       }
       if (dom.authModal && !dom.authModal.classList.contains('hidden')) {
