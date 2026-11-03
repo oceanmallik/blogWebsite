@@ -47,8 +47,9 @@ let activeComments = [];
 let adminPosts = [];
 let editingPostId = null;
 
-// Contributor Grading & Scoring System: 1 Article = 10 pts, 1 Comment = 1 pt
+// Contributor Grading & Scoring System: 1 Article = 10 pts, 1 Pizza = 5 pts, 1 Comment = 1 pt
 const ARTICLE_GRADE_POINTS = 10;
+const PIZZA_GRADE_POINTS = 5;
 const COMMENT_GRADE_POINTS = 1;
 let cachedComments = [];
 const authorProfilesCache = new Map();
@@ -1520,6 +1521,12 @@ function getTopContributors(limit = 3, sortBy = currentContributorSort) {
         initialProfile?.is_verified
       );
       let createdAt = initialProfile?.created_at || cached?.created_at || '';
+      let pizzasDonated = Number(
+        (isSelf && currentProfile?.pizzas_donated !== undefined ? currentProfile.pizzas_donated : null) ??
+        initialProfile?.pizzas_donated ??
+        cached?.pizzas_donated ??
+        0
+      );
 
       if (!name) {
         name = username || 'Contributor';
@@ -1540,6 +1547,7 @@ function getTopContributors(limit = 3, sortBy = currentContributorSort) {
         created_at: createdAt,
         postCount: 0,
         commentCount: 0,
+        pizzasDonated: pizzasDonated,
         score: 0
       });
     }
@@ -1578,6 +1586,11 @@ function getTopContributors(limit = 3, sortBy = currentContributorSort) {
         (isSelf && currentProfile?.is_verified) ||
         prof?.is_verified ||
         cached?.is_verified
+      ),
+      pizzas_donated: Number(
+        (isSelf && currentProfile?.pizzas_donated !== undefined)
+          ? currentProfile.pizzas_donated
+          : (prof?.pizzas_donated !== undefined ? prof.pizzas_donated : cached?.pizzas_donated || 0)
       )
     };
 
@@ -1634,6 +1647,9 @@ function getTopContributors(limit = 3, sortBy = currentContributorSort) {
       if (currentProfile.bio) entry.bio = currentProfile.bio;
       if (currentProfile.created_at) entry.created_at = currentProfile.created_at;
       if (currentProfile.is_verified) entry.isVerified = true;
+      if (currentProfile.pizzas_donated !== undefined) {
+        entry.pizzasDonated = Number(currentProfile.pizzas_donated) || 0;
+      }
     }
 
     if (cachedEntry) {
@@ -1658,7 +1674,30 @@ function getTopContributors(limit = 3, sortBy = currentContributorSort) {
       if (cachedEntry.is_verified) {
         entry.isVerified = true;
       }
+      if (!entry.pizzasDonated && cachedEntry.pizzas_donated) {
+        entry.pizzasDonated = Number(cachedEntry.pizzas_donated) || 0;
+      }
     }
+  });
+
+  // 5. Cross-check topSupportersList to ensure pizza counts are fresh
+  if (Array.isArray(topSupportersList) && topSupportersList.length > 0) {
+    topSupportersList.forEach(sup => {
+      if (sup && sup.id) {
+        const entry = contributorMap.get(sup.id);
+        const pCount = Number(sup.pizzas_donated) || 0;
+        if (entry && pCount > (entry.pizzasDonated || 0)) {
+          entry.pizzasDonated = pCount;
+        }
+      }
+    });
+  }
+
+  // 6. Calculate total score for all contributors (1 Article = 10 pts, 1 Pizza = 5 pts, 1 Comment = 1 pt)
+  contributorMap.forEach(entry => {
+    entry.score = (entry.postCount * ARTICLE_GRADE_POINTS) + 
+                  ((entry.pizzasDonated || 0) * PIZZA_GRADE_POINTS) + 
+                  (entry.commentCount * COMMENT_GRADE_POINTS);
   });
 
   // Fallback: if contributor still has no coverUrl, check if any authored post has cover_image
@@ -1688,6 +1727,7 @@ function getTopContributors(limit = 3, sortBy = currentContributorSort) {
       isVerified: true,
       postCount: 1,
       commentCount: 0,
+      pizzasDonated: 0,
       score: 10
     });
   }
@@ -1704,6 +1744,12 @@ function getTopContributors(limit = 3, sortBy = currentContributorSort) {
       if (b.score !== a.score) return b.score - a.score;
       return (a.name || '').localeCompare(b.name || '');
     }
+    if (sortBy === 'pizzas') {
+      const pDiff = (b.pizzasDonated || 0) - (a.pizzasDonated || 0);
+      if (pDiff !== 0) return pDiff;
+      if (b.score !== a.score) return b.score - a.score;
+      return (a.name || '').localeCompare(b.name || '');
+    }
     if (sortBy === 'newest') {
       const dateA = new Date(a.created_at || 0).getTime();
       const dateB = new Date(b.created_at || 0).getTime();
@@ -1713,6 +1759,7 @@ function getTopContributors(limit = 3, sortBy = currentContributorSort) {
     // Default: 'score' desc
     if (b.score !== a.score) return b.score - a.score;
     if (b.postCount !== a.postCount) return b.postCount - a.postCount;
+    if ((b.pizzasDonated || 0) !== (a.pizzasDonated || 0)) return (b.pizzasDonated || 0) - (a.pizzasDonated || 0);
     if (b.commentCount !== a.commentCount) return b.commentCount - a.commentCount;
     return (a.name || '').localeCompare(b.name || '');
   });
@@ -1750,7 +1797,15 @@ function renderHeroTopWriters() {
 
     const articleText = `${writer.postCount} ${writer.postCount === 1 ? 'article' : 'articles'}`;
     const commentText = `${writer.commentCount} ${writer.commentCount === 1 ? 'comment' : 'comments'}`;
-    item.title = `View ${writer.name}'s profile (${writer.score} pts: ${articleText}, ${commentText})`;
+    const pizzaText = (writer.pizzasDonated > 0) ? `${writer.pizzasDonated} ${writer.pizzasDonated === 1 ? 'pizza' : 'pizzas'}` : '';
+    const statsSummary = [articleText, pizzaText, commentText].filter(Boolean).join(', ');
+    const breakdownParts = [
+      writer.postCount > 0 ? `${articleText} (${writer.postCount * ARTICLE_GRADE_POINTS} pts)` : '',
+      writer.pizzasDonated > 0 ? `${pizzaText} (${writer.pizzasDonated * PIZZA_GRADE_POINTS} pts)` : '',
+      writer.commentCount > 0 ? `${commentText} (${writer.commentCount * COMMENT_GRADE_POINTS} pts)` : ''
+    ].filter(Boolean).join(' + ') || '0 pts';
+
+    item.title = `View ${writer.name}'s profile (${writer.score} pts: ${statsSummary})`;
 
     const initials = (writer.name || 'W')
       .split(' ')
@@ -1777,10 +1832,10 @@ function renderHeroTopWriters() {
           <div class="hero-writer-name-row">
             <span class="hero-writer-name">${escapeHtml(writer.name)}</span>
           </div>
-          <span class="hero-writer-meta">@${escapeHtml(writer.username)}</span>
+          <span class="hero-writer-meta">@${escapeHtml(writer.username)}${writer.pizzasDonated > 0 ? ` • 🍕 ${writer.pizzasDonated}` : ''}</span>
         </div>
       </div>
-      <span class="hero-writer-count-pill" title="${writer.score} pts: ${articleText} (${writer.postCount * ARTICLE_GRADE_POINTS} pts) + ${commentText} (${writer.commentCount * COMMENT_GRADE_POINTS} pts)">${writer.score} pts</span>
+      <span class="hero-writer-count-pill" title="${writer.score} pts: ${breakdownParts}">${writer.score} pts</span>
     `;
 
     if (writer.isVerified) {
@@ -1838,6 +1893,13 @@ function renderTopWritersList() {
 
     const articleText = `${writer.postCount} ${writer.postCount === 1 ? 'article' : 'articles'}`;
     const commentText = `${writer.commentCount} ${writer.commentCount === 1 ? 'comment' : 'comments'}`;
+    const pizzaText = (writer.pizzasDonated > 0) ? `${writer.pizzasDonated} ${writer.pizzasDonated === 1 ? 'pizza' : 'pizzas'}` : '';
+    const statsSummary = [articleText, pizzaText, commentText].filter(Boolean).join(' • ');
+    const breakdownParts = [
+      writer.postCount > 0 ? `${articleText} (${writer.postCount * ARTICLE_GRADE_POINTS} pts)` : '',
+      writer.pizzasDonated > 0 ? `${pizzaText} (${writer.pizzasDonated * PIZZA_GRADE_POINTS} pts)` : '',
+      writer.commentCount > 0 ? `${commentText} (${writer.commentCount * COMMENT_GRADE_POINTS} pts)` : ''
+    ].filter(Boolean).join(' + ') || '0 pts';
 
     card.innerHTML = `
       <div class="writer-left-group">
@@ -1850,12 +1912,12 @@ function renderTopWritersList() {
           <div class="writer-meta-row">
             <span class="writer-handle">@${escapeHtml(writer.username)}</span>
             <span class="writer-meta-sep">•</span>
-            <span class="writer-meta-stats">${articleText}, ${commentText}</span>
+            <span class="writer-meta-stats">${statsSummary}</span>
           </div>
         </div>
       </div>
       <div class="writer-right-group">
-        <div class="writer-score-badge" title="${writer.score} pts: ${articleText} (${writer.postCount * ARTICLE_GRADE_POINTS} pts) + ${commentText} (${writer.commentCount * COMMENT_GRADE_POINTS} pts)">${writer.score} pts</div>
+        <div class="writer-score-badge" title="${writer.score} pts: ${breakdownParts}">${writer.score} pts</div>
         <button type="button" class="btn-sm btn-outline writer-profile-btn" title="View ${escapeHtml(writer.name)}'s public profile">
           <span>View Profile</span>
         </button>
@@ -2025,7 +2087,7 @@ function applyContributorsFilter() {
     } else {
       const activeCount = allContributorsList.filter(c => c.score > 0).length;
       const zeroCount = total - activeCount;
-      const sortLabel = currentContributorSort === 'articles' ? 'by articles' : currentContributorSort === 'comments' ? 'by comments' : currentContributorSort === 'newest' ? 'newest first' : 'by score';
+      const sortLabel = currentContributorSort === 'articles' ? 'by articles' : currentContributorSort === 'comments' ? 'by comments' : currentContributorSort === 'pizzas' ? 'by pizzas' : currentContributorSort === 'newest' ? 'newest first' : 'by score';
       dom.contributorsCountText.textContent = `${total} members (${sortLabel}) • ${activeCount} active • ${zeroCount} new`;
     }
   }
@@ -2086,6 +2148,13 @@ function applyContributorsFilter() {
 
     const articleText = `${writer.postCount} ${writer.postCount === 1 ? 'article' : 'articles'}`;
     const commentText = `${writer.commentCount} ${writer.commentCount === 1 ? 'comment' : 'comments'}`;
+    const pizzaText = (writer.pizzasDonated > 0) ? `${writer.pizzasDonated} ${writer.pizzasDonated === 1 ? 'pizza' : 'pizzas'}` : '';
+    const statsSummary = [articleText, pizzaText, commentText].filter(Boolean).join(' • ');
+    const breakdownParts = [
+      writer.postCount > 0 ? `${articleText} (${writer.postCount * ARTICLE_GRADE_POINTS} pts)` : '',
+      writer.pizzasDonated > 0 ? `${pizzaText} (${writer.pizzasDonated * PIZZA_GRADE_POINTS} pts)` : '',
+      writer.commentCount > 0 ? `${commentText} (${writer.commentCount * COMMENT_GRADE_POINTS} pts)` : ''
+    ].filter(Boolean).join(' + ') || '0 pts';
     const bioText = writer.bio ? escapeHtml(writer.bio) : '';
 
     card.innerHTML = `
@@ -2102,8 +2171,8 @@ function applyContributorsFilter() {
       </div>
       ${bioText ? `<p class="contributor-bio">${bioText}</p>` : ''}
       <div class="contributor-card-footer">
-        <span class="contributor-stats">${articleText} • ${commentText}</span>
-        <span class="contributor-score-pill ${isZero ? 'zero-score' : ''}">${writer.score} pts</span>
+        <span class="contributor-stats">${statsSummary}</span>
+        <span class="contributor-score-pill ${isZero ? 'zero-score' : ''}" title="${breakdownParts}">${writer.score} pts</span>
       </div>
     `;
 
