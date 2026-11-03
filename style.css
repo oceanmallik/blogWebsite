@@ -1179,11 +1179,18 @@ img {
   flex-shrink: 1;
 }
 
-.hero-writer-verified-badge {
+.hero-writer-verified-badge,
+.hero-writer-supporter-badge,
+.hero-writer-author-badge {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+.hero-writer-name-row .verified-badge-svg {
+  width: 14px;
+  height: 14px;
 }
 
 .hero-writer-meta {
@@ -6251,11 +6258,19 @@ input[type="datetime-local"] {
   flex-shrink: 1;
 }
 
-.writer-modal-verified-badge {
+.writer-modal-verified-badge,
+.writer-modal-supporter-badge,
+.writer-modal-author-badge {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+.writer-name-row .verified-badge-svg,
+.contributor-name-row .verified-badge-svg {
+  width: 16px;
+  height: 16px;
 }
 
 .writer-meta-row {
@@ -14894,6 +14909,66 @@ button:active:not(:disabled),
 .supporter-item-badge .verified-badge-svg {
   width: 17px;
   height: 17px;
+}
+
+/* Badges inside Top Contributors & Leaderboards */
+.hero-writer-name-row .verified-badge-btn,
+.hero-writer-name-row .supporter-badge-btn,
+.hero-writer-name-row .author-badge-btn,
+.writer-name-row .verified-badge-btn,
+.writer-name-row .supporter-badge-btn,
+.writer-name-row .author-badge-btn,
+.contributor-name-row .verified-badge-btn,
+.contributor-name-row .supporter-badge-btn,
+.contributor-name-row .author-badge-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* Ensure no visual text role/author tag is shown anywhere */
+.profile-header-badge,
+.profile-role-wrap {
+  display: none !important;
+}
+
+/* Badges inside Top Navbar Profile Chip & Dropdown */
+.nav-user-badges,
+.dropdown-user-badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.nav-user-badges .verified-badge-btn,
+.nav-user-badges .supporter-badge-btn,
+.nav-user-badges .author-badge-btn,
+.dropdown-user-badges .verified-badge-btn,
+.dropdown-user-badges .supporter-badge-btn,
+.dropdown-user-badges .author-badge-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  line-height: 1;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.nav-user-badges .verified-badge-svg {
+  width: 15px;
+  height: 15px;
+}
+
+.dropdown-user-badges .verified-badge-svg {
+  width: 16px;
+  height: 16px;
 }
 
 /* ==========================================================================

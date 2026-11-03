@@ -65,8 +65,8 @@
 
       <div class="header-right">
         <!-- Support 🍕 Navigation Button -->
-        <button type="button" id="nav-support-btn" class="nav-support-btn" title="Support BartaWire • Pizza Donations" aria-label="Support BartaWire with Pizza Donations">
-          <span class="nav-support-label">Support</span>
+        <button type="button" id="nav-support-btn" class="nav-support-btn" title="Donate Pizza • Support BartaWire" aria-label="Donate Pizza to BartaWire">
+          <span class="nav-support-label">Donate Pizza</span>
           <span class="nav-support-pizza" aria-hidden="true">🍕</span>
         </button>
 
@@ -84,16 +84,16 @@
 
           <!-- Logged in user profile & dropdown menu -->
           <div id="nav-user-profile" class="nav-user-profile-wrap hidden">
-            <button type="button" id="nav-user-chip" class="nav-user-chip" title="Account Menu" aria-label="Account Menu" aria-expanded="false" aria-haspopup="true">
+            <div id="nav-user-chip" class="nav-user-chip" role="button" tabindex="0" title="Account Menu" aria-label="Account Menu" aria-expanded="false" aria-haspopup="true">
               <div id="nav-user-avatar" class="nav-user-avatar" title="Your Account"></div>
               <div class="nav-user-details">
                 <span id="nav-user-name" class="nav-user-name"></span>
-                <span id="nav-user-role" class="role-badge role-visitor">Visitor</span>
+                <div id="nav-user-badges" class="nav-user-badges"></div>
               </div>
               <svg class="nav-user-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12" aria-hidden="true">
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
-            </button>
+            </div>
 
             <!-- Neo-Brutalist User Dropdown Menu -->
             <div id="nav-user-dropdown" class="nav-user-dropdown hidden" role="menu" aria-label="Account Options">
@@ -102,7 +102,7 @@
                   <span id="dropdown-user-name" class="dropdown-name"></span>
                   <span id="dropdown-user-handle" class="dropdown-handle"></span>
                 </div>
-                <div id="dropdown-user-badge"></div>
+                <div id="dropdown-user-badge" class="dropdown-user-badges"></div>
               </div>
               <div class="dropdown-divider"></div>
               <button type="button" id="dropdown-item-public" class="dropdown-item" role="menuitem">
@@ -121,7 +121,7 @@
               </button>
               <button type="button" id="dropdown-item-support" class="dropdown-item" role="menuitem">
                 <span style="font-size: 15px; line-height: 1;" aria-hidden="true">🍕</span>
-                <span>Supporters &amp; Pizza Donations</span>
+                <span>Donate Pizza</span>
               </button>
               <div id="dropdown-writer-section" class="dropdown-writer-section hidden">
                 <div class="dropdown-divider"></div>
@@ -251,7 +251,7 @@
               </div>
 
               <div class="hero-writers-footer">
-                <div class="hero-grade-rule">⭐ 1 Article = 10 pts • 1 Pizza = 5 pts • 1 Comment = 1 pt</div>
+                <div class="hero-grade-rule">⭐ 1 Article = 10 pts • 1 Pizza = 100 pts • 1 Comment = 1 pt</div>
                 <div class="hero-writers-footer-row">
                   <span class="hero-writers-footer-label">Want to share your ideas?</span>
                   <button type="button" id="hero-writers-apply-btn" class="hero-writers-apply-link" title="Apply for writer access">
@@ -1260,7 +1260,7 @@
         <h1 class="admin-title">Top Contributors &amp; Members</h1>
         <p class="admin-subtitle">Explore the community writers, active commenters, and registered members of BartaWire.</p>
         <div class="contributors-grade-banner">
-          ⭐ 1 Article = 10 pts • 1 Pizza = 5 pts • 1 Comment = 1 pt • Zero point members are listed below
+          ⭐ 1 Article = 10 pts • 1 Pizza = 100 pts • 1 Comment = 1 pt • Zero point members are listed below
         </div>
       </div>
 
@@ -1355,7 +1355,7 @@
             <div class="supporters-tag-row">
               <div class="hero-badge supporters-hero-badge">
                 <span class="pulse-dot"></span>
-                <span>BartaWire Pizza Supporter 🍕</span>
+                <span>Donate Pizza 🍕</span>
               </div>
               <span class="supporters-rate-pill">🍕 1 Pizza = 50৳ • Powered by SupportKori</span>
             </div>
@@ -1471,8 +1471,8 @@
             </svg>
             <span>Edit My Profile</span>
           </button>
-          <div class="profile-header-badge">
-            <span id="public-profile-header-role" class="role-badge role-visitor">Visitor</span>
+          <div class="profile-header-badge hidden">
+            <span id="public-profile-header-role" class="role-badge role-visitor hidden">Visitor</span>
           </div>
         </div>
       </div>
@@ -1836,8 +1836,8 @@
             </svg>
             <span>Create a post</span>
           </button>
-          <div class="profile-header-badge">
-            <span id="profile-header-role" class="role-badge role-visitor">Visitor</span>
+          <div class="profile-header-badge hidden">
+            <span id="profile-header-role" class="role-badge role-visitor hidden">Visitor</span>
           </div>
         </div>
       </div>
@@ -2558,7 +2558,7 @@
             <span>🏆 Community Leaderboard</span>
           </div>
           <h3 id="top-writers-modal-title" class="top-writers-modal-title">Top Contributors</h3>
-          <p class="top-writers-modal-subtitle">Ranked by community impact: 1 Article = 10 pts • 1 Pizza = 5 pts • 1 Comment = 1 pt.</p>
+          <p class="top-writers-modal-subtitle">Ranked by community impact: 1 Article = 10 pts • 1 Pizza = 100 pts • 1 Comment = 1 pt.</p>
         </div>
         <button id="top-writers-close-btn" class="modal-close" aria-label="Close dialog">&times;</button>
       </div>
@@ -2570,7 +2570,7 @@
 
         <div class="top-writers-footer-cta">
           <div class="top-writers-grade-rule">
-            <span>⭐ <strong>Grade System:</strong> 1 Article = 10 pts • 1 Pizza = 5 pts • 1 Comment = 1 pt</span>
+            <span>⭐ <strong>Grade System:</strong> 1 Article = 10 pts • 1 Pizza = 100 pts • 1 Comment = 1 pt</span>
           </div>
           <div class="top-writers-cta-row">
             <span>Want to share your ideas?</span>

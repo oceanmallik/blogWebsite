@@ -47,9 +47,9 @@ let activeComments = [];
 let adminPosts = [];
 let editingPostId = null;
 
-// Contributor Grading & Scoring System: 1 Article = 10 pts, 1 Pizza = 5 pts, 1 Comment = 1 pt
+// Contributor Grading & Scoring System: 1 Article = 10 pts, 1 Pizza = 100 pts, 1 Comment = 1 pt
 const ARTICLE_GRADE_POINTS = 10;
-const PIZZA_GRADE_POINTS = 5;
+const PIZZA_GRADE_POINTS = 100;
 const COMMENT_GRADE_POINTS = 1;
 let cachedComments = [];
 const authorProfilesCache = new Map();
@@ -80,19 +80,35 @@ const DEFAULT_OG_IMAGE = 'banner.png';
 // Writing icon SVG used for writer/publisher role badge
 const WRITING_ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>`;
 
-function updateRoleBadge(element, role) {
+function updateRoleBadge(element, role, userProfile = null) {
   if (!element) return;
   const r = (role || '').toLowerCase();
-  const isWriter = r === 'admin' || r === 'publisher';
-  element.className = `role-badge role-${isWriter ? 'admin' : 'visitor'}`;
-  if (isWriter) {
-    element.innerHTML = `<span class="role-badge-icon" aria-hidden="true">${WRITING_ICON_SVG}</span><span class="role-badge-text">Author</span>`;
-    element.title = 'Publisher / Author';
-    element.setAttribute('aria-label', 'Author');
-  } else {
-    element.innerHTML = `<span class="role-badge-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="12" height="12"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span><span class="role-badge-text">Member</span>`;
-    element.title = 'Community Member';
-    element.setAttribute('aria-label', 'Community Member');
+
+  // If this is the navbar profile chip or dropdown badge container, attach rosette badges
+  if (element.id === 'nav-user-badges' || element.id === 'nav-user-role' || element.id === 'dropdown-user-badge') {
+    const prof = userProfile || (currentUser && currentProfile ? currentProfile : null);
+    element.innerHTML = '';
+    element.className = element.id === 'dropdown-user-badge' ? 'dropdown-user-badges' : 'nav-user-badges';
+    if (prof) {
+      attachContributorBadges(element, {
+        name: prof.display_name || prof.name,
+        username: prof.username,
+        isVerified: prof.is_verified,
+        pizzasDonated: prof.pizzas_donated,
+        role: role || prof.role
+      }, element.id === 'dropdown-user-badge' ? 16 : 14);
+    }
+    element.style.display = '';
+    element.classList.remove('hidden');
+    return;
+  }
+
+  // Never show author or publisher visual text tags anywhere
+  element.style.display = 'none';
+  element.classList.add('hidden');
+  if (element.parentElement?.classList.contains('profile-header-badge') || element.parentElement?.classList.contains('profile-role-wrap')) {
+    element.parentElement.style.display = 'none';
+    element.parentElement.classList.add('hidden');
   }
 }
 
@@ -407,6 +423,7 @@ function initDOM() {
   dom.navUserAvatar = document.getElementById('nav-user-avatar');
   dom.navUserName = document.getElementById('nav-user-name');
   dom.navUserRole = document.getElementById('nav-user-role');
+  dom.navUserBadges = document.getElementById('nav-user-badges');
   dom.navAdminBtn = document.getElementById('nav-admin-btn');
   dom.navLogoutBtn = document.getElementById('nav-logout-btn');
 
@@ -1112,9 +1129,18 @@ function updateAuthUI() {
     const role = (currentUserRole || currentProfile?.role || 'visitor').toLowerCase();
     const isAdmin = role === 'admin' || role === 'publisher';
 
-    // Role badge
-    if (dom.navUserRole) {
-      updateRoleBadge(dom.navUserRole, role);
+    // Role badges on navbar profile chip
+    if (dom.navUserBadges) {
+      dom.navUserBadges.innerHTML = '';
+      attachContributorBadges(dom.navUserBadges, {
+        name: displayName,
+        username: currentProfile?.username,
+        isVerified: currentProfile?.is_verified,
+        pizzasDonated: currentProfile?.pizzas_donated,
+        role: role
+      }, 14);
+    } else if (dom.navUserRole) {
+      updateRoleBadge(dom.navUserRole, role, currentProfile);
     }
 
     // Top Create a post button is removed from top navbar, protect admin view route access
@@ -1128,7 +1154,17 @@ function updateAuthUI() {
     // Update user dropdown menu items (1A)
     if (dom.dropdownUserName) dom.dropdownUserName.textContent = displayName;
     if (dom.dropdownUserHandle) dom.dropdownUserHandle.textContent = formattedHandle || (currentUser.email || '');
-    if (dom.dropdownUserBadge) updateRoleBadge(dom.dropdownUserBadge, role);
+    if (dom.dropdownUserBadge) {
+      dom.dropdownUserBadge.innerHTML = '';
+      dom.dropdownUserBadge.className = 'dropdown-user-badges';
+      attachContributorBadges(dom.dropdownUserBadge, {
+        name: displayName,
+        username: currentProfile?.username,
+        isVerified: currentProfile?.is_verified,
+        pizzasDonated: currentProfile?.pizzas_donated,
+        role: role
+      }, 16);
+    }
     if (dom.dropdownWriterSection) {
       if (isAdmin) {
         dom.dropdownWriterSection.classList.remove('hidden');
@@ -1171,6 +1207,8 @@ function updateAuthUI() {
     // Logged out
     closeUserDropdown();
     if (dom.navUserProfile) dom.navUserProfile.classList.add('hidden');
+    if (dom.navUserBadges) dom.navUserBadges.innerHTML = '';
+    if (dom.dropdownUserBadge) dom.dropdownUserBadge.innerHTML = '';
     if (dom.navLoginBtn) dom.navLoginBtn.classList.remove('hidden');
     if (dom.navAdminBtn) dom.navAdminBtn.classList.add('hidden');
     if (dom.adminView && !dom.adminView.classList.contains('hidden')) {
@@ -1470,20 +1508,65 @@ function createSupporterBadge(pizzasDonated = 1, size = 16, userMeta = null) {
 }
 
 /**
- * Creates an authentic author/publisher badge icon with royal violet rosette seal SVG (no tag name text).
+ * Creates an authentic author/publisher badge icon button with royal violet rosette seal SVG (no tag name text).
+ * Clicking it opens the Author & Publisher Information modal.
  */
-function createAuthorBadge(size = 16) {
-  const badge = document.createElement('span');
-  badge.className = 'author-badge-btn comment-author-badge';
-  badge.title = 'Author & Publisher • Independent Journalist on BartaWire';
-  badge.setAttribute('aria-label', 'Author & Publisher');
-  badge.innerHTML = `
+function createAuthorBadge(size = 16, displayName = '', username = '') {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'author-badge-btn comment-author-badge';
+  btn.title = 'Author & Publisher • Independent Journalist on BartaWire • Click to view author details';
+  btn.setAttribute('aria-label', 'Author and Publisher');
+  btn.innerHTML = `
     <svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" class="verified-badge-svg author-badge-svg">
       <path fill="#7c3aed" stroke="#000000" stroke-width="0.8" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"></path>
       <path fill="#FFFFFF" d="M15.8 6.5a1.41 1.41 0 0 1 2 2L9.5 16.8l-2.8.7.7-2.8L15.8 6.5zm-6.2 9l-.3 1.2 1.2-.3 6.3-6.3-.9-.9-6.3 6.3z"></path>
     </svg>
   `;
-  return badge;
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openAuthorInfoModal(displayName, username);
+  });
+  btn.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      e.stopPropagation();
+      openAuthorInfoModal(displayName, username);
+    }
+  });
+  return btn;
+}
+
+/**
+ * Attaches the 3 profile-equivalent rosette badges (Verified Creator, Pizza Supporter, Author/Publisher)
+ * to any contributor row element. No tag names or text tags are displayed.
+ */
+function attachContributorBadges(nameRow, user, size = 15) {
+  if (!nameRow || !user) return;
+  const displayName = user.name || user.display_name || 'Contributor';
+  const username = user.username || '';
+
+  // 1. Verified Creator Badge (Blue rosette check)
+  const isVerified = Boolean(user.isVerified || user.is_verified);
+  if (isVerified) {
+    const vBadge = createVerifiedBadge(displayName, username, size);
+    nameRow.appendChild(vBadge);
+  }
+
+  // 2. Pizza Supporter Badge (Golden rosette pizza)
+  const pizzas = Number(user.pizzasDonated || user.pizzas_donated || 0);
+  if (pizzas > 0) {
+    const sBadge = createSupporterBadge(pizzas, size, user);
+    nameRow.appendChild(sBadge);
+  }
+
+  // 3. Author & Publisher Badge (Purple rosette quill, no text tag!)
+  const isAuthor = user.role === 'admin' || user.role === 'publisher' || (Number(user.postCount || 0) > 0);
+  if (isAuthor) {
+    const aBadge = createAuthorBadge(size, displayName, username);
+    nameRow.appendChild(aBadge);
+  }
 }
 
 let currentContributorSort = 'score';
@@ -1693,7 +1776,7 @@ function getTopContributors(limit = 3, sortBy = currentContributorSort) {
     });
   }
 
-  // 6. Calculate total score for all contributors (1 Article = 10 pts, 1 Pizza = 5 pts, 1 Comment = 1 pt)
+  // 6. Calculate total score for all contributors (1 Article = 10 pts, 1 Pizza = 100 pts, 1 Comment = 1 pt)
   contributorMap.forEach(entry => {
     entry.score = (entry.postCount * ARTICLE_GRADE_POINTS) + 
                   ((entry.pizzasDonated || 0) * PIZZA_GRADE_POINTS) + 
@@ -1832,19 +1915,15 @@ function renderHeroTopWriters() {
           <div class="hero-writer-name-row">
             <span class="hero-writer-name">${escapeHtml(writer.name)}</span>
           </div>
-          <span class="hero-writer-meta">@${escapeHtml(writer.username)}${writer.pizzasDonated > 0 ? ` • 🍕 ${writer.pizzasDonated}` : ''}</span>
+          <span class="hero-writer-meta">@${escapeHtml(writer.username)}</span>
         </div>
       </div>
       <span class="hero-writer-count-pill" title="${writer.score} pts: ${breakdownParts}">${writer.score} pts</span>
     `;
 
-    if (writer.isVerified) {
-      const nameRow = item.querySelector('.hero-writer-name-row');
-      if (nameRow) {
-        const vBadge = createVerifiedBadge(writer.name, writer.username, 15);
-        vBadge.classList.add('hero-writer-verified-badge');
-        nameRow.appendChild(vBadge);
-      }
+    const nameRow = item.querySelector('.hero-writer-name-row');
+    if (nameRow) {
+      attachContributorBadges(nameRow, writer, 14);
     }
 
     const handleProfileClick = (e) => {
@@ -1924,13 +2003,9 @@ function renderTopWritersList() {
       </div>
     `;
 
-    if (writer.isVerified) {
-      const nameRow = card.querySelector('.writer-name-row');
-      if (nameRow) {
-        const vBadge = createVerifiedBadge(writer.name, writer.username, 16);
-        vBadge.classList.add('writer-modal-verified-badge');
-        nameRow.appendChild(vBadge);
-      }
+    const nameRow = card.querySelector('.writer-name-row');
+    if (nameRow) {
+      attachContributorBadges(nameRow, writer, 16);
     }
 
     const viewBtn = card.querySelector('.writer-profile-btn');
@@ -2176,23 +2251,9 @@ function applyContributorsFilter() {
       </div>
     `;
 
-    // Verified badge
-    if (writer.isVerified) {
-      const nameRow = card.querySelector('.contributor-name-row');
-      if (nameRow) {
-        const vBadge = createVerifiedBadge(writer.name, writer.username, 16);
-        nameRow.appendChild(vBadge);
-      }
-    }
-
-    // Role badge for writers/publishers
-    if (writer.role === 'admin' || writer.role === 'publisher') {
-      const nameRow = card.querySelector('.contributor-name-row');
-      if (nameRow) {
-        const rBadge = document.createElement('span');
-        updateRoleBadge(rBadge, writer.role);
-        nameRow.appendChild(rBadge);
-      }
+    const nameRow = card.querySelector('.contributor-name-row');
+    if (nameRow) {
+      attachContributorBadges(nameRow, writer, 16);
     }
 
     const handleCardClick = (e) => {
@@ -12246,6 +12307,19 @@ function initEventListeners() {
       toggleUserDropdown();
     } else {
       openAuthModal('signin');
+    }
+  });
+  dom.navUserChip?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      if (e.target === dom.navUserChip) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (currentUser) {
+          toggleUserDropdown();
+        } else {
+          openAuthModal('signin');
+        }
+      }
     }
   });
 
