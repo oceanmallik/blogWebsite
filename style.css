@@ -5167,7 +5167,7 @@ input[type="datetime-local"] {
   border: var(--border-width) solid var(--border-color);
   box-shadow: 2px 2px 0 var(--border-color);
   border-radius: 6px;
-  padding: 0.65rem 0.85rem;
+  padding: 0.55rem 0.85rem;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -5175,6 +5175,8 @@ input[type="datetime-local"] {
   text-align: left;
   gap: 0.65rem;
   min-width: 105px;
+  height: 58px;
+  min-height: 58px;
   box-sizing: border-box;
   overflow: hidden;
   transition: transform var(--transition-fast, 0.15s ease), 
@@ -5218,9 +5220,11 @@ input[type="datetime-local"] {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  justify-content: center;
   gap: 0.12rem;
   min-width: 0;
   flex: 1;
+  height: 100%;
 }
 
 .stat-card .stat-card-number,
@@ -5310,6 +5314,75 @@ input[type="datetime-local"] {
 
 [data-theme="cyberpunk"] .stat-icon-achievements {
   color: var(--accent-yellow);
+}
+
+/* Achievements Stat Card Shuffling & Rarity Styling */
+.stat-card-achievements {
+  user-select: none;
+}
+
+.stat-card-achievements .stat-card-body,
+.stat-card-achievements .stat-card-icon {
+  transition: opacity 0.18s cubic-bezier(0.4, 0, 0.2, 1), transform 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stat-ach-flip {
+  opacity: 0 !important;
+  transform: translateY(-3px) scale(0.96) !important;
+}
+
+.stat-card-achievements.has-unlocked .stat-card-number {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 175px;
+  letter-spacing: -0.01em;
+}
+
+.stat-card-achievements.has-unlocked .stat-card-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.63rem;
+  white-space: nowrap;
+}
+
+.stat-ach-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+  background: var(--text-muted);
+}
+
+.stat-ach-badge-dot.rarity-common { background: #9E9E9E; }
+.stat-ach-badge-dot.rarity-uncommon { background: var(--accent-lime, #A8FF53); }
+.stat-ach-badge-dot.rarity-rare { background: var(--accent-cyan, #00E5FF); }
+.stat-ach-badge-dot.rarity-epic { background: #D500F9; }
+.stat-ach-badge-dot.rarity-legendary { background: #FFD700; }
+
+.stat-card-achievements.rarity-common::before { background: #9E9E9E; }
+.stat-card-achievements.rarity-uncommon::before { background: var(--accent-lime, #A8FF53); }
+.stat-card-achievements.rarity-rare::before { background: var(--accent-cyan, #00E5FF); }
+.stat-card-achievements.rarity-epic::before { background: #D500F9; }
+.stat-card-achievements.rarity-legendary::before { background: #FFD700; }
+
+.stat-ach-emoji {
+  font-size: 1.15rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.public-profile-stats .stat-card.stat-card-achievements {
+  min-width: 165px;
+  max-width: 240px;
 }
 
 /* Fallback box for legacy markup */
@@ -7933,7 +8006,7 @@ input[type="datetime-local"] {
 
 .public-profile-stats {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 0.65rem;
   flex-wrap: wrap;
   margin: 0;
@@ -7945,8 +8018,11 @@ input[type="datetime-local"] {
 .public-profile-stats .stat-card {
   flex: 0 0 auto;
   min-width: 105px;
-  padding: 0.55rem 0.8rem;
-  gap: 0.6rem;
+  height: 58px;
+  min-height: 58px;
+  box-sizing: border-box;
+  padding: 0.55rem 0.85rem;
+  gap: 0.65rem;
 }
 
 .public-profile-content-wrap {
@@ -10360,6 +10436,16 @@ input[type="datetime-local"] {
   .public-profile-stats .stat-card {
     flex: 1 1 auto;
     width: 100%;
+    max-width: 100%;
+    height: 58px;
+    min-height: 58px;
+  }
+  .public-profile-stats .stat-card.stat-card-achievements {
+    max-width: 100%;
+    min-width: 0;
+  }
+  .stat-card-achievements.has-unlocked .stat-card-number {
+    max-width: 100%;
   }
 }
 

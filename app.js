@@ -683,6 +683,8 @@ function initDOM() {
   dom.publicStatPizzasTaka = document.getElementById('public-stat-pizzas-taka');
   dom.publicStatAchievementsWrap = document.getElementById('public-stat-achievements-wrap');
   dom.publicStatAchievements = document.getElementById('public-stat-achievements');
+  dom.publicStatAchievementsLabel = document.getElementById('public-stat-achievements-label');
+  dom.publicStatAchievementsIcon = document.getElementById('public-stat-achievements-icon');
   dom.publicTabPosts = document.getElementById('public-tab-posts');
   dom.publicTabComments = document.getElementById('public-tab-comments');
   dom.publicTabAchievements = document.getElementById('public-tab-achievements');
@@ -4506,6 +4508,7 @@ function getAppBasePath() {
 function returnToHomeView() {
   if (isZenMode) toggleZenMode(false);
   closeUserDropdown();
+  stopAchievementShuffle();
   activePost = null;
   currentPublicProfileUser = null;
 
@@ -8164,6 +8167,147 @@ function renderProfileAchievements(stats) {
 let currentPublicAchievementStats = null;
 let currentPublicAchievementFilter = 'all';
 
+let publicAchievementShuffleTimer = null;
+let publicAchievementShuffleList = [];
+let publicAchievementShuffleIndex = 0;
+let isPublicAchievementPaused = false;
+
+const DEFAULT_ACHIEVEMENT_ICON_HTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+  <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+  <path d="M4 4h16v6a6 6 0 0 1-12 0V4z"></path>
+  <path d="M12 16v3"></path>
+  <path d="M8 21h8"></path>
+</svg>`;
+
+/**
+ * Applies achievement details to the public profile stat card.
+ */
+function applyStatAchievementDisplay(ach, index, total, animate = false) {
+  if (!dom.publicStatAchievementsWrap) return;
+
+  const updateContent = () => {
+    if (!ach) {
+      dom.publicStatAchievementsWrap.classList.remove('has-unlocked');
+      ['rarity-common', 'rarity-uncommon', 'rarity-rare', 'rarity-epic', 'rarity-legendary'].forEach(c => {
+        dom.publicStatAchievementsWrap.classList.remove(c);
+      });
+      dom.publicStatAchievementsWrap.removeAttribute('data-rarity');
+
+      if (dom.publicStatAchievements) {
+        dom.publicStatAchievements.textContent = `0 / ${total || 15}`;
+      }
+      if (dom.publicStatAchievementsLabel) {
+        dom.publicStatAchievementsLabel.textContent = 'Achievements';
+      }
+      if (dom.publicStatAchievementsIcon) {
+        dom.publicStatAchievementsIcon.innerHTML = DEFAULT_ACHIEVEMENT_ICON_HTML;
+      }
+      dom.publicStatAchievementsWrap.title = 'No achievements unlocked yet (Click to view Achievements tab)';
+      return;
+    }
+
+    dom.publicStatAchievementsWrap.classList.add('has-unlocked');
+    ['rarity-common', 'rarity-uncommon', 'rarity-rare', 'rarity-epic', 'rarity-legendary'].forEach(c => {
+      dom.publicStatAchievementsWrap.classList.remove(c);
+    });
+    dom.publicStatAchievementsWrap.classList.add(`rarity-${ach.rarity}`);
+    dom.publicStatAchievementsWrap.setAttribute('data-rarity', ach.rarity);
+
+    if (dom.publicStatAchievements) {
+      dom.publicStatAchievements.textContent = ach.label;
+    }
+
+    if (dom.publicStatAchievementsLabel) {
+      if (total > 1) {
+        dom.publicStatAchievementsLabel.innerHTML = `
+          <span class="stat-ach-badge-dot rarity-${ach.rarity}"></span>
+          <span>Achievement • ${index + 1}/${total}</span>
+        `;
+      } else {
+        dom.publicStatAchievementsLabel.innerHTML = `
+          <span class="stat-ach-badge-dot rarity-${ach.rarity}"></span>
+          <span>Achievement</span>
+        `;
+      }
+    }
+
+    if (dom.publicStatAchievementsIcon) {
+      dom.publicStatAchievementsIcon.innerHTML = `<span class="stat-ach-emoji" aria-hidden="true">${escapeHtml(ach.icon)}</span>`;
+    }
+
+    dom.publicStatAchievementsWrap.title = `${ach.label}: ${ach.desc} (${total > 1 ? `Unlocked ${index + 1} of ${total}` : 'Unlocked'} — Click to view Achievements tab)`;
+  };
+
+  if (animate) {
+    const bodyEl = dom.publicStatAchievementsWrap.querySelector('.stat-card-body');
+    const iconEl = dom.publicStatAchievementsIcon;
+    if (bodyEl && iconEl) {
+      bodyEl.classList.add('stat-ach-flip');
+      iconEl.classList.add('stat-ach-flip');
+      setTimeout(() => {
+        updateContent();
+        bodyEl.classList.remove('stat-ach-flip');
+        iconEl.classList.remove('stat-ach-flip');
+      }, 180);
+      return;
+    }
+  }
+
+  updateContent();
+}
+
+/**
+ * Starts or updates shuffling through unlocked achievements on public profile stat card
+ */
+function updateAchievementShuffle(unlockedList, totalCount = 15) {
+  const list = Array.isArray(unlockedList) ? unlockedList : [];
+
+  const newIds = list.map(a => a.id).join(',');
+  const oldIds = publicAchievementShuffleList.map(a => a.id).join(',');
+
+  publicAchievementShuffleList = list;
+
+  if (list.length === 0) {
+    stopAchievementShuffle();
+    applyStatAchievementDisplay(null, 0, totalCount, false);
+    return;
+  }
+
+  if (list.length === 1) {
+    stopAchievementShuffle();
+    publicAchievementShuffleIndex = 0;
+    applyStatAchievementDisplay(list[0], 0, 1, false);
+    return;
+  }
+
+  // If already running with the same list of unlocked achievements, keep going smoothly
+  if (newIds === oldIds && publicAchievementShuffleTimer) {
+    return;
+  }
+
+  // Reset timer and index for new/updated list
+  stopAchievementShuffle();
+  publicAchievementShuffleIndex = 0;
+  applyStatAchievementDisplay(list[0], 0, list.length, false);
+
+  publicAchievementShuffleTimer = setInterval(() => {
+    if (isPublicAchievementPaused) return;
+    if (publicAchievementShuffleList.length <= 1) return;
+
+    publicAchievementShuffleIndex = (publicAchievementShuffleIndex + 1) % publicAchievementShuffleList.length;
+    const nextAch = publicAchievementShuffleList[publicAchievementShuffleIndex];
+    applyStatAchievementDisplay(nextAch, publicAchievementShuffleIndex, publicAchievementShuffleList.length, true);
+  }, 3500);
+}
+
+function stopAchievementShuffle() {
+  if (publicAchievementShuffleTimer) {
+    clearInterval(publicAchievementShuffleTimer);
+    publicAchievementShuffleTimer = null;
+  }
+}
+
 /**
  * Renders achievement cards in the PUBLIC profile hero deck.
  * @param {object} [stats] - { comments, posts, pizzas, memberDays }
@@ -8197,9 +8341,7 @@ function renderPublicAchievements(stats) {
     dom.publicTabAchievementsCount.textContent = `${unlockedCount}/${total}`;
   }
 
-  if (dom.publicStatAchievements) {
-    dom.publicStatAchievements.textContent = `${unlockedCount} / ${total}`;
-  }
+  updateAchievementShuffle(unlocked, total);
 
   if (progressBar) {
     progressBar.style.width = `${pct}%`;
@@ -9622,6 +9764,8 @@ async function openPublicProfileView(userIdentifier, fallbackUsername, fallbackN
     return;
   }
 
+  stopAchievementShuffle();
+
   // Record where the user came from to support returning back cleanly
   if (dom.publicProfileView?.classList.contains('hidden')) {
     if (activePost && !dom.articleView?.classList.contains('hidden')) {
@@ -10428,6 +10572,7 @@ function setPublicProfileTab(tab) {
  * Handles back button from public profile view
  */
 function handlePublicProfileBack() {
+  stopAchievementShuffle();
   if (lastNonProfileView === 'article' && activePost) {
     openArticleView(activePost);
   } else if (lastNonProfileView === 'admin' && currentUserRole === 'admin') {
@@ -12223,6 +12368,12 @@ function initEventListeners() {
       e.preventDefault();
       setPublicProfileTab('achievements');
     }
+  });
+  dom.publicStatAchievementsWrap?.addEventListener('mouseenter', () => {
+    isPublicAchievementPaused = true;
+  });
+  dom.publicStatAchievementsWrap?.addEventListener('mouseleave', () => {
+    isPublicAchievementPaused = false;
   });
 
   dom.publicProfileSupporterBadge?.addEventListener('click', () => {
