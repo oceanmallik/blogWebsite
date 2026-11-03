@@ -731,6 +731,23 @@ function initDOM() {
   dom.authorCopyEmailBtn = document.getElementById('author-copy-email-btn');
   dom.authorCopyFeedback = document.getElementById('author-copy-feedback');
   dom.authorEmailLink = document.getElementById('author-email-link');
+
+  // Supporter Info Modal Elements (Donation Details, Date & Message)
+  dom.supporterInfoModal = document.getElementById('supporter-info-modal');
+  dom.supporterModalTitle = document.getElementById('supporter-modal-title');
+  dom.supporterModalUsername = document.getElementById('supporter-modal-username');
+  dom.supporterModalAvatar = document.getElementById('supporter-modal-avatar');
+  dom.supporterModalTierBadge = document.getElementById('supporter-modal-tier-badge');
+  dom.supporterModalSummary = document.getElementById('supporter-modal-summary');
+  dom.supporterModalTotalPizzas = document.getElementById('supporter-modal-total-pizzas');
+  dom.supporterModalTotalTaka = document.getElementById('supporter-modal-total-taka');
+  dom.supporterModalActiveStatus = document.getElementById('supporter-modal-active-status');
+  dom.supporterModalDonationsCount = document.getElementById('supporter-modal-donations-count');
+  dom.supporterModalDonationsList = document.getElementById('supporter-modal-donations-list');
+  dom.supporterModalCloseBtn = document.getElementById('supporter-modal-close-btn');
+  dom.supporterModalDoneBtn = document.getElementById('supporter-modal-done-btn');
+  dom.supporterModalLeaderboardBtn = document.getElementById('supporter-modal-leaderboard-btn');
+  dom.supporterModalDonateBtn = document.getElementById('supporter-modal-donate-btn');
 }
 
 // ============================================================================
@@ -1414,14 +1431,14 @@ function createVerifiedBadge(displayName, username, size = 16) {
 
 /**
  * Creates an authentic supporter badge button with golden rosette seal SVG (no tag name text).
- * Clicking it opens the Supporters view / leaderboard.
+ * Clicking it opens the Supporter Info modal showing donation details, date, and message.
  */
-function createSupporterBadge(pizzasDonated = 1, size = 16) {
+function createSupporterBadge(pizzasDonated = 1, size = 16, userMeta = null) {
   const pCount = Number(pizzasDonated) || 1;
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'supporter-badge-btn comment-supporter-badge';
-  btn.title = `BartaWire Pizza Supporter • ${pCount} ${pCount === 1 ? 'pizza' : 'pizzas'} donated (${pCount * PIZZA_PRICE_BDT}৳) • Click to view supporters`;
+  btn.title = `BartaWire Pizza Supporter • ${pCount} ${pCount === 1 ? 'pizza' : 'pizzas'} donated (${pCount * PIZZA_PRICE_BDT}৳) • Click to view donation details & message`;
   btn.setAttribute('aria-label', `Supporter • ${pCount} pizzas donated`);
   btn.innerHTML = `
     <svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" class="verified-badge-svg supporter-badge-svg">
@@ -1435,7 +1452,13 @@ function createSupporterBadge(pizzasDonated = 1, size = 16) {
   btn.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    openSupportersView();
+    if (userMeta) {
+      openSupporterInfoModal(userMeta);
+    } else if (currentPublicProfileUser) {
+      openSupporterInfoModal(currentPublicProfileUser);
+    } else {
+      openSupporterInfoModal({ pizzas_donated: pCount });
+    }
   });
   btn.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -2405,7 +2428,7 @@ function renderTopSupportersLeaderboard(supporters) {
         nameRow.appendChild(vBadge);
       }
       if (pizzas > 0) {
-        const sBadge = createSupporterBadge(pizzas, 15);
+        const sBadge = createSupporterBadge(pizzas, 15, supporter);
         nameRow.appendChild(sBadge);
       }
       const isWriter = (supporter.role === 'admin' || supporter.role === 'publisher');
@@ -3828,7 +3851,7 @@ function renderArticleAuthor(author) {
     }
     const pizzasDonated = Number(author?.pizzas_donated || 0);
     if (pizzasDonated > 0) {
-      const sBadge = createSupporterBadge(pizzasDonated, 18);
+      const sBadge = createSupporterBadge(pizzasDonated, 18, author);
       sBadge.style.marginLeft = '0.25rem';
       dom.articleAuthorName.appendChild(sBadge);
     }
@@ -3880,7 +3903,7 @@ function renderArticleAuthor(author) {
     }
     const pizzasDonated = Number(author?.pizzas_donated || 0);
     if (pizzasDonated > 0) {
-      const sBadge = createSupporterBadge(pizzasDonated, 15);
+      const sBadge = createSupporterBadge(pizzasDonated, 15, author);
       sBadge.style.marginLeft = '0.2rem';
       dom.articleMobileAuthorName.appendChild(sBadge);
     }
@@ -4723,7 +4746,13 @@ function createCommentCardElement(comment) {
     0
   );
   if (pizzasDonated > 0) {
-    const supporterBadge = createSupporterBadge(pizzasDonated, 16);
+    const supporterBadge = createSupporterBadge(pizzasDonated, 16, {
+      id: comment.user_id,
+      display_name: displayName,
+      username: username,
+      avatar_url: (profile?.avatar_url || cachedProf?.avatar_url || ''),
+      pizzas_donated: pizzasDonated
+    });
     authorNameRow.appendChild(supporterBadge);
   }
 
@@ -8683,6 +8712,220 @@ function closeAuthorInfoModal() {
   dom.authorInfoModal?.classList.add('hidden');
 }
 
+function getSupporterTierInfo(pizzasDonated) {
+  const p = Number(pizzasDonated) || 0;
+  if (p >= 20) return { name: 'Platinum Patron', className: 'tier-platinum' };
+  if (p >= 10) return { name: 'Gold Supporter', className: 'tier-gold' };
+  if (p >= 5)  return { name: 'Silver Supporter', className: 'tier-silver' };
+  return { name: 'Bronze Supporter', className: 'tier-bronze' };
+}
+
+function formatDateTime(isoString) {
+  if (!isoString) return '';
+  try {
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return '';
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  } catch {
+    return formatDate(isoString);
+  }
+}
+
+async function openSupporterInfoModal(user) {
+  if (!user) return;
+
+  const displayName = user.display_name || user.displayName || user.name || 'Generous Supporter';
+  const rawUsername = String(user.username || '').trim().replace(/^@+/, '');
+  const username = rawUsername ? `@${rawUsername}` : '';
+  const userId = user.id || user.userId || '';
+  const userEmail = (user.email || user.donor_email || '').trim().toLowerCase();
+  const pizzasDonated = Number(user.pizzas_donated || user.pizzasDonated || user.pizzas || 0);
+  const takaAmount = pizzasDonated * PIZZA_PRICE_BDT;
+
+  // Title / Username
+  if (dom.supporterModalUsername) {
+    dom.supporterModalUsername.textContent = username ? `${displayName} (${username})` : displayName;
+  }
+
+  // Avatar
+  if (dom.supporterModalAvatar) {
+    if (user.avatar_url) {
+      dom.supporterModalAvatar.innerHTML = `<img src="${escapeHtml(user.avatar_url)}" alt="${escapeHtml(displayName)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    } else {
+      const initial = (displayName.charAt(0) || '🍕').toUpperCase();
+      dom.supporterModalAvatar.textContent = initial;
+    }
+  }
+
+  // Tier badge & summary
+  const tier = getSupporterTierInfo(pizzasDonated);
+  if (dom.supporterModalTierBadge) {
+    dom.supporterModalTierBadge.className = `supporter-tier-rank ${tier.className}`;
+    dom.supporterModalTierBadge.textContent = tier.name;
+  }
+
+  if (dom.supporterModalSummary) {
+    if (pizzasDonated > 0) {
+      dom.supporterModalSummary.textContent = `Backed independent journalism on BartaWire with 🍕 ${pizzasDonated} ${pizzasDonated === 1 ? 'pizza' : 'pizzas'} (${takaAmount}৳ total contributed).`;
+    } else {
+      dom.supporterModalSummary.textContent = `BartaWire Community Supporter & Patron.`;
+    }
+  }
+
+  // Metrics
+  if (dom.supporterModalTotalPizzas) {
+    dom.supporterModalTotalPizzas.textContent = `🍕 ${pizzasDonated} ${pizzasDonated === 1 ? 'Pizza' : 'Pizzas'}`;
+  }
+  if (dom.supporterModalTotalTaka) {
+    dom.supporterModalTotalTaka.textContent = `${takaAmount}৳ BDT`;
+  }
+  if (dom.supporterModalActiveStatus) {
+    dom.supporterModalActiveStatus.textContent = pizzasDonated > 0 ? 'Verified Supporter' : 'Supporter';
+  }
+
+  // Initial loading indicator in donations list
+  if (dom.supporterModalDonationsList) {
+    dom.supporterModalDonationsList.innerHTML = `
+      <div style="padding: 1.25rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+        <span>Loading donation records...</span>
+      </div>
+    `;
+  }
+  if (dom.supporterModalDonationsCount) {
+    dom.supporterModalDonationsCount.textContent = 'Searching...';
+  }
+
+  dom.supporterInfoModal?.classList.remove('hidden');
+
+  // Query / filter user donations
+  let userDonations = [];
+  try {
+    if ((!allDonationsList || allDonationsList.length === 0) && supabaseClient) {
+      const { data, error } = await supabaseClient
+        .from('donations')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (!error && Array.isArray(data)) {
+        allDonationsList = data;
+      }
+    }
+
+    if (Array.isArray(allDonationsList) && allDonationsList.length > 0) {
+      userDonations = allDonationsList.filter(d => {
+        if (!d) return false;
+        // 1. user_id match
+        if (userId && d.user_id && String(d.user_id) === String(userId)) return true;
+
+        // 2. username match
+        if (rawUsername) {
+          const dUser = String(d.username || '').trim().replace(/^@+/, '').toLowerCase();
+          if (dUser && dUser === rawUsername.toLowerCase()) return true;
+
+          const dSupporter = String(d.supporter_name || d.donor_name || d.name || '').trim().replace(/^@+/, '').toLowerCase();
+          if (dSupporter === rawUsername.toLowerCase()) return true;
+
+          // Message mentions username
+          const dMsg = String(d.message || d.comment || d.donor_note || d.note || '').toLowerCase();
+          if (dMsg.includes(`@${rawUsername.toLowerCase()}`)) return true;
+        }
+
+        // 3. display name match
+        if (displayName && displayName !== 'Generous Supporter' && displayName !== 'Member') {
+          const dSupporter = String(d.supporter_name || d.donor_name || d.name || d.display_name || '').trim().toLowerCase();
+          if (dSupporter && dSupporter === displayName.toLowerCase()) return true;
+        }
+
+        // 4. email match
+        if (userEmail) {
+          const dEmail = String(d.donor_email || d.email || '').trim().toLowerCase();
+          if (dEmail && dEmail === userEmail) return true;
+        }
+
+        return false;
+      });
+    }
+  } catch (err) {
+    console.warn('Error fetching donations for supporter modal:', err);
+  }
+
+  renderSupporterModalDonations(userDonations, pizzasDonated, user);
+}
+
+function closeSupporterInfoModal() {
+  dom.supporterInfoModal?.classList.add('hidden');
+}
+
+function renderSupporterModalDonations(userDonations, pizzasDonated, user) {
+  if (!dom.supporterModalDonationsList) return;
+  dom.supporterModalDonationsList.innerHTML = '';
+
+  if (Array.isArray(userDonations) && userDonations.length > 0) {
+    // Sort newest first
+    userDonations.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+    if (dom.supporterModalDonationsCount) {
+      dom.supporterModalDonationsCount.textContent = `${userDonations.length} ${userDonations.length === 1 ? 'donation recorded' : 'donations recorded'}`;
+    }
+
+    userDonations.forEach(donation => {
+      const count = Number(donation.pizzas_count) || 1;
+      const taka = count * PIZZA_PRICE_BDT;
+      const timeFormatted = donation.created_at ? formatDateTime(donation.created_at) : 'Recently';
+      const msg = String(donation.message || donation.comment || donation.donor_note || donation.note || '').trim();
+
+      const card = document.createElement('div');
+      card.className = 'supporter-donation-card';
+      card.innerHTML = `
+        <div class="supporter-donation-top">
+          <span class="supporter-donation-pizzas">🍕 x ${count} (${taka}৳)</span>
+          <span class="supporter-donation-date">${timeFormatted}</span>
+        </div>
+        ${msg ? `<p class="supporter-donation-message">"${escapeHtml(msg)}"</p>` : `<p class="supporter-donation-message is-fallback">“Fueling independent journalism on BartaWire!”</p>`}
+      `;
+      dom.supporterModalDonationsList.appendChild(card);
+    });
+    return;
+  }
+
+  // Fallback: If user has verified pizzas on profile
+  if (pizzasDonated > 0) {
+    if (dom.supporterModalDonationsCount) {
+      dom.supporterModalDonationsCount.textContent = '1 verified patron record';
+    }
+
+    const card = document.createElement('div');
+    card.className = 'supporter-donation-card';
+    card.innerHTML = `
+      <div class="supporter-donation-top">
+        <span class="supporter-donation-pizzas">🍕 ${pizzasDonated} ${pizzasDonated === 1 ? 'Pizza' : 'Pizzas'} (${pizzasDonated * PIZZA_PRICE_BDT}৳)</span>
+        <span class="supporter-donation-date">Verified Supporter</span>
+      </div>
+      <p class="supporter-donation-message">
+        “Fueling independent journalism, technical writing & community ideas on BartaWire.”
+      </p>
+    `;
+    dom.supporterModalDonationsList.appendChild(card);
+    return;
+  }
+
+  // Empty state
+  if (dom.supporterModalDonationsCount) {
+    dom.supporterModalDonationsCount.textContent = '0 donations';
+  }
+  dom.supporterModalDonationsList.innerHTML = `
+    <div style="padding: 1.25rem 1rem; text-align: center; color: var(--text-muted); font-size: 0.88rem;">
+      <p>No donation records found for this member yet.</p>
+    </div>
+  `;
+}
+
 /**
  * Closes the crop modal and cleans up active resources
  */
@@ -11823,10 +12066,28 @@ function initEventListeners() {
   });
 
   dom.publicProfileSupporterBadge?.addEventListener('click', () => {
-    openSupportersView();
+    if (currentPublicProfileUser) {
+      openSupporterInfoModal(currentPublicProfileUser);
+    } else {
+      openSupportersView();
+    }
   });
   dom.profileIdentitySupporterBadge?.addEventListener('click', () => {
-    openSupportersView();
+    if (currentProfile) {
+      openSupporterInfoModal(currentProfile);
+    } else {
+      openSupportersView();
+    }
+  });
+  dom.publicSupporterTier?.addEventListener('click', () => {
+    if (currentPublicProfileUser) {
+      openSupporterInfoModal(currentPublicProfileUser);
+    }
+  });
+  document.getElementById('public-stat-pizzas-wrap')?.addEventListener('click', () => {
+    if (currentPublicProfileUser && Number(currentPublicProfileUser.pizzas_donated || 0) > 0) {
+      openSupporterInfoModal(currentPublicProfileUser);
+    }
   });
 
   // Direct Profile Photo & Cover Edit buttons on Profile
@@ -12972,6 +13233,23 @@ function initEventListeners() {
     }
   });
 
+  // Supporter Info Modal Listeners
+  dom.supporterModalCloseBtn?.addEventListener('click', closeSupporterInfoModal);
+  dom.supporterModalDoneBtn?.addEventListener('click', closeSupporterInfoModal);
+  dom.supporterInfoModal?.addEventListener('click', (e) => {
+    if (e.target === dom.supporterInfoModal) {
+      closeSupporterInfoModal();
+    }
+  });
+  dom.supporterModalLeaderboardBtn?.addEventListener('click', () => {
+    closeSupporterInfoModal();
+    openSupportersView();
+  });
+  dom.supporterModalDonateBtn?.addEventListener('click', () => {
+    closeSupporterInfoModal();
+    openDonatePizzaModal();
+  });
+
   // Footer Brand Link
   dom.footerBrandLogo?.addEventListener('click', (e) => {
     e.preventDefault();
@@ -13059,6 +13337,10 @@ function initEventListeners() {
         closeAuthorInfoModal();
         return;
       }
+      if (dom.supporterInfoModal && !dom.supporterInfoModal.classList.contains('hidden')) {
+        closeSupporterInfoModal();
+        return;
+      }
       if (dom.authModal && !dom.authModal.classList.contains('hidden')) {
         closeAuthModal();
         return;
@@ -13129,6 +13411,8 @@ window.handleSupportersCopyEmail = handleSupportersCopyEmail;
 window.handleSupportersCopyUsername = handleSupportersCopyUsername;
 window.openDonatePizzaModal = openDonatePizzaModal;
 window.closeDonatePizzaModal = closeDonatePizzaModal;
+window.openSupporterInfoModal = openSupporterInfoModal;
+window.closeSupporterInfoModal = closeSupporterInfoModal;
 window.authorProfilesCache = authorProfilesCache;
 window.updateAuthUI = updateAuthUI;
 window.printArticle = printArticle;

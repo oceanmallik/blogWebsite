@@ -2816,6 +2816,97 @@
   </div>
 
   <!-- ==============================================
+       SUPPORTER INFO MODAL (Donation Details, Date & Message)
+       ============================================== -->
+  <div id="supporter-info-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="supporter-modal-title">
+    <div class="modal-card supporter-modal-card">
+      <div class="modal-header supporter-modal-header">
+        <div class="supporter-modal-title-wrap">
+          <div class="supporter-modal-badge-seal">
+            <svg viewBox="0 0 24 24" width="36" height="36" aria-hidden="true" class="verified-badge-svg supporter-badge-svg">
+              <path fill="#f59e0b" stroke="#000000" stroke-width="0.8" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91c-1.31.67-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"></path>
+              <path fill="#FFFFFF" d="M12 7c-2.4 0-4.6.4-5.7 1.1-.1.4 4.8 9.6 5.7 9.9.9-.3 5.8-9.5 5.7-9.9C16.6 7.4 14.4 7 12 7zm0 2.2c1.4 0 2.8.2 3.5.5L12 15.6 8.5 9.7c.7-.3 2.1-.5 3.5-.5z"></path>
+              <circle cx="12" cy="11.4" r="0.85" fill="#FFFFFF"></circle>
+              <circle cx="10.5" cy="13.2" r="0.7" fill="#FFFFFF"></circle>
+              <circle cx="13.5" cy="13.2" r="0.7" fill="#FFFFFF"></circle>
+            </svg>
+          </div>
+          <div>
+            <h3 id="supporter-modal-title" class="supporter-modal-title">BartaWire Supporter</h3>
+            <p class="supporter-modal-subtitle">Pizza Community Backer • Independent Patron</p>
+          </div>
+        </div>
+        <button id="supporter-modal-close-btn" class="modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <div class="modal-body supporter-modal-body">
+        <!-- Supporter Overview Banner -->
+        <div class="supporter-status-banner">
+          <div class="supporter-banner-avatar-wrap">
+            <div id="supporter-modal-avatar" class="supporter-modal-avatar">🍕</div>
+          </div>
+          <div class="supporter-status-text">
+            <div class="supporter-modal-name-row">
+              <span class="supporter-status-heading" id="supporter-modal-username">Supporter</span>
+              <span id="supporter-modal-tier-badge" class="supporter-tier-rank tier-bronze">Supporter</span>
+            </div>
+            <p class="supporter-status-desc" id="supporter-modal-summary">
+              Backed independent journalism on BartaWire.
+            </p>
+          </div>
+        </div>
+
+        <!-- Metric Badges Row -->
+        <div class="supporter-modal-metrics">
+          <div class="supporter-modal-stat-pill">
+            <span class="stat-pill-label">Total Donated</span>
+            <span class="stat-pill-value" id="supporter-modal-total-pizzas">🍕 0 Pizzas</span>
+          </div>
+          <div class="supporter-modal-stat-pill">
+            <span class="stat-pill-label">Total Raised</span>
+            <span class="stat-pill-value" id="supporter-modal-total-taka">0৳ BDT</span>
+          </div>
+          <div class="supporter-modal-stat-pill">
+            <span class="stat-pill-label">Tier Status</span>
+            <span class="stat-pill-value" id="supporter-modal-active-status">Active Supporter</span>
+          </div>
+        </div>
+
+        <!-- Donation History & Messages List Section -->
+        <div class="supporter-history-section">
+          <div class="supporter-history-header">
+            <span class="supporter-history-tag">✦ DONATION HISTORY &amp; MESSAGES</span>
+            <span class="supporter-history-count" id="supporter-modal-donations-count">0 donations</span>
+          </div>
+
+          <div id="supporter-modal-donations-list" class="supporter-donations-list">
+            <!-- Dynamically populated donation cards with pizzas, date and donor message -->
+          </div>
+        </div>
+
+        <!-- Call-to-action box to become a supporter -->
+        <div class="supporter-modal-cta-box">
+          <div class="supporter-cta-text">
+            <strong>Fuel Independent Journalism</strong>
+            <span>Support BartaWire for 50৳ / pizza and get recognized across the platform.</span>
+          </div>
+          <button type="button" id="supporter-modal-donate-btn" class="btn-primary supporter-modal-donate-cta">
+            <span class="cta-pizza-icon">🍕</span>
+            <span>Donate Pizza (50৳)</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-footer supporter-modal-footer">
+        <button type="button" id="supporter-modal-leaderboard-btn" class="btn-secondary">
+          <span>🏆 View Leaderboard</span>
+        </button>
+        <button type="button" id="supporter-modal-done-btn" class="btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================================
        PHOTOCARD STUDIO MODAL (1080x1350 Social News Card)
        ============================================== -->
   <div id="photocard-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="photocard-modal-title">
