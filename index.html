@@ -1546,68 +1546,91 @@
             </div>
           </div>
 
-          <!-- Activity Summary Stats Deck -->
-          <div class="public-profile-stats" id="public-profile-stats" aria-label="Creator Activity Statistics">
-            <!-- Articles -->
-            <div class="stat-card stat-card-articles profile-stat-box" title="Published Articles">
-              <div class="stat-card-body">
-                <span id="public-stat-posts" class="stat-card-number profile-stat-num">0</span>
-                <span class="stat-card-label profile-stat-lbl">Articles</span>
+          <!-- Lower Bar: Left (Find Me Section) | Right (4 Stats) -->
+          <div class="public-profile-lower-bar" id="public-profile-lower-bar">
+            <!-- Left: Top (Social Media) & Bottom (Member Since Date) -->
+            <div class="public-profile-lower-left" id="public-profile-lower-left">
+              <!-- Top: "Find Me" Social Profiles -->
+              <div id="public-profile-social-row" class="public-profile-social-row">
+                <span class="social-row-label">Find Me:</span>
+                <div id="public-profile-social-list" class="public-social-links-list"></div>
               </div>
-              <div class="stat-card-icon stat-icon-articles" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <line x1="16" y1="13" x2="8" y2="13"></line>
-                  <line x1="16" y1="17" x2="8" y2="17"></line>
+
+              <!-- Bottom: Member Since Date -->
+              <div class="public-profile-joined-row" id="public-profile-joined-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true" class="joined-calendar-icon">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
+                <span id="public-profile-joined" class="public-joined-text">Member</span>
               </div>
             </div>
 
-            <!-- Comments -->
-            <div class="stat-card stat-card-comments profile-stat-box" title="Discussions & Comments">
-              <div class="stat-card-body">
-                <span id="public-stat-comments" class="stat-card-number profile-stat-num">0</span>
-                <span class="stat-card-label profile-stat-lbl">Comments</span>
+            <!-- Right: Activity Summary Stats Deck -->
+            <div class="public-profile-stats" id="public-profile-stats" aria-label="Creator Activity Statistics">
+              <!-- Articles -->
+              <div class="stat-card stat-card-articles profile-stat-box" title="Published Articles">
+                <div class="stat-card-body">
+                  <span id="public-stat-posts" class="stat-card-number profile-stat-num">0</span>
+                  <span class="stat-card-label profile-stat-lbl">Articles</span>
+                </div>
+                <div class="stat-card-icon stat-icon-articles" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                  </svg>
+                </div>
               </div>
-              <div class="stat-card-icon stat-icon-comments" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                </svg>
-              </div>
-            </div>
 
-            <!-- Pizzas Donated -->
-            <div class="stat-card stat-card-pizzas profile-stat-box" id="public-stat-pizzas-wrap" title="Pizzas Donated to Independent Journalism">
-              <div class="stat-card-body">
-                <span id="public-stat-pizzas" class="stat-card-number profile-stat-num">0</span>
-                <span class="stat-card-label profile-stat-lbl">Pizzas Donated</span>
+              <!-- Comments -->
+              <div class="stat-card stat-card-comments profile-stat-box" title="Discussions & Comments">
+                <div class="stat-card-body">
+                  <span id="public-stat-comments" class="stat-card-number profile-stat-num">0</span>
+                  <span class="stat-card-label profile-stat-lbl">Comments</span>
+                </div>
+                <div class="stat-card-icon stat-icon-comments" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                </div>
               </div>
-              <div class="stat-card-icon stat-icon-pizzas" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 21.5L3.5 6.5C8 4.2 16 4.2 20.5 6.5L12 21.5z"></path>
-                  <path d="M4.8 8.2C8.5 6.6 15.5 6.6 19.2 8.2"></path>
-                  <circle cx="12" cy="12" r="1.3" fill="currentColor"></circle>
-                  <circle cx="9.5" cy="15.8" r="1.1" fill="currentColor"></circle>
-                  <circle cx="14.5" cy="15.8" r="1.1" fill="currentColor"></circle>
-                </svg>
-              </div>
-            </div>
 
-            <!-- Achievements -->
-            <div class="stat-card stat-card-achievements stat-card-clickable profile-stat-box profile-stat-achievements-btn" id="public-stat-achievements-wrap" role="button" tabindex="0" title="Click to view Achievements tab">
-              <div class="stat-card-body">
-                <span id="public-stat-achievements" class="stat-card-number profile-stat-num">0 / 15</span>
-                <span class="stat-card-label profile-stat-lbl">Achievements</span>
+              <!-- Pizzas Donated -->
+              <div class="stat-card stat-card-pizzas profile-stat-box" id="public-stat-pizzas-wrap" title="Pizzas Donated to Independent Journalism">
+                <div class="stat-card-body">
+                  <span id="public-stat-pizzas" class="stat-card-number profile-stat-num">0</span>
+                  <span class="stat-card-label profile-stat-lbl">Pizzas Donated</span>
+                </div>
+                <div class="stat-card-icon stat-icon-pizzas" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 21.5L3.5 6.5C8 4.2 16 4.2 20.5 6.5L12 21.5z"></path>
+                    <path d="M4.8 8.2C8.5 6.6 15.5 6.6 19.2 8.2"></path>
+                    <circle cx="12" cy="12" r="1.3" fill="currentColor"></circle>
+                    <circle cx="9.5" cy="15.8" r="1.1" fill="currentColor"></circle>
+                    <circle cx="14.5" cy="15.8" r="1.1" fill="currentColor"></circle>
+                  </svg>
+                </div>
               </div>
-              <div class="stat-card-icon stat-icon-achievements" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-                  <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-                  <path d="M4 4h16v6a6 6 0 0 1-12 0V4z"></path>
-                  <path d="M12 16v3"></path>
-                  <path d="M8 21h8"></path>
-                </svg>
+
+              <!-- Achievements -->
+              <div class="stat-card stat-card-achievements stat-card-clickable profile-stat-box profile-stat-achievements-btn" id="public-stat-achievements-wrap" role="button" tabindex="0" title="Click to view Achievements tab">
+                <div class="stat-card-body">
+                  <span id="public-stat-achievements" class="stat-card-number profile-stat-num">0 / 15</span>
+                  <span class="stat-card-label profile-stat-lbl">Achievements</span>
+                </div>
+                <div class="stat-card-icon stat-icon-achievements" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                    <path d="M4 4h16v6a6 6 0 0 1-12 0V4z"></path>
+                    <path d="M12 16v3"></path>
+                    <path d="M8 21h8"></path>
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
@@ -1675,26 +1698,10 @@
                 <span id="public-profile-website"></span>
               </a>
 
-              <span class="public-meta-pill">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                  <line x1="16" y1="2" x2="16" y2="6"></line>
-                  <line x1="8" y1="2" x2="8" y2="6"></line>
-                  <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
-                <span id="public-profile-joined">Member</span>
-              </span>
-
               <span class="public-meta-pill" id="public-profile-status-pill">
                 <span class="status-indicator-dot online" style="width: 7px; height: 7px;"></span>
                 <span>Active Member</span>
               </span>
-            </div>
-
-            <!-- "Find Me" Social Links Row -->
-            <div id="public-profile-social-row" class="public-profile-social-row hidden">
-              <span class="social-row-label">Find Me:</span>
-              <div id="public-profile-social-list" class="public-social-links-list"></div>
             </div>
           </div>
 

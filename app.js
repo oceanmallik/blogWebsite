@@ -9489,35 +9489,65 @@ function renderPublicProfileSocials(socialLinks) {
   if (!dom.publicProfileSocialRow || !dom.publicProfileSocialList) return;
   dom.publicProfileSocialList.innerHTML = '';
 
-  if (!socialLinks || typeof socialLinks !== 'object') {
-    dom.publicProfileSocialRow.classList.add('hidden');
-    return;
-  }
+  const isSelf = currentUser && currentPublicProfileUser && (currentUser.id === currentPublicProfileUser.id || currentUser.id === currentPublicProfileUser.user_id);
 
   let count = 0;
-  SOCIAL_PLATFORMS.forEach(({ key, label }) => {
-    const rawVal = socialLinks[key];
-    if (rawVal && String(rawVal).trim() !== '') {
-      const url = formatSocialUrl(key, rawVal);
-      if (url) {
-        count++;
-        const link = document.createElement('a');
-        link.className = `social-link-btn social-btn-${key}`;
-        link.href = url;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        link.title = `${label}: ${rawVal}`;
-        link.setAttribute('aria-label', `${label} profile`);
-        link.innerHTML = getSocialSvg(key);
-        dom.publicProfileSocialList.appendChild(link);
+  if (socialLinks && typeof socialLinks === 'object') {
+    SOCIAL_PLATFORMS.forEach(({ key, label }) => {
+      const rawVal = socialLinks[key];
+      if (rawVal && String(rawVal).trim() !== '') {
+        const url = formatSocialUrl(key, rawVal);
+        if (url) {
+          count++;
+          const link = document.createElement('a');
+          link.href = url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.title = `${label}: ${rawVal}`;
+          link.setAttribute('aria-label', `${label} profile`);
+
+          // Make sure the first find me link shows with icon + title and the others show only icon
+          if (count === 1) {
+            link.className = `social-link-btn social-link-featured social-btn-${key}`;
+            link.innerHTML = `
+              <span class="social-btn-icon" aria-hidden="true">${getSocialSvg(key)}</span>
+              <span class="social-btn-title">${escapeHtml(label)}</span>
+            `;
+          } else {
+            link.className = `social-link-btn social-link-icon-only social-btn-${key}`;
+            link.innerHTML = `<span class="social-btn-icon" aria-hidden="true">${getSocialSvg(key)}</span>`;
+          }
+
+          dom.publicProfileSocialList.appendChild(link);
+        }
       }
-    }
-  });
+    });
+  }
 
   if (count > 0) {
     dom.publicProfileSocialRow.classList.remove('hidden');
+  } else if (isSelf) {
+    // If owner viewing profile with no links yet, offer an "Add Socials" prompt
+    dom.publicProfileSocialRow.classList.remove('hidden');
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'social-link-btn social-link-featured social-link-add-prompt';
+    addBtn.title = 'Add your social profiles in Account Settings';
+    addBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      <span class="social-btn-title">Add Social Links</span>
+    `;
+    addBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openSettingsView();
+    });
+    dom.publicProfileSocialList.appendChild(addBtn);
   } else {
-    dom.publicProfileSocialRow.classList.add('hidden');
+    dom.publicProfileSocialRow.classList.remove('hidden');
+    const emptyPill = document.createElement('span');
+    emptyPill.className = 'social-link-empty-pill';
+    emptyPill.textContent = 'No links added';
+    dom.publicProfileSocialList.appendChild(emptyPill);
   }
 }
 
