@@ -85,13 +85,13 @@ function updateRoleBadge(element, role) {
   const isWriter = r === 'admin' || r === 'publisher';
   element.className = `role-badge role-${isWriter ? 'admin' : 'visitor'}`;
   if (isWriter) {
-    element.innerHTML = WRITING_ICON_SVG;
-    element.title = 'Writer';
-    element.setAttribute('aria-label', 'Writer');
+    element.innerHTML = `<span class="role-badge-icon" aria-hidden="true">${WRITING_ICON_SVG}</span><span class="role-badge-text">Author</span>`;
+    element.title = 'Publisher / Author';
+    element.setAttribute('aria-label', 'Author');
   } else {
-    element.textContent = 'Visitor';
-    element.title = 'Role: Visitor';
-    element.setAttribute('aria-label', 'Role: Visitor');
+    element.innerHTML = `<span class="role-badge-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="12" height="12"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span><span class="role-badge-text">Member</span>`;
+    element.title = 'Community Member';
+    element.setAttribute('aria-label', 'Community Member');
   }
 }
 
@@ -563,6 +563,16 @@ function initDOM() {
   dom.profileStatPizzas = document.getElementById('profile-stat-pizzas');
   dom.profileStatPizzasTaka = document.getElementById('profile-stat-pizzas-taka');
   dom.profileStatStatus = document.getElementById('profile-stat-status');
+  dom.profileSupporterTier = document.getElementById('profile-supporter-tier');
+  dom.profileSupporterTierDesc = document.getElementById('profile-supporter-tier-desc');
+  dom.profileSupporterTierBadge = document.getElementById('profile-supporter-tier-badge');
+  dom.profileAchievementsGrid = document.getElementById('profile-achievements-grid');
+  dom.profileAchievementsCount = document.getElementById('profile-achievements-count');
+  dom.profileSupporterTier = document.getElementById('profile-supporter-tier');
+  dom.profileSupporterTierDesc = document.getElementById('profile-supporter-tier-desc');
+  dom.profileSupporterTierBadge = document.getElementById('profile-supporter-tier-badge');
+  dom.profileAchievementsGrid = document.getElementById('profile-achievements-grid');
+  dom.profileAchievementsCount = document.getElementById('profile-achievements-count');
   dom.profileSidePasswordBtn = document.getElementById('profile-side-password-btn');
   dom.profileSideLogoutBtn = document.getElementById('profile-side-logout-btn');
   dom.profileForm = document.getElementById('profile-form');
@@ -675,6 +685,13 @@ function initDOM() {
   dom.publicProfileEditCoverBtn = document.getElementById('public-profile-edit-cover-btn');
   dom.publicProfileEditAvatarBtn = document.getElementById('public-profile-edit-avatar-btn');
   dom.profileIdentityEditAvatarBtn = document.getElementById('profile-identity-edit-avatar-btn');
+
+  // Public Profile Supporter Tier & Achievements
+  dom.publicSupporterTier = document.getElementById('public-supporter-tier');
+  dom.publicSupporterTierDesc = document.getElementById('public-supporter-tier-desc');
+  dom.publicSupporterTierBadge = document.getElementById('public-supporter-tier-badge');
+  dom.publicAchievementsGrid = document.getElementById('public-achievements-grid');
+  dom.publicAchievementsCount = document.getElementById('public-achievements-count');
 
   // Photo Upload Modal Elements
   dom.photoUploadModal = document.getElementById('photo-upload-modal');
@@ -7673,26 +7690,31 @@ function renderProfileInitials(displayName) {
 async function fetchProfileStats(userId, role) {
   if (!supabaseClient || !userId) return;
 
+  let commentCount = 0;
+  let postCount = 0;
+
   try {
     // 1. Comments Count
-    const { count: commentCount, error: commentErr } = await supabaseClient
+    const { count: cc, error: commentErr } = await supabaseClient
       .from('comments')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId);
 
-    if (!commentErr && typeof commentCount === 'number') {
+    if (!commentErr && typeof cc === 'number') {
+      commentCount = cc;
       if (dom.profileStatComments) dom.profileStatComments.textContent = commentCount;
     }
 
     // 2. Posts Authored (if role is admin)
     if (role === 'admin') {
       if (dom.profileStatPostsWrap) dom.profileStatPostsWrap.classList.remove('hidden');
-      const { count: postCount, error: postErr } = await supabaseClient
+      const { count: pc, error: postErr } = await supabaseClient
         .from('posts')
         .select('id', { count: 'exact', head: true })
         .eq('author_id', userId);
 
-      if (!postErr && typeof postCount === 'number') {
+      if (!postErr && typeof pc === 'number') {
+        postCount = pc;
         if (dom.profileStatPosts) dom.profileStatPosts.textContent = postCount;
       }
     } else {
@@ -7701,6 +7723,277 @@ async function fetchProfileStats(userId, role) {
   } catch (err) {
     console.warn('Could not load user profile stats:', err);
   }
+
+  // Render achievements based on all gathered stats
+  const pizzas = Number(currentProfile?.pizzas_donated || 0);
+  const createdAt = currentProfile?.created_at || currentUser?.created_at || new Date().toISOString();
+  const memberDays = Math.floor((Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24));
+  renderProfileAchievements({ comments: commentCount, posts: postCount, pizzas, memberDays });
+}
+
+// ============================================================================
+// ACHIEVEMENT SYSTEM
+// ============================================================================
+
+/**
+ * Returns the full list of all achievement definitions.
+ * Each achievement: { id, icon, label, desc, check: fn(stats) => bool, rarity }
+ */
+function getAchievementDefinitions() {
+  return [
+    {
+      id: 'first_step',
+      icon: '🚀',
+      label: 'First Step',
+      desc: 'Joined BartaWire',
+      check: () => true,
+      rarity: 'common'
+    },
+    {
+      id: 'first_comment',
+      icon: '💬',
+      label: 'Voice of the People',
+      desc: 'Posted your first comment',
+      check: (s) => s.comments >= 1,
+      rarity: 'common'
+    },
+    {
+      id: 'comment_5',
+      icon: '🗣️',
+      label: 'Discussion Starter',
+      desc: 'Posted 5+ comments',
+      check: (s) => s.comments >= 5,
+      rarity: 'uncommon'
+    },
+    {
+      id: 'comment_25',
+      icon: '📣',
+      label: 'Community Pillar',
+      desc: 'Posted 25+ comments',
+      check: (s) => s.comments >= 25,
+      rarity: 'rare'
+    },
+    {
+      id: 'comment_100',
+      icon: '🏅',
+      label: 'Legendary Commenter',
+      desc: '100+ comments posted',
+      check: (s) => s.comments >= 100,
+      rarity: 'legendary'
+    },
+    {
+      id: 'first_article',
+      icon: '✍️',
+      label: 'Published Author',
+      desc: 'Published your first article',
+      check: (s) => s.posts >= 1,
+      rarity: 'uncommon'
+    },
+    {
+      id: 'articles_5',
+      icon: '📰',
+      label: 'Prolific Writer',
+      desc: 'Published 5+ articles',
+      check: (s) => s.posts >= 5,
+      rarity: 'rare'
+    },
+    {
+      id: 'articles_20',
+      icon: '📚',
+      label: 'Editorial Legend',
+      desc: 'Published 20+ articles',
+      check: (s) => s.posts >= 20,
+      rarity: 'legendary'
+    },
+    {
+      id: 'first_pizza',
+      icon: '🍕',
+      label: 'Pizza Backer',
+      desc: 'Donated your first pizza',
+      check: (s) => s.pizzas >= 1,
+      rarity: 'uncommon'
+    },
+    {
+      id: 'pizzas_5',
+      icon: '🍕🍕',
+      label: 'Silver Slicer',
+      desc: 'Donated 5+ pizzas',
+      check: (s) => s.pizzas >= 5,
+      rarity: 'rare'
+    },
+    {
+      id: 'pizzas_10',
+      icon: '🥇',
+      label: 'Gold Feeder',
+      desc: 'Donated 10+ pizzas',
+      check: (s) => s.pizzas >= 10,
+      rarity: 'epic'
+    },
+    {
+      id: 'pizzas_20',
+      icon: '👑',
+      label: 'Platinum Patron',
+      desc: 'Donated 20+ pizzas — Elite tier',
+      check: (s) => s.pizzas >= 20,
+      rarity: 'legendary'
+    },
+    {
+      id: 'veteran_30',
+      icon: '📅',
+      label: 'Early Adopter',
+      desc: 'Member for 30+ days',
+      check: (s) => s.memberDays >= 30,
+      rarity: 'uncommon'
+    },
+    {
+      id: 'veteran_180',
+      icon: '🌟',
+      label: 'Veteran Member',
+      desc: 'Member for 180+ days',
+      check: (s) => s.memberDays >= 180,
+      rarity: 'rare'
+    },
+    {
+      id: 'veteran_365',
+      icon: '🏆',
+      label: 'BartaWire OG',
+      desc: 'Member for a full year',
+      check: (s) => s.memberDays >= 365,
+      rarity: 'legendary'
+    }
+  ];
+}
+
+/**
+ * Renders achievements in the profile achievement grid.
+ * @param {object} stats - { comments, posts, pizzas, memberDays }
+ */
+function renderProfileAchievements(stats) {
+  const grid = dom.profileAchievementsGrid;
+  const countEl = dom.profileAchievementsCount;
+  if (!grid) return;
+
+  const defs = getAchievementDefinitions();
+  const unlocked = defs.filter(a => a.check(stats));
+  const locked = defs.filter(a => !a.check(stats));
+
+  if (countEl) {
+    countEl.textContent = `${unlocked.length} / ${defs.length}`;
+    countEl.className = `profile-achievements-count-pill ${unlocked.length === defs.length ? 'all-unlocked' : ''}`;
+  }
+
+  grid.innerHTML = '';
+
+  // Render unlocked first, then locked
+  [...unlocked, ...locked].forEach(ach => {
+    const isUnlocked = unlocked.includes(ach);
+    const el = document.createElement('div');
+    el.className = `achievement-chip rarity-${ach.rarity} ${isUnlocked ? 'unlocked' : 'locked'}`;
+    el.title = `${ach.label}: ${ach.desc}${isUnlocked ? '' : ' (Locked)'}`;
+    el.innerHTML = `
+      <span class="achievement-icon" aria-hidden="true">${isUnlocked ? ach.icon : '🔒'}</span>
+      <div class="achievement-info">
+        <span class="achievement-label">${ach.label}</span>
+        <span class="achievement-desc">${ach.desc}</span>
+      </div>
+      ${isUnlocked ? `<span class="achievement-rarity-dot rarity-${ach.rarity}" title="${ach.rarity}"></span>` : ''}
+    `;
+    grid.appendChild(el);
+  });
+}
+
+let currentPublicAchievementStats = null;
+let currentPublicAchievementFilter = 'all';
+
+/**
+ * Renders achievement cards in the PUBLIC profile hero deck.
+ * @param {object} [stats] - { comments, posts, pizzas, memberDays }
+ */
+function renderPublicAchievements(stats) {
+  if (stats) {
+    currentPublicAchievementStats = stats;
+  } else {
+    stats = currentPublicAchievementStats || { comments: 0, posts: 0, pizzas: 0, memberDays: 0 };
+  }
+
+  const grid = dom.publicAchievementsGrid;
+  const countEl = dom.publicAchievementsCount;
+  const progressBar = document.getElementById('public-achievements-progress-bar');
+  if (!grid) return;
+
+  const defs = getAchievementDefinitions();
+  const unlocked = defs.filter(a => a.check(stats));
+  const locked   = defs.filter(a => !a.check(stats));
+
+  const total = defs.length;
+  const unlockedCount = unlocked.length;
+  const pct = total > 0 ? Math.round((unlockedCount / total) * 100) : 0;
+
+  if (countEl) {
+    countEl.textContent = `${unlockedCount} / ${total} (${pct}%)`;
+    countEl.className = `profile-achievements-count-pill ${unlockedCount === total ? 'all-unlocked' : ''}`;
+  }
+
+  if (progressBar) {
+    progressBar.style.width = `${pct}%`;
+  }
+
+  // Update filter pills count
+  const allPill = document.querySelector('.ach-filter-pill[data-filter="all"]');
+  const unlockedPill = document.querySelector('.ach-filter-pill[data-filter="unlocked"]');
+  const lockedPill = document.querySelector('.ach-filter-pill[data-filter="locked"]');
+  if (allPill) allPill.textContent = `All (${total})`;
+  if (unlockedPill) unlockedPill.textContent = `Unlocked (${unlockedCount})`;
+  if (lockedPill) lockedPill.textContent = `Locked (${locked.length})`;
+
+  let toRender = [];
+  if (currentPublicAchievementFilter === 'unlocked') {
+    toRender = unlocked;
+  } else if (currentPublicAchievementFilter === 'locked') {
+    toRender = locked;
+  } else {
+    toRender = [...unlocked, ...locked];
+  }
+
+  grid.innerHTML = '';
+
+  if (toRender.length === 0) {
+    const emptyMsg = document.createElement('div');
+    emptyMsg.className = 'achievements-empty-banner';
+    emptyMsg.textContent = currentPublicAchievementFilter === 'unlocked'
+      ? 'No achievements unlocked yet in this filter. Publish articles, leave comments, and support the community to earn badges!'
+      : 'All achievements are unlocked! You are a BartaWire legend!';
+    grid.appendChild(emptyMsg);
+    return;
+  }
+
+  toRender.forEach(ach => {
+    const isUnlocked = unlocked.includes(ach);
+    const card = document.createElement('div');
+    card.className = `achievement-deck-card rarity-${ach.rarity} ${isUnlocked ? 'unlocked' : 'locked'}`;
+    card.setAttribute('data-rarity', ach.rarity);
+    card.setAttribute('data-status', isUnlocked ? 'unlocked' : 'locked');
+    card.title = `${ach.label}: ${ach.desc} (${isUnlocked ? 'Unlocked' : 'Locked'})`;
+
+    card.innerHTML = `
+      <div class="ach-card-top">
+        <div class="ach-icon-box rarity-${ach.rarity}">
+          <span class="ach-card-icon" aria-hidden="true">${isUnlocked ? ach.icon : '🔒'}</span>
+        </div>
+        <div class="ach-card-badges">
+          <span class="ach-rarity-tag rarity-${ach.rarity}">${ach.rarity.toUpperCase()}</span>
+          <span class="ach-status-tag ${isUnlocked ? 'tag-unlocked' : 'tag-locked'}">
+            ${isUnlocked ? '✓ Unlocked' : 'Locked'}
+          </span>
+        </div>
+      </div>
+      <div class="ach-card-body">
+        <h4 class="ach-card-title">${escapeHtml(ach.label)}</h4>
+        <p class="ach-card-desc">${escapeHtml(ach.desc)}</p>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
 }
 
 /**
@@ -9026,14 +9319,44 @@ function renderPublicProfileHero(profile) {
     }
   }
 
-  // Supporter Badge
+  // Supporter Badge Pill
   const pizzasDonated = Number(profile.pizzas_donated || 0);
   if (dom.publicProfileSupporterBadge) {
     if (pizzasDonated > 0) {
       dom.publicProfileSupporterBadge.classList.remove('hidden');
+      let supporterText = 'Supporter';
+      let tierClass = 'tier-bronze';
+      if (pizzasDonated >= 20)      { supporterText = 'Platinum Patron'; tierClass = 'tier-platinum'; }
+      else if (pizzasDonated >= 10) { supporterText = 'Gold Supporter';  tierClass = 'tier-gold'; }
+      else if (pizzasDonated >= 5)  { supporterText = 'Silver Supporter';tierClass = 'tier-silver'; }
+      
+      const supporterTextEl = document.getElementById('public-profile-supporter-text');
+      if (supporterTextEl) supporterTextEl.textContent = supporterText;
+      dom.publicProfileSupporterBadge.className = `profile-badge-pill badge-supporter ${tierClass}`;
       dom.publicProfileSupporterBadge.title = `BartaWire Pizza Supporter • ${pizzasDonated} ${pizzasDonated === 1 ? 'pizza' : 'pizzas'} donated (${pizzasDonated * PIZZA_PRICE_BDT}৳)`;
     } else {
       dom.publicProfileSupporterBadge.classList.add('hidden');
+    }
+  }
+
+  // Supporter Tier Showcase Banner (top hero deck)
+  if (dom.publicSupporterTier) {
+    if (pizzasDonated > 0) {
+      dom.publicSupporterTier.classList.remove('hidden');
+      let tierLabel = 'Bronze Supporter';
+      let tierClass = 'tier-bronze';
+      if (pizzasDonated >= 20)      { tierLabel = 'Platinum Patron';   tierClass = 'tier-platinum'; }
+      else if (pizzasDonated >= 10) { tierLabel = 'Gold Supporter';     tierClass = 'tier-gold'; }
+      else if (pizzasDonated >= 5)  { tierLabel = 'Silver Supporter';   tierClass = 'tier-silver'; }
+      if (dom.publicSupporterTierDesc) {
+        dom.publicSupporterTierDesc.textContent = `Donated ${pizzasDonated} ${pizzasDonated === 1 ? 'pizza' : 'pizzas'} (${pizzasDonated * PIZZA_PRICE_BDT}৳) to fuel independent journalism.`;
+      }
+      if (dom.publicSupporterTierBadge) {
+        dom.publicSupporterTierBadge.textContent = tierLabel;
+        dom.publicSupporterTierBadge.className = `supporter-tier-rank ${tierClass}`;
+      }
+    } else {
+      dom.publicSupporterTier.classList.add('hidden');
     }
   }
 
@@ -9128,6 +9451,16 @@ function renderPublicProfileHero(profile) {
 
   // Render Skills
   renderPublicProfileSkills(profile.skills);
+
+  // Achievements Dashboard (public profile sidebar)
+  const createdAtDate = profile.created_at || new Date().toISOString();
+  const memberDays = Math.floor((Date.now() - new Date(createdAtDate).getTime()) / (1000 * 60 * 60 * 24));
+  renderPublicAchievements({
+    comments:   Number(profile.comment_count || 0),
+    posts:      Number(profile.post_count    || 0),
+    pizzas:     pizzasDonated,
+    memberDays
+  });
 
   // Owner-only action buttons (Edit Profile, Edit Cover, Edit Avatar)
   const isSelf = Boolean(currentUser && profile.id && currentUser.id === profile.id);
@@ -9260,6 +9593,17 @@ async function loadPublicUserPosts(profile, requestId) {
   if (dom.publicTabPostsCount) dom.publicTabPostsCount.textContent = uniquePosts.length;
   if (dom.publicStatPosts) dom.publicStatPosts.textContent = uniquePosts.length;
 
+  // Re-render achievements with updated post count
+  if (currentPublicProfileUser) {
+    const _cd = currentPublicProfileUser.created_at || new Date().toISOString();
+    renderPublicAchievements({
+      comments:   Number(dom.publicStatComments?.textContent || 0),
+      posts:      uniquePosts.length,
+      pizzas:     Number(currentPublicProfileUser.pizzas_donated || 0),
+      memberDays: Math.floor((Date.now() - new Date(_cd).getTime()) / (1000 * 60 * 60 * 24))
+    });
+  }
+
   if (uniquePosts.length === 0) {
     dom.publicPostsEmpty?.classList.remove('hidden');
     return;
@@ -9366,6 +9710,17 @@ async function loadPublicUserComments(profile, requestId) {
 
   if (dom.publicTabCommentsCount) dom.publicTabCommentsCount.textContent = uniqueComments.length;
   if (dom.publicStatComments) dom.publicStatComments.textContent = uniqueComments.length;
+
+  // Re-render achievements with updated comment count
+  if (currentPublicProfileUser) {
+    const _cd = currentPublicProfileUser.created_at || new Date().toISOString();
+    renderPublicAchievements({
+      comments:   uniqueComments.length,
+      posts:      Number(dom.publicStatPosts?.textContent || 0),
+      pizzas:     Number(currentPublicProfileUser.pizzas_donated || 0),
+      memberDays: Math.floor((Date.now() - new Date(_cd).getTime()) / (1000 * 60 * 60 * 24))
+    });
+  }
 
   if (uniqueComments.length === 0) {
     dom.publicCommentsEmpty?.classList.remove('hidden');
@@ -11341,6 +11696,18 @@ function initEventListeners() {
     if (currentPublicProfileUser) {
       openVerifiedInfoModal(currentPublicProfileUser.display_name, currentPublicProfileUser.username);
     }
+  });
+
+  // Public profile achievement filter pills
+  document.addEventListener('click', (e) => {
+    const filterBtn = e.target.closest('.ach-filter-pill');
+    if (!filterBtn) return;
+    const filter = filterBtn.getAttribute('data-filter');
+    if (!filter) return;
+    document.querySelectorAll('.ach-filter-pill').forEach(btn => btn.classList.remove('active'));
+    filterBtn.classList.add('active');
+    currentPublicAchievementFilter = filter;
+    renderPublicAchievements();
   });
 
   dom.profileIdentityVerifiedBadge?.addEventListener('click', () => {
