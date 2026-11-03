@@ -48,7 +48,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=9.5">
+  <link rel="stylesheet" href="style.css?v=9.6">
 </head>
 <body>
   <!-- Header / Navigation -->
@@ -64,6 +64,12 @@
       </a>
 
       <div class="header-right">
+        <!-- Support 🍕 Navigation Button -->
+        <button type="button" id="nav-support-btn" class="nav-support-btn" title="Support BartaWire • Pizza Donations" aria-label="Support BartaWire with Pizza Donations">
+          <span class="nav-support-label">Support</span>
+          <span class="nav-support-pizza" aria-hidden="true">🍕</span>
+        </button>
+
         <!-- Supabase Auth Actions -->
         <div id="nav-auth-container" class="nav-auth-container">
           <!-- Logged out button -->
@@ -112,6 +118,10 @@
                   <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                 </svg>
                 <span>Account Settings &amp; Profile</span>
+              </button>
+              <button type="button" id="dropdown-item-support" class="dropdown-item" role="menuitem">
+                <span style="font-size: 15px; line-height: 1;" aria-hidden="true">🍕</span>
+                <span>Supporters &amp; Pizza Donations</span>
               </button>
               <div id="dropdown-writer-section" class="dropdown-writer-section hidden">
                 <div class="dropdown-divider"></div>
@@ -1306,6 +1316,183 @@
     </section>
 
     <!-- ==============================================
+         SUPPORTERS VIEW: Pizza Donations (50৳ = 1 Pizza) & Leaderboard
+         ============================================== -->
+    <section id="supporters-view" class="view hidden">
+      <!-- Supporters Top Bar -->
+      <div class="admin-top-bar">
+        <button id="supporters-back-btn" class="back-btn" aria-label="Back to Feed">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span>Back to Feed</span>
+        </button>
+        <div class="admin-top-right">
+          <button type="button" id="supporters-refresh-btn" class="btn-sm btn-outline" title="Reload donations and supporters">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <path d="M23 4v6h-6"></path>
+              <path d="M1 20v-6h6"></path>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Supporters Intro -->
+      <div class="admin-intro supporters-intro">
+        <div class="hero-badge supporters-hero-badge">
+          <span class="pulse-dot"></span>
+          <span>Support BartaWire 🍕</span>
+        </div>
+        <h1 class="admin-title">BartaWire Pizza Supporters</h1>
+        <p class="admin-subtitle">Fueling independent journalism, technical writing &amp; community ideas — 1 slice at a time.</p>
+        <div class="contributors-grade-banner supporters-rate-banner">
+          🍕 1 Pizza = 50৳ • Powered by SupportKori
+        </div>
+      </div>
+
+      <!-- Callout Card: Auth Tips & SupportKori CTA -->
+      <div id="supporters-callout" class="supporters-callout-card">
+        <div class="callout-card-header">
+          <div class="callout-icon-box">🍕</div>
+          <div class="callout-header-text">
+            <h2 class="callout-title">Support BartaWire With Pizza</h2>
+            <p class="callout-subtitle">Help keep our servers humming, open-source writing alive, and writers caffeinated.</p>
+          </div>
+        </div>
+
+        <!-- Logged-in User Information Section -->
+        <div id="supporters-auth-info" class="supporters-auth-box hidden">
+          <div class="supporters-user-badge-row">
+            <span class="auth-status-indicator">Connected Account</span>
+            <span id="supporters-user-handle" class="supporters-handle-pill">@username</span>
+          </div>
+          <div class="supporters-email-row">
+            <span class="supporters-email-label">BartaWire Account Email:</span>
+            <div class="supporters-email-field">
+              <code id="supporters-user-email" class="supporters-email-value">user@example.com</code>
+              <button type="button" id="supporters-copy-email-btn" class="btn-sm btn-outline supporters-copy-btn" title="Copy your BartaWire email">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span id="supporters-copy-email-text">Copy Email</span>
+              </button>
+            </div>
+          </div>
+          <div class="supporters-tip-card">
+            <span class="tip-icon" aria-hidden="true">💡</span>
+            <div class="tip-content">
+              <strong>Tip:</strong> When paying on SupportKori, enter your BartaWire email or include your @username so pizzas are automatically credited to your profile!
+            </div>
+          </div>
+        </div>
+
+        <!-- Logged-out Guest Information Section -->
+        <div id="supporters-guest-info" class="supporters-guest-box">
+          <div class="supporters-guest-message">
+            <p><strong>Want your pizzas credited to your profile?</strong> Sign in to your BartaWire account first so we can link your donations, boost your stats, and grant you the exclusive <strong>🍕 SUPPORTER</strong> badge across the platform.</p>
+          </div>
+          <button type="button" id="supporters-login-btn" class="btn-sm btn-outline supporters-guest-login-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+              <polyline points="10 17 15 12 10 7"></polyline>
+              <line x1="15" y1="12" x2="3" y2="12"></line>
+            </svg>
+            <span>Sign In to Track Pizzas</span>
+          </button>
+        </div>
+
+        <!-- SupportKori CTA Button -->
+        <div class="supporters-cta-row">
+          <a id="supporters-donate-btn" href="https://supportkori.com/bartawire" target="_blank" rel="noopener noreferrer" class="btn-primary supporters-donate-btn" title="Open SupportKori to donate pizzas">
+            <span class="cta-pizza-icon">🍕</span>
+            <span>Donate Pizza with SupportKori (50৳)</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16" aria-hidden="true">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Stats Summary Cards -->
+      <div class="supporters-stats-grid">
+        <div class="supporter-stat-card">
+          <div class="stat-card-icon">🍕</div>
+          <div class="stat-card-body">
+            <span id="supporters-total-pizzas" class="stat-card-value">0</span>
+            <span class="stat-card-label">Total Pizzas Donated</span>
+          </div>
+        </div>
+        <div class="supporter-stat-card">
+          <div class="stat-card-icon">৳</div>
+          <div class="stat-card-body">
+            <span id="supporters-total-taka" class="stat-card-value">0৳</span>
+            <span class="stat-card-label">Total Taka Raised (50৳/pizza)</span>
+          </div>
+        </div>
+        <div class="supporter-stat-card">
+          <div class="stat-card-icon">🤝</div>
+          <div class="stat-card-body">
+            <span id="supporters-total-supporters" class="stat-card-value">0</span>
+            <span class="stat-card-label">Generous Supporters</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two-Column Layout: Leaderboard & Feed -->
+      <div class="supporters-main-grid">
+        <!-- Left: Top Pizza Supporters Leaderboard -->
+        <div class="supporters-col supporters-leaderboard-col">
+          <div class="supporters-section-header">
+            <div class="section-title-wrap">
+              <span class="section-icon">🏆</span>
+              <h2 class="section-title">Top Pizza Supporters</h2>
+            </div>
+            <span class="section-badge">Ranked by Pizzas</span>
+          </div>
+          <p class="section-desc">Community members who fueled BartaWire with the most pizzas.</p>
+
+          <div id="supporters-leaderboard-list" class="supporters-leaderboard-list">
+            <!-- Dynamically populated top supporter cards -->
+          </div>
+
+          <div id="supporters-leaderboard-empty" class="supporters-empty-box hidden">
+            <div class="empty-icon">🍕</div>
+            <p class="empty-title">No pizza supporters yet</p>
+            <p class="empty-desc">Be the very first supporter! Donate a pizza to claim the #1 spot.</p>
+          </div>
+        </div>
+
+        <!-- Right: Recent Support Feed -->
+        <div class="supporters-col supporters-feed-col">
+          <div class="supporters-section-header">
+            <div class="section-title-wrap">
+              <span class="section-icon">💌</span>
+              <h2 class="section-title">Recent Support Feed</h2>
+            </div>
+            <span class="section-badge">Live Feed</span>
+          </div>
+          <p class="section-desc">Heartwarming pizza deliveries and messages from readers.</p>
+
+          <div id="supporters-feed-list" class="supporters-feed-list">
+            <!-- Dynamically populated recent donation items -->
+          </div>
+
+          <div id="supporters-feed-empty" class="supporters-empty-box hidden">
+            <div class="empty-icon">☕</div>
+            <p class="empty-title">No donations recorded yet</p>
+            <p class="empty-desc">Your kind words and pizza will appear here once you donate!</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==============================================
          PUBLIC PROFILE VIEW (Accessible to everyone: visitors, commenters, authors)
          ============================================== -->
     <section id="public-profile-view" class="view hidden">
@@ -1367,6 +1554,7 @@
           <div class="public-profile-info">
             <div class="public-profile-title-row">
               <h1 id="public-profile-name" class="public-profile-name">Member</h1>
+              <span id="public-profile-supporter-badge" class="supporter-badge hidden" title="BartaWire Pizza Supporter">🍕 SUPPORTER</span>
               <!-- Crisp icon-only VERIFIED check mark badge (Clickable to learn more & get verified) -->
               <button type="button" id="public-profile-verified-badge" class="verified-badge verified-check-btn hidden" title="Verified Creator • Click to learn more" aria-label="Verified Creator">
                 <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" class="verified-badge-svg">
@@ -1391,6 +1579,11 @@
             <div class="profile-stat-box">
               <span id="public-stat-comments" class="profile-stat-num">0</span>
               <span class="profile-stat-lbl">Comments</span>
+            </div>
+            <div class="profile-stat-box" id="public-stat-pizzas-wrap">
+              <span id="public-stat-pizzas" class="profile-stat-num">🍕 0</span>
+              <span id="public-stat-pizzas-taka" class="profile-stat-sub">0৳</span>
+              <span class="profile-stat-lbl">Pizzas Donated</span>
             </div>
           </div>
         </div>
@@ -1587,6 +1780,7 @@
 
           <div class="profile-name-badge-row">
             <h2 id="profile-identity-name" class="profile-identity-name">Member</h2>
+            <span id="profile-identity-supporter-badge" class="supporter-badge hidden" title="BartaWire Pizza Supporter">🍕 SUPPORTER</span>
             <!-- Crisp icon-only VERIFIED check mark badge (Clickable to learn more & get verified) -->
             <button type="button" id="profile-identity-verified-badge" class="verified-badge verified-check-btn hidden" title="Verified Creator • Click to learn more" aria-label="Verified Creator">
               <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" class="verified-badge-svg">
@@ -1648,9 +1842,10 @@
               <span id="profile-stat-posts" class="profile-stat-num">0</span>
               <span class="profile-stat-lbl">Posts Authored</span>
             </div>
-            <div class="profile-stat-box">
-              <span class="profile-stat-num" id="profile-stat-status">Active</span>
-              <span class="profile-stat-lbl">Status</span>
+            <div class="profile-stat-box" id="profile-stat-pizzas-wrap">
+              <span id="profile-stat-pizzas" class="profile-stat-num">🍕 0</span>
+              <span id="profile-stat-pizzas-taka" class="profile-stat-sub">0৳</span>
+              <span class="profile-stat-lbl">Pizzas Donated</span>
             </div>
           </div>
 
@@ -2859,7 +3054,7 @@
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
   <!-- Application Logic -->
-  <script src="app.js?v=10.0"></script>
+  <script src="app.js?v=10.1"></script>
 </body>
 </html>
 

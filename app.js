@@ -53,6 +53,14 @@ const COMMENT_GRADE_POINTS = 1;
 let cachedComments = [];
 const authorProfilesCache = new Map();
 
+// Pizza Donations Configuration: 50 Taka = 1 Pizza (SupportKori)
+const SUPPORTKORI_URL = window.SUPPORTKORI_URL || 'https://supportkori.com/bartawire';
+const PIZZA_PRICE_BDT = 50;
+window.SUPPORTKORI_URL = SUPPORTKORI_URL;
+window.PIZZA_PRICE_BDT = PIZZA_PRICE_BDT;
+let allDonationsList = [];
+let topSupportersList = [];
+
 // Photocard Studio State (1080x1350 News Card Generator & Instagram Carousel Multi-Card System)
 let currentPhotocardPost = null;
 let currentPhotocardTheme = 'yellow';
@@ -151,6 +159,27 @@ function initDOM() {
   dom.publicProfileView = document.getElementById('public-profile-view');
   dom.manageView = document.getElementById('manage-view');
   dom.contributorsView = document.getElementById('contributors-view');
+  dom.supportersView = document.getElementById('supporters-view');
+
+  // Supporters View elements
+  dom.supportersBackBtn = document.getElementById('supporters-back-btn');
+  dom.supportersRefreshBtn = document.getElementById('supporters-refresh-btn');
+  dom.supportersCallout = document.getElementById('supporters-callout');
+  dom.supportersAuthInfo = document.getElementById('supporters-auth-info');
+  dom.supportersGuestInfo = document.getElementById('supporters-guest-info');
+  dom.supportersUserHandle = document.getElementById('supporters-user-handle');
+  dom.supportersUserEmail = document.getElementById('supporters-user-email');
+  dom.supportersCopyEmailBtn = document.getElementById('supporters-copy-email-btn');
+  dom.supportersCopyEmailText = document.getElementById('supporters-copy-email-text');
+  dom.supportersLoginBtn = document.getElementById('supporters-login-btn');
+  dom.supportersDonateBtn = document.getElementById('supporters-donate-btn');
+  dom.supportersTotalPizzas = document.getElementById('supporters-total-pizzas');
+  dom.supportersTotalTaka = document.getElementById('supporters-total-taka');
+  dom.supportersTotalSupporters = document.getElementById('supporters-total-supporters');
+  dom.supportersLeaderboardList = document.getElementById('supporters-leaderboard-list');
+  dom.supportersFeedList = document.getElementById('supporters-feed-list');
+  dom.supportersLeaderboardEmpty = document.getElementById('supporters-leaderboard-empty');
+  dom.supportersFeedEmpty = document.getElementById('supporters-feed-empty');
 
   // Contributors View elements
   dom.contributorsBackBtn = document.getElementById('contributors-back-btn');
@@ -361,6 +390,7 @@ function initDOM() {
 
   // Auth & Profile Navbar Elements
   dom.navAuthContainer = document.getElementById('nav-auth-container');
+  dom.navSupportBtn = document.getElementById('nav-support-btn');
   dom.navLoginBtn = document.getElementById('nav-login-btn');
   dom.navUserProfile = document.getElementById('nav-user-profile');
   dom.navUserChip = document.getElementById('nav-user-chip');
@@ -379,6 +409,7 @@ function initDOM() {
   dom.dropdownWriterSection = document.getElementById('dropdown-writer-section');
   dom.dropdownItemPublic = document.getElementById('dropdown-item-public');
   dom.dropdownItemSettings = document.getElementById('dropdown-item-settings');
+  dom.dropdownItemSupport = document.getElementById('dropdown-item-support');
   dom.dropdownItemCreate = document.getElementById('dropdown-item-create');
   dom.dropdownItemManage = document.getElementById('dropdown-item-manage');
   dom.dropdownItemLogout = document.getElementById('dropdown-item-logout');
@@ -510,6 +541,7 @@ function initDOM() {
   dom.profileAvatarLarge = document.getElementById('profile-avatar-large');
   dom.profileAvatarBadge = document.getElementById('profile-avatar-badge');
   dom.profileIdentityName = document.getElementById('profile-identity-name');
+  dom.profileIdentitySupporterBadge = document.getElementById('profile-identity-supporter-badge');
   dom.profileIdentityUsername = document.getElementById('profile-identity-username');
   dom.profileIdentityRole = document.getElementById('profile-identity-role');
   dom.profileIdentityEmail = document.getElementById('profile-identity-email');
@@ -520,6 +552,8 @@ function initDOM() {
   dom.profileStatComments = document.getElementById('profile-stat-comments');
   dom.profileStatPosts = document.getElementById('profile-stat-posts');
   dom.profileStatPostsWrap = document.getElementById('profile-stat-posts-wrap');
+  dom.profileStatPizzas = document.getElementById('profile-stat-pizzas');
+  dom.profileStatPizzasTaka = document.getElementById('profile-stat-pizzas-taka');
   dom.profileStatStatus = document.getElementById('profile-stat-status');
   dom.profileSidePasswordBtn = document.getElementById('profile-side-password-btn');
   dom.profileSideLogoutBtn = document.getElementById('profile-side-logout-btn');
@@ -590,6 +624,7 @@ function initDOM() {
   dom.publicProfileHeaderRole = document.getElementById('public-profile-header-role');
   dom.publicProfileAvatar = document.getElementById('public-profile-avatar');
   dom.publicProfileName = document.getElementById('public-profile-name');
+  dom.publicProfileSupporterBadge = document.getElementById('public-profile-supporter-badge');
   dom.publicProfileUsername = document.getElementById('public-profile-username');
   dom.publicProfileVerifiedBadge = document.getElementById('public-profile-verified-badge');
   dom.publicProfileRoleBadge = document.getElementById('public-profile-role-badge');
@@ -611,6 +646,8 @@ function initDOM() {
   dom.publicPinnedPostWrap = document.getElementById('public-pinned-post-wrap');
   dom.publicStatPosts = document.getElementById('public-stat-posts');
   dom.publicStatComments = document.getElementById('public-stat-comments');
+  dom.publicStatPizzas = document.getElementById('public-stat-pizzas');
+  dom.publicStatPizzasTaka = document.getElementById('public-stat-pizzas-taka');
   dom.publicTabPosts = document.getElementById('public-tab-posts');
   dom.publicTabComments = document.getElementById('public-tab-comments');
   dom.publicTabPostsCount = document.getElementById('public-tab-posts-count');
@@ -917,6 +954,7 @@ async function handleUserSession(user, fallbackDisplayName) {
     social_links: {},
     is_verified: false,
     pinned_post_id: null,
+    pizzas_donated: 0,
     ...(profile || {}),
     id: user.id,
     email: user.email,
@@ -1133,6 +1171,7 @@ function updateAuthUI() {
   }
 
   updateCommentFormAuthUI();
+  updateSupportersCallout();
 }
 
 // ----------------------------------------------------------------------------
@@ -1753,6 +1792,7 @@ async function openContributorsView() {
   dom.profileView?.classList.add('hidden');
   dom.publicProfileView?.classList.add('hidden');
   dom.manageView?.classList.add('hidden');
+  dom.supportersView?.classList.add('hidden');
   dom.contributorsView?.classList.remove('hidden');
 
   try {
@@ -1798,7 +1838,8 @@ async function loadAllContributors() {
             location: p.location || '',
             institution: p.institution || '',
             website_url: p.website_url || '',
-            cover_url: p.cover_url || ''
+            cover_url: p.cover_url || '',
+            pizzas_donated: Number(p.pizzas_donated) || 0
           });
           if (p.username) {
             authorProfilesCache.set(p.username, authorProfilesCache.get(p.id));
@@ -1989,6 +2030,305 @@ function applyContributorsFilter() {
     });
 
     dom.contributorsList.appendChild(card);
+  });
+}
+
+// ============================================================================
+// SUPPORTERS VIEW (Pizza Donations: 50৳ = 1 Pizza & Leaderboard)
+// ============================================================================
+
+async function openSupportersView() {
+  if (isZenMode) toggleZenMode(false);
+  closeUserDropdown();
+  currentPublicProfileUser = null;
+
+  dom.homeView?.classList.add('hidden');
+  dom.articleView?.classList.add('hidden');
+  dom.adminView?.classList.add('hidden');
+  dom.profileView?.classList.add('hidden');
+  dom.publicProfileView?.classList.add('hidden');
+  dom.manageView?.classList.add('hidden');
+  dom.contributorsView?.classList.add('hidden');
+  dom.supportersView?.classList.remove('hidden');
+
+  const basePath = getAppBasePath() || '/';
+  try {
+    if (window.location.pathname.includes('/@') && window.history && window.history.pushState && window.location.protocol !== 'file:') {
+      window.history.pushState(null, '', `${basePath}#/supporters`);
+    } else if (window.location.hash !== '#/supporters' && window.location.hash !== '#/support') {
+      window.location.hash = '#/supporters';
+    }
+  } catch (e) {
+    window.location.hash = '#/supporters';
+  }
+  document.title = 'BartaWire Pizza Supporters 🍕';
+  window.scrollTo?.({ top: 0, behavior: 'smooth' });
+
+  updateSupportersCallout();
+  await loadSupportersData();
+}
+
+function updateSupportersCallout() {
+  if (!dom.supportersCallout) return;
+
+  if (dom.supportersDonateBtn) {
+    dom.supportersDonateBtn.href = SUPPORTKORI_URL;
+  }
+
+  if (currentUser) {
+    dom.supportersGuestInfo?.classList.add('hidden');
+    dom.supportersAuthInfo?.classList.remove('hidden');
+
+    const username = currentProfile?.username || (currentUser.email ? currentUser.email.split('@')[0] : 'member');
+    const cleanUsername = String(username).trim().replace(/^@+/, '');
+    const email = currentUser.email || '';
+
+    if (dom.supportersUserHandle) {
+      dom.supportersUserHandle.textContent = `@${cleanUsername}`;
+    }
+    if (dom.supportersUserEmail) {
+      dom.supportersUserEmail.textContent = email;
+      dom.supportersUserEmail.title = email;
+    }
+  } else {
+    dom.supportersAuthInfo?.classList.add('hidden');
+    dom.supportersGuestInfo?.classList.remove('hidden');
+  }
+}
+
+async function handleSupportersCopyEmail() {
+  const emailToCopy = currentUser?.email || dom.supportersUserEmail?.textContent || '';
+  if (!emailToCopy) return;
+
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(emailToCopy);
+    } else {
+      const temp = document.createElement('textarea');
+      temp.value = emailToCopy;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      document.body.removeChild(temp);
+    }
+    if (dom.supportersCopyEmailText) {
+      dom.supportersCopyEmailText.textContent = 'Copied!';
+      setTimeout(() => {
+        if (dom.supportersCopyEmailText) dom.supportersCopyEmailText.textContent = 'Copy Email';
+      }, 2000);
+    }
+    showToast('BartaWire email copied! Paste it into SupportKori so pizzas are credited to your profile.', 'success');
+  } catch (err) {
+    showToast('Could not copy email to clipboard', 'info');
+  }
+}
+
+async function loadSupportersData() {
+  dom.supportersRefreshBtn?.classList.add('spinning');
+
+  try {
+    let donations = [];
+    let topSupporters = [];
+
+    if (supabaseClient) {
+      // 1. Fetch donations from public.donations
+      try {
+        const { data: dData, error: dErr } = await supabaseClient
+          .from('donations')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!dErr && Array.isArray(dData)) {
+          donations = dData;
+        } else if (dErr) {
+          console.warn('Could not fetch donations:', dErr.message);
+        }
+      } catch (err) {
+        console.warn('Error querying donations table:', err);
+      }
+
+      // 2. Query public.profiles where pizzas_donated > 0 ordered by pizzas_donated descending
+      try {
+        const { data: sData, error: sErr } = await supabaseClient
+          .from('profiles')
+          .select('id, display_name, username, avatar_url, is_verified, pizzas_donated, role')
+          .gt('pizzas_donated', 0)
+          .order('pizzas_donated', { ascending: false });
+
+        if (!sErr && Array.isArray(sData)) {
+          topSupporters = sData;
+        } else if (sErr) {
+          console.warn('Could not fetch top supporters:', sErr.message);
+        }
+      } catch (err) {
+        console.warn('Error querying top supporters from profiles:', err);
+      }
+    }
+
+    // Fallback: If DB query returned no top supporters, check authorProfilesCache for any profiles with pizzas_donated > 0
+    if (topSupporters.length === 0 && authorProfilesCache.size > 0) {
+      const cachedMatches = [];
+      authorProfilesCache.forEach(p => {
+        if (p && Number(p.pizzas_donated) > 0 && !cachedMatches.some(m => m.id === p.id)) {
+          cachedMatches.push(p);
+        }
+      });
+      if (cachedMatches.length > 0) {
+        cachedMatches.sort((a, b) => (Number(b.pizzas_donated) || 0) - (Number(a.pizzas_donated) || 0));
+        topSupporters = cachedMatches;
+      }
+    }
+
+    allDonationsList = donations;
+    topSupportersList = topSupporters;
+
+    renderSupportersStats(donations, topSupporters);
+    renderTopSupportersLeaderboard(topSupporters);
+    renderRecentSupportFeed(donations);
+  } catch (err) {
+    console.error('Error in loadSupportersData:', err);
+  } finally {
+    dom.supportersRefreshBtn?.classList.remove('spinning');
+  }
+}
+
+function renderSupportersStats(donations, topSupporters) {
+  // Sum of all pizzas_count across public.donations
+  const totalPizzas = (donations || []).reduce((acc, d) => acc + (Number(d.pizzas_count) || 1), 0);
+  const totalTaka = totalPizzas * PIZZA_PRICE_BDT;
+
+  // Count of distinct supporters
+  let uniqueSupportersCount = (topSupporters || []).length;
+  if (uniqueSupportersCount === 0 && (donations || []).length > 0) {
+    uniqueSupportersCount = new Set(donations.map(d => d.user_id || d.supporter_name || d.name)).size;
+  }
+
+  if (dom.supportersTotalPizzas) {
+    dom.supportersTotalPizzas.textContent = totalPizzas.toLocaleString();
+  }
+  if (dom.supportersTotalTaka) {
+    dom.supportersTotalTaka.textContent = `${totalTaka.toLocaleString()}৳`;
+  }
+  if (dom.supportersTotalSupporters) {
+    dom.supportersTotalSupporters.textContent = uniqueSupportersCount.toLocaleString();
+  }
+}
+
+function renderTopSupportersLeaderboard(supporters) {
+  if (!dom.supportersLeaderboardList) return;
+  dom.supportersLeaderboardList.innerHTML = '';
+
+  if (!supporters || supporters.length === 0) {
+    dom.supportersLeaderboardEmpty?.classList.remove('hidden');
+    return;
+  }
+  dom.supportersLeaderboardEmpty?.classList.add('hidden');
+
+  supporters.forEach((supporter, idx) => {
+    const rank = idx + 1;
+    const item = document.createElement('div');
+    item.className = 'supporter-card';
+    item.setAttribute('role', 'button');
+    item.setAttribute('tabindex', '0');
+
+    const displayName = supporter.display_name || (supporter.username ? `@${supporter.username}` : 'Generous Supporter');
+    const rawUsername = String(supporter.username || '').trim().replace(/^@+/, '');
+    const pizzas = Number(supporter.pizzas_donated) || 0;
+    const pizzaLabel = `${pizzas} ${pizzas === 1 ? 'Pizza' : 'Pizzas'}`;
+
+    item.title = `View @${rawUsername || displayName}'s public profile • ${pizzas} pizzas donated`;
+
+    const initials = (displayName || 'S')
+      .split(' ')
+      .filter(Boolean)
+      .map(w => w[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase() || 'S';
+
+    const avatarHtml = supporter.avatar_url && String(supporter.avatar_url).trim() !== ''
+      ? `<img src="${escapeHtml(supporter.avatar_url)}" alt="${escapeHtml(displayName)}">`
+      : initials;
+
+    const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
+    const rankIcon = rank === 1 ? '🥇 #1' : rank === 2 ? '🥈 #2' : rank === 3 ? '🥉 #3' : `#${rank}`;
+
+    item.innerHTML = `
+      <div class="supporter-card-left">
+        <span class="supporter-rank-pill ${rankClass}">${rankIcon}</span>
+        <div class="supporter-avatar">${avatarHtml}</div>
+        <div class="supporter-details">
+          <div class="supporter-name-row">
+            <span class="supporter-name">${escapeHtml(displayName)}</span>
+          </div>
+          ${rawUsername ? `<span class="supporter-username">@${escapeHtml(rawUsername)}</span>` : ''}
+        </div>
+      </div>
+      <div class="supporter-card-right">
+        <span class="supporter-pizza-badge" title="${pizzas} pizzas donated (${pizzas * PIZZA_PRICE_BDT}৳)">🍕 ${pizzaLabel}</span>
+      </div>
+    `;
+
+    // Verified badge
+    if (supporter.is_verified) {
+      const nameRow = item.querySelector('.supporter-name-row');
+      if (nameRow) {
+        const vBadge = createVerifiedBadge(displayName, rawUsername, 16);
+        nameRow.appendChild(vBadge);
+      }
+    }
+
+    const handleClick = (e) => {
+      e.preventDefault();
+      openPublicProfileView(supporter.id || rawUsername, rawUsername, displayName);
+    };
+    item.addEventListener('click', handleClick);
+    item.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleClick(e);
+      }
+    });
+
+    dom.supportersLeaderboardList.appendChild(item);
+  });
+}
+
+function renderRecentSupportFeed(donations) {
+  if (!dom.supportersFeedList) return;
+  dom.supportersFeedList.innerHTML = '';
+
+  if (!donations || donations.length === 0) {
+    dom.supportersFeedEmpty?.classList.remove('hidden');
+    return;
+  }
+  dom.supportersFeedEmpty?.classList.add('hidden');
+
+  donations.forEach(donation => {
+    const item = document.createElement('div');
+    item.className = 'donation-feed-item';
+
+    const supporterName = donation.supporter_name || donation.donor_name || donation.name || donation.display_name || 'Generous Supporter';
+    const pizzasCount = Number(donation.pizzas_count) || 1;
+    const message = String(donation.message || donation.comment || '').trim();
+    const timeFormatted = donation.created_at ? formatDate(donation.created_at) : 'Recently';
+    const takaAmount = pizzasCount * PIZZA_PRICE_BDT;
+
+    item.innerHTML = `
+      <div class="donation-feed-header">
+        <div class="donation-feed-supporter">
+          <span class="donation-feed-icon">🍕</span>
+          <span class="donation-feed-name">${escapeHtml(supporterName)}</span>
+        </div>
+        <div class="donation-feed-badges">
+          <span class="feed-pizza-pill" title="${takaAmount}৳ donated">🍕 x ${pizzasCount}</span>
+          <span class="donation-feed-time">${timeFormatted}</span>
+        </div>
+      </div>
+      ${message ? `<p class="donation-feed-message">"${escapeHtml(message)}"</p>` : ''}
+    `;
+
+    dom.supportersFeedList.appendChild(item);
   });
 }
 
@@ -3725,6 +4065,7 @@ async function openArticleView(post, updateHash = true) {
   dom.publicProfileView?.classList.add('hidden');
   dom.manageView?.classList.add('hidden');
   dom.contributorsView?.classList.add('hidden');
+  dom.supportersView?.classList.add('hidden');
   dom.articleView?.classList.remove('hidden');
 
   // Article admin action buttons (strictly limited to post author)
@@ -3860,6 +4201,7 @@ function returnToHomeView() {
   dom.publicProfileView?.classList.add('hidden');
   dom.manageView?.classList.add('hidden');
   dom.contributorsView?.classList.add('hidden');
+  dom.supportersView?.classList.add('hidden');
   dom.homeView?.classList.remove('hidden');
 
   collapseTopics();
@@ -4022,6 +4364,11 @@ function handleAppNavigation() {
     return;
   }
 
+  if (hash === '#/supporters' || hash === '#/support') {
+    openSupportersView();
+    return;
+  }
+
   if (hash.startsWith('#/post/')) {
     const identifier = decodeURIComponent(hash.replace('#/post/', '')).trim();
     if (identifier) {
@@ -4036,7 +4383,7 @@ function handleAppNavigation() {
     if (urlParams.get('post')) {
       return;
     }
-    if (!dom.articleView?.classList.contains('hidden') || !dom.adminView?.classList.contains('hidden') || !dom.manageView?.classList.contains('hidden') || !dom.contributorsView?.classList.contains('hidden') || !dom.profileView?.classList.contains('hidden') || !dom.publicProfileView?.classList.contains('hidden')) {
+    if (!dom.articleView?.classList.contains('hidden') || !dom.adminView?.classList.contains('hidden') || !dom.manageView?.classList.contains('hidden') || !dom.contributorsView?.classList.contains('hidden') || !dom.supportersView?.classList.contains('hidden') || !dom.profileView?.classList.contains('hidden') || !dom.publicProfileView?.classList.contains('hidden')) {
       returnToHomeView();
     }
   }
@@ -4070,7 +4417,7 @@ async function loadCommentsForPost(postId) {
   try {
     const { data, error } = await supabaseClient
       .from('comments')
-      .select('id, post_id, user_id, content, created_at, profiles(display_name, username, avatar_url)')
+      .select('id, post_id, user_id, content, created_at, profiles(display_name, username, avatar_url, role, is_verified, pizzas_donated)')
       .eq('post_id', postId)
       .order('created_at', { ascending: true });
 
@@ -4088,7 +4435,7 @@ async function loadCommentsForPost(postId) {
         if (userIds.length > 0) {
           const { data: profs } = await supabaseClient
             .from('profiles')
-            .select('id, display_name, username, avatar_url')
+            .select('id, display_name, username, avatar_url, role, is_verified, pizzas_donated')
             .in('id', userIds);
           if (profs) profs.forEach(p => { profilesMap[p.id] = p; });
         }
@@ -4200,7 +4547,7 @@ function createCommentCardElement(comment) {
   // Look up profile / author cache for verified & publisher role badges
   const cachedProf = comment.user_id ? authorProfilesCache.get(comment.user_id) : null;
   const isVerified = Boolean((profile && profile.is_verified) || (cachedProf && cachedProf.is_verified) || (currentUser && currentUser.id === comment.user_id && currentProfile?.is_verified));
-  const commentRole = (profile?.role || cachedProf?.role || (currentUser && currentUser.id === comment.user_id ? currentUserRole : 'visitor')).toLowerCase();
+  const commentRole = String(profile?.role || cachedProf?.role || (currentUser && currentUser.id === comment.user_id && currentUserRole ? currentUserRole : null) || 'visitor').toLowerCase();
 
   if (isVerified) {
     const verifiedBadge = createVerifiedBadge(displayName, username, 16);
@@ -4213,6 +4560,21 @@ function createCommentCardElement(comment) {
     updateRoleBadge(roleBadge, 'admin');
     roleBadge.classList.add('comment-role-badge');
     authorNameRow.appendChild(roleBadge);
+  }
+
+  // Look up supporter status (pizzas_donated > 0)
+  const pizzasDonated = Number(
+    profile?.pizzas_donated ??
+    cachedProf?.pizzas_donated ??
+    (currentUser && currentUser.id === comment.user_id ? currentProfile?.pizzas_donated : 0) ??
+    0
+  );
+  if (pizzasDonated > 0) {
+    const supporterBadge = document.createElement('span');
+    supporterBadge.className = 'supporter-badge comment-supporter-badge';
+    supporterBadge.title = `BartaWire Pizza Supporter • ${pizzasDonated} ${pizzasDonated === 1 ? 'pizza' : 'pizzas'} donated`;
+    supporterBadge.textContent = '🍕 SUPPORTER';
+    authorNameRow.appendChild(supporterBadge);
   }
 
   const time = document.createElement('span');
@@ -4382,6 +4744,7 @@ function openAdminView() {
   dom.publicProfileView?.classList.add('hidden');
   dom.manageView?.classList.add('hidden');
   dom.contributorsView?.classList.add('hidden');
+  dom.supportersView?.classList.add('hidden');
   dom.adminView?.classList.remove('hidden');
 
   const basePath = getAppBasePath() || '/';
@@ -4427,6 +4790,7 @@ function openManageView() {
   dom.publicProfileView?.classList.add('hidden');
   dom.adminView?.classList.add('hidden');
   dom.contributorsView?.classList.add('hidden');
+  dom.supportersView?.classList.add('hidden');
   dom.manageView?.classList.remove('hidden');
 
   try {
@@ -7037,6 +7401,7 @@ async function openProfileView() {
   dom.publicProfileView?.classList.add('hidden');
   dom.manageView?.classList.add('hidden');
   dom.contributorsView?.classList.add('hidden');
+  dom.supportersView?.classList.add('hidden');
   dom.profileView?.classList.remove('hidden');
 
   const basePath = getAppBasePath() || '/';
@@ -7143,6 +7508,25 @@ async function populateProfileView() {
     } else {
       dom.profileIdentityVerifiedBadge.classList.add('hidden');
     }
+  }
+
+  // Supporter badge on identity card
+  const pizzasDonated = Number(profile.pizzas_donated || 0);
+  if (dom.profileIdentitySupporterBadge) {
+    if (pizzasDonated > 0) {
+      dom.profileIdentitySupporterBadge.classList.remove('hidden');
+      dom.profileIdentitySupporterBadge.title = `BartaWire Pizza Supporter • ${pizzasDonated} ${pizzasDonated === 1 ? 'pizza' : 'pizzas'} donated (${pizzasDonated * PIZZA_PRICE_BDT}৳)`;
+    } else {
+      dom.profileIdentitySupporterBadge.classList.add('hidden');
+    }
+  }
+
+  // Pizzas Donated Stat Box
+  if (dom.profileStatPizzas) {
+    dom.profileStatPizzas.textContent = `🍕 ${pizzasDonated}`;
+  }
+  if (dom.profileStatPizzasTaka) {
+    dom.profileStatPizzasTaka.textContent = `${pizzasDonated * PIZZA_PRICE_BDT}৳`;
   }
 
   // Admin button visibility
@@ -8375,6 +8759,8 @@ async function openPublicProfileView(userIdentifier, fallbackUsername, fallbackN
       lastNonProfileView = 'manage';
     } else if (dom.contributorsView && !dom.contributorsView.classList.contains('hidden')) {
       lastNonProfileView = 'contributors';
+    } else if (dom.supportersView && !dom.supportersView.classList.contains('hidden')) {
+      lastNonProfileView = 'supporters';
     } else if (dom.profileView && !dom.profileView.classList.contains('hidden')) {
       lastNonProfileView = 'profile';
     } else {
@@ -8389,6 +8775,7 @@ async function openPublicProfileView(userIdentifier, fallbackUsername, fallbackN
   dom.profileView?.classList.add('hidden');
   dom.manageView?.classList.add('hidden');
   dom.contributorsView?.classList.add('hidden');
+  dom.supportersView?.classList.add('hidden');
   dom.publicProfileView?.classList.remove('hidden');
 
   // Update back button label
@@ -8401,6 +8788,8 @@ async function openPublicProfileView(userIdentifier, fallbackUsername, fallbackN
       dom.publicProfileBackLabel.textContent = 'Back to Manage';
     } else if (lastNonProfileView === 'contributors') {
       dom.publicProfileBackLabel.textContent = 'Back to Contributors';
+    } else if (lastNonProfileView === 'supporters') {
+      dom.publicProfileBackLabel.textContent = 'Back to Supporters';
     } else if (lastNonProfileView === 'profile') {
       dom.publicProfileBackLabel.textContent = 'Back to Settings';
     } else {
@@ -8457,6 +8846,7 @@ async function loadAndRenderPublicProfile(userIdentifier, fallbackUsername, fall
           skills: Array.isArray(p.skills) ? p.skills : [],
           social_links: (p.social_links && typeof p.social_links === 'object') ? p.social_links : {},
           is_verified: !!p.is_verified,
+          pizzas_donated: Number(p.pizzas_donated) || 0,
           pinned_post_id: p.pinned_post_id || null
         };
       }
@@ -8490,6 +8880,7 @@ async function loadAndRenderPublicProfile(userIdentifier, fallbackUsername, fall
           skills: Array.isArray(data.skills) ? data.skills : (typeof data.skills === 'string' ? JSON.parse(data.skills || '[]') : []),
           social_links: (data.social_links && typeof data.social_links === 'object') ? data.social_links : (typeof data.social_links === 'string' ? JSON.parse(data.social_links || '{}') : {}),
           is_verified: !!data.is_verified,
+          pizzas_donated: Number(data.pizzas_donated) || 0,
           pinned_post_id: data.pinned_post_id || null
         };
         authorProfilesCache.set(data.id, profile);
@@ -8518,6 +8909,7 @@ async function loadAndRenderPublicProfile(userIdentifier, fallbackUsername, fall
       skills: isDemo ? [{ name: 'Architecture', percentage: 95 }, { name: 'JavaScript', percentage: 90 }, { name: 'PostgreSQL', percentage: 85 }] : [],
       social_links: isDemo ? { github: 'https://github.com', x: 'https://x.com' } : {},
       is_verified: isDemo,
+      pizzas_donated: 0,
       pinned_post_id: null
     };
   }
@@ -8582,6 +8974,25 @@ function renderPublicProfileHero(profile) {
     } else {
       dom.publicProfileVerifiedBadge.classList.add('hidden');
     }
+  }
+
+  // Supporter Badge
+  const pizzasDonated = Number(profile.pizzas_donated || 0);
+  if (dom.publicProfileSupporterBadge) {
+    if (pizzasDonated > 0) {
+      dom.publicProfileSupporterBadge.classList.remove('hidden');
+      dom.publicProfileSupporterBadge.title = `BartaWire Pizza Supporter • ${pizzasDonated} ${pizzasDonated === 1 ? 'pizza' : 'pizzas'} donated (${pizzasDonated * PIZZA_PRICE_BDT}৳)`;
+    } else {
+      dom.publicProfileSupporterBadge.classList.add('hidden');
+    }
+  }
+
+  // Pizzas Donated Stat Box
+  if (dom.publicStatPizzas) {
+    dom.publicStatPizzas.textContent = `🍕 ${pizzasDonated}`;
+  }
+  if (dom.publicStatPizzasTaka) {
+    dom.publicStatPizzasTaka.textContent = `${pizzasDonated * PIZZA_PRICE_BDT}৳`;
   }
 
   if (dom.publicProfileRoleBadge) {
@@ -10942,6 +11353,12 @@ function initEventListeners() {
     openProfileView();
   });
 
+  dom.dropdownItemSupport?.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeUserDropdown();
+    openSupportersView();
+  });
+
   dom.dropdownItemCreate?.addEventListener('click', (e) => {
     e.preventDefault();
     closeUserDropdown();
@@ -11732,6 +12149,18 @@ function initEventListeners() {
     }
   });
 
+  // Supporters View navigation & interaction handlers
+  dom.navSupportBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openSupportersView();
+  });
+  dom.supportersBackBtn?.addEventListener('click', returnToHomeView);
+  dom.supportersRefreshBtn?.addEventListener('click', loadSupportersData);
+  dom.supportersLoginBtn?.addEventListener('click', () => {
+    openAuthModal('signin');
+  });
+  dom.supportersCopyEmailBtn?.addEventListener('click', handleSupportersCopyEmail);
+
   // Admin Cover Image Upload (Auto-WebP)
   dom.adminUploadBtn?.addEventListener('click', () => {
     dom.adminCoverFile?.click();
@@ -12054,6 +12483,13 @@ window.setContributorSort = setContributorSort;
 window.getTopContributors = getTopContributors;
 window.renderContributorsPage = renderContributorsPage;
 window.applyContributorsFilter = applyContributorsFilter;
+window.openSupportersView = openSupportersView;
+window.loadSupportersData = loadSupportersData;
+window.renderSupportersStats = renderSupportersStats;
+window.renderTopSupportersLeaderboard = renderTopSupportersLeaderboard;
+window.renderRecentSupportFeed = renderRecentSupportFeed;
+window.updateSupportersCallout = updateSupportersCallout;
+window.handleSupportersCopyEmail = handleSupportersCopyEmail;
 window.authorProfilesCache = authorProfilesCache;
 window.updateAuthUI = updateAuthUI;
 window.printArticle = printArticle;
