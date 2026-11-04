@@ -8497,6 +8497,17 @@ input[type="datetime-local"] {
   width: 100%;
 }
 
+@media (min-width: 901px) {
+  .public-profile-sidebar-col {
+    position: sticky;
+    top: calc(75px + 1.25rem);
+    align-self: start;
+    max-height: calc(100vh - (75px + 2.5rem));
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+}
+
 .public-profile-main-col {
   display: flex;
   flex-direction: column;
@@ -8508,6 +8519,12 @@ input[type="datetime-local"] {
   .public-profile-layout-grid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
+  }
+
+  .public-profile-sidebar-col {
+    position: static;
+    max-height: none;
+    overflow: visible;
   }
 }
 
