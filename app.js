@@ -158,6 +158,32 @@ const DEMO_PREVIEW_POSTS = [
     cover_image: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?auto=format&fit=crop&w=1200&q=80',
     is_published: true,
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9).toISOString()
+  },
+  {
+    id: 'demo-4',
+    author_id: null,
+    title: 'Neo-Brutalist Web Aesthetics: Why Harsh Borders Are Back',
+    slug: 'm3p7k2',
+    topic: 'Design',
+    summary: 'From flat design fatigue to bold, high-contrast layouts: why developers and designers are embracing raw digital brutalism.',
+    photo_source: 'BartaWire',
+    content: `## The Rebirth of High Contrast\n\nFor over a decade, digital interfaces chased frictionless minimalism. Rounded corners, subtle drop shadows, and low-contrast typography reigned supreme.\n\nNow, the tide is turning. Neo-brutalism reclaims web personality with bold borders, hard offset shadows, vibrant primary palettes, and uncompromising functional typography.`,
+    cover_image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80',
+    is_published: true,
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString()
+  },
+  {
+    id: 'demo-5',
+    author_id: null,
+    title: 'Decentralized Consensus and the Future of Open Journalism',
+    slug: 'z8v1r5',
+    topic: 'News',
+    summary: 'How distributed networks and cryptographic verification are reshaping news publishing, creator attribution, and censorship resistance.',
+    photo_source: 'BartaWire',
+    content: `## The Next Era of the Wire\n\nIndependent reporting requires verifiable integrity. By combining open protocols with distributed storage, decentralized journalism empowers writers to own their archives permanently.`,
+    cover_image: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=1200&q=80',
+    is_published: true,
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString()
   }
 ];
 
@@ -281,6 +307,14 @@ function initDOM() {
   dom.heroTopWritersList = document.getElementById('hero-top-writers-list');
   dom.heroViewAllWritersBtn = document.getElementById('hero-view-all-writers-btn');
   dom.heroWritersApplyBtn = document.getElementById('hero-writers-apply-btn');
+  dom.headerWriteBtn = document.getElementById('header-write-btn');
+  dom.footerSupportBtn = document.getElementById('footer-support-btn');
+  dom.featuredStoryCard = document.getElementById('featured-story-card');
+  dom.featuredStoryImg = document.getElementById('featured-story-img');
+  dom.featuredNavPrev = document.getElementById('featured-nav-prev');
+  dom.featuredNavNext = document.getElementById('featured-nav-next');
+  dom.trendingCard = document.getElementById('trending-card');
+  dom.trendingList = document.getElementById('trending-list');
 
   // Writer & Top Writers Modals
   dom.writerModal = document.getElementById('writer-modal');
@@ -831,7 +865,7 @@ async function loadPosts() {
       try {
         const { data: commentsData, error: commentsErr } = await supabaseClient
           .from('comments')
-          .select('id, user_id, created_at');
+          .select('id, user_id, post_id, created_at');
         if (!commentsErr && Array.isArray(commentsData)) {
           cachedComments = commentsData;
         }
@@ -881,6 +915,8 @@ async function loadPosts() {
     updateTopicCounts();
     renderPostsGrid(allPosts);
     renderHeroTopWriters();
+    initFeaturedStories(allPosts);
+    renderTrendingPanel();
     if (!activePost || dom.articleView?.classList.contains('hidden')) {
       handleHashNavigation();
     }
@@ -1244,6 +1280,8 @@ function updateAuthUI() {
     updateTopicCounts();
     renderPostsGrid(allPosts);
     renderHeroTopWriters();
+    initFeaturedStories(allPosts);
+    renderTrendingPanel();
   }
 
   // Ensure admin posts list is loaded if currently on admin view
@@ -1421,13 +1459,15 @@ function closeAuthModal() {
 // ----------------------------------------------------------------------------
 
 function openWriterModal() {
-  if (!dom.writerModal) return;
-  dom.writerModal.classList.remove('hidden');
+  const modal = dom.writerModal || document.getElementById('writer-modal');
+  if (!modal) return;
+  modal.classList.remove('hidden');
 }
 
 function closeWriterModal() {
-  if (dom.writerModal) {
-    dom.writerModal.classList.add('hidden');
+  const modal = dom.writerModal || document.getElementById('writer-modal');
+  if (modal) {
+    modal.classList.add('hidden');
   }
 }
 
@@ -1857,91 +1897,581 @@ function getTopWriters(limit = 3) {
   return getTopContributors(limit);
 }
 
+// ============================================================================
+// TOP CONTRIBUTORS CAROUSEL (Single Contributor View with Tabs 1, 2, 3)
+// ============================================================================
+let heroTopContributors = [];
+let currentHeroContributorIndex = 0;
+let heroContributorTimer = null;
+let isHeroContributorPaused = false;
+
 function renderHeroTopWriters() {
   if (!dom.heroTopWritersList) return;
 
-  const top3 = getTopContributors(3);
+  heroTopContributors = getTopContributors(3);
 
-  if (top3.length === 0) {
+  if (heroTopContributors.length === 0) {
     dom.heroTopWritersList.innerHTML = `
-      <div style="padding:0.75rem; text-align:center; font-family:var(--font-mono); font-size:0.78rem; color:var(--text-muted);">
+      <div style="padding:1.5rem 0.75rem; text-align:center; font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted);">
         No contributors yet. Be the first!
       </div>
     `;
     return;
   }
 
-  dom.heroTopWritersList.innerHTML = '';
+  if (currentHeroContributorIndex >= heroTopContributors.length) {
+    currentHeroContributorIndex = 0;
+  }
 
-  top3.forEach((writer, idx) => {
-    const rank = idx + 1;
-    const item = document.createElement('div');
-    item.className = 'hero-writer-item';
-    item.setAttribute('role', 'button');
-    item.setAttribute('tabindex', '0');
+  renderHeroSingleContributor(currentHeroContributorIndex, false);
+  startHeroContributorTimer();
+}
 
-    const articleText = `${writer.postCount} ${writer.postCount === 1 ? 'article' : 'articles'}`;
-    const commentText = `${writer.commentCount} ${writer.commentCount === 1 ? 'comment' : 'comments'}`;
-    const pizzaText = (writer.pizzasDonated > 0) ? `${writer.pizzasDonated} ${writer.pizzasDonated === 1 ? 'pizza' : 'pizzas'}` : '';
-    const statsSummary = [articleText, pizzaText, commentText].filter(Boolean).join(', ');
-    const breakdownParts = [
-      writer.postCount > 0 ? `${articleText} (${writer.postCount * ARTICLE_GRADE_POINTS} pts)` : '',
-      writer.pizzasDonated > 0 ? `${pizzaText} (${writer.pizzasDonated * PIZZA_GRADE_POINTS} pts)` : '',
-      writer.commentCount > 0 ? `${commentText} (${writer.commentCount * COMMENT_GRADE_POINTS} pts)` : ''
-    ].filter(Boolean).join(' + ') || '0 pts';
+function renderHeroSingleContributor(index, animate = true) {
+  if (!dom.heroTopWritersList || !heroTopContributors[index]) return;
 
-    item.title = `View ${writer.name}'s profile (${writer.score} pts: ${statsSummary})`;
+  const writer = heroTopContributors[index];
+  const rank = index + 1;
+  const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : 'rank-3';
+  const rankMedal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉';
+  const rankTitle = rank === 1 ? '1st Place' : rank === 2 ? '2nd Place' : '3rd Place';
 
-    const initials = (writer.name || 'W')
-      .split(' ')
-      .filter(Boolean)
-      .map(w => w[0])
-      .slice(0, 2)
-      .join('')
-      .toUpperCase() || 'W';
+  const articleText = `${writer.postCount} ${writer.postCount === 1 ? 'article' : 'articles'}`;
+  const commentText = `${writer.commentCount} ${writer.commentCount === 1 ? 'comment' : 'comments'}`;
+  const pizzaText = (writer.pizzasDonated > 0) ? `${writer.pizzasDonated} ${writer.pizzasDonated === 1 ? 'pizza' : 'pizzas'}` : '';
+  const statsSummary = [articleText, pizzaText, commentText].filter(Boolean).join(' • ');
+  const breakdownParts = [
+    writer.postCount > 0 ? `${articleText} (${writer.postCount * ARTICLE_GRADE_POINTS} pts)` : '',
+    writer.pizzasDonated > 0 ? `${pizzaText} (${writer.pizzasDonated * PIZZA_GRADE_POINTS} pts)` : '',
+    writer.commentCount > 0 ? `${commentText} (${writer.commentCount * COMMENT_GRADE_POINTS} pts)` : ''
+  ].filter(Boolean).join(' + ') || '0 pts';
 
-    const avatarHtml = writer.avatarUrl && writer.avatarUrl.trim() !== ''
-      ? `<img src="${escapeHtml(writer.avatarUrl)}" alt="${escapeHtml(writer.name)}">`
-      : initials;
+  const initials = (writer.name || 'W')
+    .split(' ')
+    .filter(Boolean)
+    .map(w => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase() || 'W';
 
-    const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
-    const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
-    const hasCover = Boolean(writer.coverUrl && String(writer.coverUrl).trim() !== '');
+  const avatarHtml = writer.avatarUrl && writer.avatarUrl.trim() !== ''
+    ? `<img src="${escapeHtml(writer.avatarUrl)}" alt="${escapeHtml(writer.name)}">`
+    : initials;
 
-    item.innerHTML = `
+  const hasCover = Boolean(writer.coverUrl && String(writer.coverUrl).trim() !== '');
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const cardHtml = `
+    <div class="hero-single-writer-card ${rankClass}" role="button" tabindex="0" title="View ${escapeHtml(writer.name)}'s public profile (${writer.score} pts: ${statsSummary})" aria-label="${rankTitle}: ${escapeHtml(writer.name)}, ${writer.score} points">
       ${hasCover ? `<div class="hero-writer-cover" style="background-image: url('${escapeHtml(String(writer.coverUrl).trim())}');" aria-hidden="true"></div>` : ''}
-      <div class="hero-writer-left">
-        <span class="hero-writer-rank ${rankClass}">${rankIcon}</span>
-        <div class="hero-writer-avatar">${avatarHtml}</div>
-        <div class="hero-writer-details">
-          <div class="hero-writer-name-row">
-            <span class="hero-writer-name">${escapeHtml(writer.name)}</span>
+
+      <div class="hero-single-writer-profile">
+        <div class="hero-single-avatar-wrap">
+          <div class="hero-single-avatar">${avatarHtml}</div>
+          <span class="hero-single-rank-badge ${rankClass}" aria-hidden="true">${rankMedal}</span>
+        </div>
+
+        <div class="hero-single-info">
+          <div class="hero-single-name-row">
+            <div class="hero-single-name-group">
+              <span class="hero-single-name">${escapeHtml(writer.name)}</span>
+            </div>
+            <span class="hero-single-points-pill" title="${writer.score} pts: ${breakdownParts}">
+              ⭐ ${writer.score} pts
+            </span>
           </div>
-          <span class="hero-writer-meta">@${escapeHtml(writer.username)}</span>
+          <span class="hero-single-username">@${escapeHtml(writer.username)}</span>
+          <span class="hero-single-stats-line">${statsSummary}</span>
         </div>
       </div>
-      <span class="hero-writer-count-pill" title="${writer.score} pts: ${breakdownParts}">${writer.score} pts</span>
-    `;
+    </div>
+  `;
 
-    const nameRow = item.querySelector('.hero-writer-name-row');
-    if (nameRow) {
-      attachContributorBadges(nameRow, writer, 14);
+  const doUpdate = () => {
+    dom.heroTopWritersList.innerHTML = cardHtml;
+
+    const nameGroup = dom.heroTopWritersList.querySelector('.hero-single-name-group');
+    if (nameGroup) {
+      attachContributorBadges(nameGroup, writer, 15);
     }
 
-    const handleProfileClick = (e) => {
-      e.stopPropagation();
-      openPublicProfileView(writer.id, writer.username, writer.name);
-    };
+    const item = dom.heroTopWritersList.querySelector('.hero-single-writer-card');
+    if (item) {
+      const handleProfileClick = (e) => {
+        e.stopPropagation();
+        openPublicProfileView(writer.id, writer.username, writer.name);
+      };
+      item.addEventListener('click', handleProfileClick);
+      item.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleProfileClick(e);
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          prevHeroContributor();
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          nextHeroContributor();
+        }
+      });
+    }
 
-    item.addEventListener('click', handleProfileClick);
-    item.addEventListener('keydown', (e) => {
+    updateHeroContributorTabs(index);
+  };
+
+  if (animate && !prefersReduced && dom.heroTopWritersList.firstElementChild) {
+    dom.heroTopWritersList.classList.add('fade-transition');
+    setTimeout(() => {
+      doUpdate();
+      dom.heroTopWritersList.classList.remove('fade-transition');
+    }, 150);
+  } else {
+    doUpdate();
+  }
+}
+
+function nextHeroContributor() {
+  if (heroTopContributors.length <= 1) return;
+  currentHeroContributorIndex = (currentHeroContributorIndex + 1) % heroTopContributors.length;
+  renderHeroSingleContributor(currentHeroContributorIndex);
+}
+
+function prevHeroContributor() {
+  if (heroTopContributors.length <= 1) return;
+  currentHeroContributorIndex = (currentHeroContributorIndex - 1 + heroTopContributors.length) % heroTopContributors.length;
+  renderHeroSingleContributor(currentHeroContributorIndex);
+}
+
+function goToHeroContributor(index) {
+  if (index < 0 || index >= heroTopContributors.length) return;
+  currentHeroContributorIndex = index;
+  renderHeroSingleContributor(currentHeroContributorIndex);
+}
+
+function updateHeroContributorTabs(activeIndex) {
+  const tabs = document.querySelectorAll('.hero-rank-tab');
+  tabs.forEach((tab) => {
+    const rIdx = parseInt(tab.getAttribute('data-rank-index'), 10);
+    if (rIdx === activeIndex) {
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+    } else {
+      tab.classList.remove('active');
+      tab.setAttribute('aria-selected', 'false');
+    }
+  });
+}
+
+function startHeroContributorTimer() {
+  stopHeroContributorTimer();
+  heroContributorTimer = setInterval(() => {
+    if (!isHeroContributorPaused && heroTopContributors.length > 1) {
+      nextHeroContributor();
+    }
+  }, 5000);
+}
+
+function stopHeroContributorTimer() {
+  if (heroContributorTimer) {
+    clearInterval(heroContributorTimer);
+    heroContributorTimer = null;
+  }
+}
+
+// ============================================================================
+// FEATURED STORIES CAROUSEL (Top 5 News Articles with 6s Auto-Rotation)
+// ============================================================================
+let featuredStories = [];
+let currentFeaturedIndex = 0;
+let featuredRotateTimer = null;
+let isFeaturedPaused = false;
+
+function initFeaturedStories(posts) {
+  let pool = posts && posts.length > 0 ? posts : ((allPosts && allPosts.length > 0) ? allPosts : (typeof DEMO_PREVIEW_POSTS !== 'undefined' ? DEMO_PREVIEW_POSTS : []));
+  if (!pool || pool.length === 0) return;
+
+  // Filter latest 5 news posts, fallback to any latest posts if fewer than 5
+  const newsPosts = pool.filter(p => (p.topic || '').toLowerCase() === 'news');
+  const otherPosts = pool.filter(p => (p.topic || '').toLowerCase() !== 'news');
+  const combined = [...newsPosts, ...otherPosts];
+  if (combined.length < 5 && typeof DEMO_PREVIEW_POSTS !== 'undefined') {
+    for (const demo of DEMO_PREVIEW_POSTS) {
+      if (!combined.some(p => String(p.id) === String(demo.id) || p.title === demo.title)) {
+        combined.push(demo);
+        if (combined.length >= 5) break;
+      }
+    }
+  }
+
+  const seen = new Set();
+  featuredStories = [];
+  for (const post of combined) {
+    if (!seen.has(post.id)) {
+      seen.add(post.id);
+      featuredStories.push(post);
+      if (featuredStories.length === 5) break;
+    }
+  }
+
+  if (featuredStories.length === 0) return;
+
+  if (currentFeaturedIndex >= featuredStories.length) {
+    currentFeaturedIndex = 0;
+  }
+
+  renderFeaturedStoryCard(currentFeaturedIndex, false);
+  renderFeaturedDots();
+  startFeaturedTimer();
+}
+
+function renderFeaturedStoryCard(index, animate = true) {
+  const post = featuredStories[index];
+  if (!post) return;
+
+  const card = document.getElementById('featured-story-card');
+  const imgEl = document.getElementById('featured-story-img');
+  const fallbackEl = document.getElementById('featured-story-fallback');
+  const tagEl = document.getElementById('featured-story-tag');
+  const titleEl = document.getElementById('featured-story-title');
+  const avatarEl = document.getElementById('featured-author-avatar');
+  const nameEl = document.getElementById('featured-author-name');
+  const readtimeEl = document.getElementById('featured-story-readtime');
+  const timeagoEl = document.getElementById('featured-story-timeago');
+  const counterEl = document.getElementById('featured-counter');
+
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const updateCardDOM = () => {
+    // Cover Image
+    if (post.cover_image && typeof post.cover_image === 'string' && post.cover_image.trim() !== '') {
+      if (imgEl) {
+        imgEl.src = post.cover_image;
+        imgEl.alt = post.title || 'Featured story';
+        imgEl.classList.remove('hidden');
+        imgEl.onerror = () => {
+          imgEl.classList.add('hidden');
+          if (fallbackEl) fallbackEl.classList.remove('hidden');
+        };
+      }
+      if (fallbackEl) fallbackEl.classList.add('hidden');
+    } else {
+      if (imgEl) imgEl.classList.add('hidden');
+      if (fallbackEl) fallbackEl.classList.remove('hidden');
+    }
+
+    // Category / Tag
+    if (tagEl) {
+      tagEl.textContent = post.topic || 'News';
+    }
+
+    // Headline / Title
+    if (titleEl) {
+      titleEl.textContent = post.title || 'Untitled Post';
+      if (typeof isBanglaText === 'function' && isBanglaText(post.title)) {
+        titleEl.classList.add('is-bangla');
+        titleEl.setAttribute('lang', 'bn');
+      } else {
+        titleEl.classList.remove('is-bangla');
+        titleEl.removeAttribute('lang');
+      }
+    }
+
+    // Author
+    let authorName = post.profiles?.display_name || post.author_name || '';
+    let authorAvatar = post.profiles?.avatar_url || post.author_avatar || '';
+    if (!authorName && post.author_id && typeof authorProfilesCache !== 'undefined') {
+      const cached = authorProfilesCache.get(post.author_id);
+      if (cached) {
+        authorName = cached.display_name;
+        authorAvatar = cached.avatar_url;
+      }
+    }
+    authorName = authorName || 'BartaWire';
+
+    if (nameEl) {
+      nameEl.textContent = authorName;
+    }
+
+    if (avatarEl) {
+      const initials = (authorName || 'B')
+        .split(' ')
+        .filter(Boolean)
+        .map(w => w[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase() || 'B';
+
+      if (authorAvatar && authorAvatar.trim() !== '') {
+        avatarEl.innerHTML = `<img src="${escapeHtml(authorAvatar)}" alt="${escapeHtml(authorName)}" onerror="this.parentElement.textContent='${initials}';">`;
+      } else {
+        avatarEl.textContent = initials;
+      }
+    }
+
+    // Reading time
+    if (readtimeEl) {
+      const rt = typeof calculateReadingTime === 'function'
+        ? calculateReadingTime(post.content || post.summary || '')
+        : '3 min read';
+      readtimeEl.textContent = rt;
+    }
+
+    // Time ago
+    if (timeagoEl) {
+      timeagoEl.textContent = typeof formatTimeAgo === 'function'
+        ? (formatTimeAgo(post.created_at) || 'Recently')
+        : 'Recently';
+    }
+
+    // Counter
+    if (counterEl) {
+      counterEl.textContent = `${index + 1} / ${featuredStories.length}`;
+    }
+
+    // Aria
+    if (card) {
+      card.setAttribute('aria-label', `Featured Story ${index + 1} of ${featuredStories.length}: ${post.title || ''}`);
+    }
+
+    // Update Dots
+    updateFeaturedDots(index);
+
+    // Update Trending Now Highlight
+    updateTrendingHighlight(post.id);
+  };
+
+  if (animate && !prefersReduced && card) {
+    card.classList.add('fade-transition');
+    setTimeout(() => {
+      updateCardDOM();
+      card.classList.remove('fade-transition');
+    }, 150);
+  } else {
+    updateCardDOM();
+  }
+}
+
+function nextFeaturedStory() {
+  if (featuredStories.length <= 1) return;
+  currentFeaturedIndex = (currentFeaturedIndex + 1) % featuredStories.length;
+  renderFeaturedStoryCard(currentFeaturedIndex);
+}
+
+function prevFeaturedStory() {
+  if (featuredStories.length <= 1) return;
+  currentFeaturedIndex = (currentFeaturedIndex - 1 + featuredStories.length) % featuredStories.length;
+  renderFeaturedStoryCard(currentFeaturedIndex);
+}
+
+function goToFeaturedStory(index) {
+  if (index < 0 || index >= featuredStories.length) return;
+  currentFeaturedIndex = index;
+  renderFeaturedStoryCard(currentFeaturedIndex);
+}
+
+function renderFeaturedDots() {
+  const dotsGroup = document.getElementById('featured-dots-group');
+  if (!dotsGroup) return;
+  dotsGroup.innerHTML = '';
+
+  featuredStories.forEach((story, idx) => {
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'featured-dot' + (idx === currentFeaturedIndex ? ' active' : '');
+    dot.setAttribute('role', 'tab');
+    dot.setAttribute('aria-label', `Go to story ${idx + 1} of ${featuredStories.length}: ${story.title || ''}`);
+    dot.setAttribute('aria-selected', idx === currentFeaturedIndex ? 'true' : 'false');
+    dot.addEventListener('click', (e) => {
+      e.stopPropagation();
+      goToFeaturedStory(idx);
+    });
+    dotsGroup.appendChild(dot);
+  });
+}
+
+function updateFeaturedDots(activeIndex) {
+  const dots = document.querySelectorAll('.featured-dot');
+  dots.forEach((dot, idx) => {
+    if (idx === activeIndex) {
+      dot.classList.add('active');
+      dot.setAttribute('aria-selected', 'true');
+    } else {
+      dot.classList.remove('active');
+      dot.setAttribute('aria-selected', 'false');
+    }
+  });
+}
+
+function startFeaturedTimer() {
+  stopFeaturedTimer();
+  featuredRotateTimer = setInterval(() => {
+    if (!isFeaturedPaused && featuredStories.length > 1) {
+      nextFeaturedStory();
+    }
+  }, 6000);
+}
+
+function stopFeaturedTimer() {
+  if (featuredRotateTimer) {
+    clearInterval(featuredRotateTimer);
+    featuredRotateTimer = null;
+  }
+}
+
+// ============================================================================
+// TRENDING NOW PANEL (Top 3 Posts by views or comments/reactions in last 7 days)
+// ============================================================================
+
+function getTrendingPosts(limit = 3) {
+  let postsPool = (allPosts && allPosts.length > 0) ? allPosts : ((window.allPosts && window.allPosts.length > 0) ? window.allPosts : (typeof DEMO_PREVIEW_POSTS !== 'undefined' ? DEMO_PREVIEW_POSTS : []));
+  if (!postsPool || postsPool.length === 0) return [];
+
+  // 1. Calculate comments per post from cachedComments
+  const commentCountsByPost = new Map();
+  if (Array.isArray(cachedComments)) {
+    cachedComments.forEach(c => {
+      const pId = c.post_id || c.postId;
+      if (pId) {
+        commentCountsByPost.set(String(pId), (commentCountsByPost.get(String(pId)) || 0) + 1);
+      }
+    });
+  }
+
+  // 2. Filter posts published within the last 7 days
+  const now = Date.now();
+  const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+  const recentPosts = postsPool.filter(p => {
+    if (!p) return false;
+    const createdAt = p.created_at ? new Date(p.created_at).getTime() : 0;
+    return !isNaN(createdAt) && createdAt > 0 && (now - createdAt) <= sevenDaysMs;
+  });
+
+  // Fallback: If fewer than 3 posts in last 7 days, fallback to all published posts
+  const candidatePosts = recentPosts.length >= 3 ? recentPosts : postsPool.slice();
+
+  // 3. Determine if views are explicitly tracked
+  const hasTrackedViews = candidatePosts.some(p => {
+    const v = Number(p.views ?? p.view_count ?? p.views_count ?? 0);
+    return !isNaN(v) && v > 0;
+  });
+
+  // 4. Sort posts
+  const sorted = [...candidatePosts].sort((a, b) => {
+    if (hasTrackedViews) {
+      const viewsA = Number(a.views ?? a.view_count ?? a.views_count ?? 0);
+      const viewsB = Number(b.views ?? b.view_count ?? b.views_count ?? 0);
+      if (viewsB !== viewsA) return viewsB - viewsA;
+    }
+
+    // Secondary / Fallback: comments count
+    const pIdA = String(a.id);
+    const pIdB = String(b.id);
+    const commentsA = commentCountsByPost.get(pIdA) || (Array.isArray(a.comments) ? a.comments.length : 0);
+    const commentsB = commentCountsByPost.get(pIdB) || (Array.isArray(b.comments) ? b.comments.length : 0);
+    if (commentsB !== commentsA) return commentsB - commentsA;
+
+    // Tertiary: recency
+    const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return timeB - timeA;
+  });
+
+  // Pad with demo preview posts if fewer than limit so 3 real rows are ALWAYS returned
+  if (sorted.length < limit && typeof DEMO_PREVIEW_POSTS !== 'undefined') {
+    for (const demo of DEMO_PREVIEW_POSTS) {
+      if (!sorted.some(p => String(p.id) === String(demo.id) || p.title === demo.title)) {
+        sorted.push(demo);
+        if (sorted.length >= limit) break;
+      }
+    }
+  }
+
+  return sorted.slice(0, limit);
+}
+
+function renderTrendingPanel() {
+  const container = document.getElementById('trending-list');
+  if (!container) return;
+
+  const trendingPosts = getTrendingPosts(3);
+  if (trendingPosts.length === 0) {
+    container.innerHTML = `
+      <div class="trending-empty-state">
+        <span>No trending posts yet. Check back soon!</span>
+      </div>
+    `;
+    return;
+  }
+
+  const currentlyFeaturedId = featuredStories[currentFeaturedIndex]?.id;
+
+  container.innerHTML = '';
+  trendingPosts.forEach((post, index) => {
+    const rank = index + 1;
+    const isFeatured = Boolean(currentlyFeaturedId && String(currentlyFeaturedId) === String(post.id));
+
+    const row = document.createElement('div');
+    row.className = 'trending-row' + (isFeatured ? ' is-featured' : '');
+    row.setAttribute('role', 'button');
+    row.setAttribute('tabindex', '0');
+    row.setAttribute('data-post-id', String(post.id));
+    row.setAttribute('aria-label', `Trending #${rank}: ${post.title || 'Untitled Post'}`);
+
+    const isBangla = typeof isBanglaText === 'function' && isBanglaText(post.title);
+    const banglaClass = isBangla ? ' is-bangla' : '';
+    const langAttr = isBangla ? ' lang="bn"' : '';
+
+    row.innerHTML = `
+      <span class="trending-rank" aria-hidden="true">${rank}</span>
+      <div class="trending-info">
+        <div class="trending-headline-row">
+          <h4 class="trending-headline${banglaClass}"${langAttr}>${escapeHtml(post.title || 'Untitled Post')}</h4>
+        </div>
+        <div class="trending-meta-row">
+          <span class="trending-category-tag">${escapeHtml(post.topic || 'News')}</span>
+        </div>
+      </div>
+    `;
+
+    // Click to open article
+    row.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openArticleView(post);
+    });
+
+    // Keyboard accessibility
+    row.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        handleProfileClick(e);
+        openArticleView(post);
       }
     });
 
-    dom.heroTopWritersList.appendChild(item);
+    container.appendChild(row);
+  });
+}
+
+function updateTrendingHighlight(featuredPostId) {
+  const rows = document.querySelectorAll('.trending-row');
+  if (!rows || rows.length === 0) return;
+
+  rows.forEach(row => {
+    const rowPostId = row.getAttribute('data-post-id');
+    if (featuredPostId && rowPostId && String(rowPostId) === String(featuredPostId)) {
+      row.classList.add('is-featured');
+    } else {
+      row.classList.remove('is-featured');
+    }
+  });
+}
+
+function updateHeaderNavActive(activeId) {
+  document.querySelectorAll('.header-nav-link').forEach(link => {
+    if (link.id === activeId) {
+      link.classList.add('active');
+    } else {
+      link.classList.remove('active');
+    }
   });
 }
 
@@ -2043,6 +2573,7 @@ async function openContributorsView() {
   dom.manageView?.classList.add('hidden');
   dom.supportersView?.classList.add('hidden');
   dom.contributorsView?.classList.remove('hidden');
+  if (typeof updateHeaderNavActive === 'function') updateHeaderNavActive('nav-link-contributors');
 
   try {
     if (window.location.hash !== '#/contributors') {
@@ -2100,7 +2631,7 @@ async function loadAllContributors() {
       try {
         const { data: commentsData } = await supabaseClient
           .from('comments')
-          .select('id, user_id, created_at');
+          .select('id, user_id, post_id, created_at');
         if (Array.isArray(commentsData)) {
           cachedComments = commentsData;
         }
@@ -2292,6 +2823,7 @@ async function openSupportersView() {
   dom.manageView?.classList.add('hidden');
   dom.contributorsView?.classList.add('hidden');
   dom.supportersView?.classList.remove('hidden');
+  if (typeof updateHeaderNavActive === 'function') updateHeaderNavActive('nav-link-supporters');
 
   const basePath = getAppBasePath() || '/';
   try {
@@ -4255,7 +4787,7 @@ async function openArticleView(post, updateHash = true) {
 
   // 1. Resolve full post object if missing essential fields (content, author_id, created_at)
   if (!post.content || !post.author_id) {
-    const postsPool = (allPosts && allPosts.length > 0) ? allPosts : (window.allPosts || []);
+    const postsPool = (allPosts && allPosts.length > 0) ? allPosts : ((window.allPosts && window.allPosts.length > 0) ? window.allPosts : (typeof DEMO_PREVIEW_POSTS !== 'undefined' ? DEMO_PREVIEW_POSTS : []));
     const inMemory = postsPool.find(p => (post.id && String(p.id) === String(post.id)) || (post.slug && p.slug === post.slug));
     if (inMemory && inMemory.content && inMemory.author_id) {
       post = { ...post, ...inMemory };
@@ -4520,6 +5052,7 @@ function returnToHomeView() {
   dom.contributorsView?.classList.add('hidden');
   dom.supportersView?.classList.add('hidden');
   dom.homeView?.classList.remove('hidden');
+  if (typeof updateHeaderNavActive === 'function') updateHeaderNavActive('nav-link-home');
 
   collapseTopics();
 
@@ -5001,9 +5534,11 @@ async function handleAddComment(e) {
       cachedComments.push({
         id: data[0].id,
         user_id: currentUser.id,
+        post_id: activePost ? activePost.id : null,
         created_at: new Date().toISOString()
       });
       renderHeroTopWriters();
+      renderTrendingPanel();
     }
 
     await loadCommentsForPost(activePost.id);
@@ -5032,6 +5567,7 @@ async function deleteComment(commentId) {
 
     cachedComments = cachedComments.filter(c => c.id !== commentId);
     renderHeroTopWriters();
+    renderTrendingPanel();
 
     if (activePost) {
       await loadCommentsForPost(activePost.id);
@@ -11662,6 +12198,10 @@ async function openPhotocardStudio(post) {
   const isPostBangla = isBanglaPost(post);
   currentPhotocardLang = isPostBangla ? 'bn' : 'en';
 
+  // Open modal immediately for snappy responsiveness
+  dom.photocardModal?.classList.remove('hidden');
+  document.body.classList.add('modal-open');
+
   currentPhotocardCardIndex = 0;
   storyContentOverride = null;
   storyFontSize = 16;
@@ -12451,13 +12991,9 @@ function initEventListeners() {
       openAuthorInfoModal(currentProfile.display_name, currentProfile.username);
     }
   });
-  dom.articleAuthorProfileBtn?.addEventListener('click', () => {
-    if (currentArticleAuthor) {
-      openPublicProfileView(currentArticleAuthor.id || currentArticleAuthor.username, currentArticleAuthor.username, currentArticleAuthor.display_name);
-    }
-  });
-
-  const handleMobileAuthorClick = (e) => {
+  const handleArticleAuthorClick = (e) => {
+    if (e?.target?.closest?.('a') || e?.target?.closest?.('#article-topic-btn')) return;
+    e?.preventDefault?.();
     e?.stopPropagation?.();
     const authorId = currentArticleAuthor?.id || activePost?.author_id;
     const authorUsername = currentArticleAuthor?.username || activePost?.author_username;
@@ -12467,11 +13003,14 @@ function initEventListeners() {
     }
   };
 
-  dom.articleMobileAuthorChip?.addEventListener('click', handleMobileAuthorClick);
+  dom.articleAuthorProfileBtn?.addEventListener('click', handleArticleAuthorClick);
+  dom.articleAuthorCard?.addEventListener('click', handleArticleAuthorClick);
+
+  dom.articleMobileAuthorChip?.addEventListener('click', handleArticleAuthorClick);
   dom.articleMobileAuthorChip?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      handleMobileAuthorClick(e);
+      handleArticleAuthorClick(e);
     }
   });
   dom.profileViewPublicBtn?.addEventListener('click', () => {
@@ -12510,13 +13049,19 @@ function initEventListeners() {
     closeUserDropdown();
     if (currentUser) {
       openPublicProfileView(currentUser.id, currentProfile?.username, currentProfile?.display_name);
+    } else {
+      openAuthModal('signin');
     }
   });
 
   dom.dropdownItemSettings?.addEventListener('click', (e) => {
     e.preventDefault();
     closeUserDropdown();
-    openProfileView();
+    if (currentUser) {
+      openProfileView();
+    } else {
+      openAuthModal('signin');
+    }
   });
 
   dom.dropdownItemSupport?.addEventListener('click', (e) => {
@@ -12771,79 +13316,233 @@ function initEventListeners() {
     }
   });
 
-  // Hero Action Buttons (Apply for Writer Access & Sign Up)
-  dom.heroBecomeWriterBtn?.addEventListener('click', () => {
+  // --------------------------------------------------------------------------
+  // Header Navigation & Actions
+  // --------------------------------------------------------------------------
+  document.getElementById('nav-link-home')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    returnToHomeView();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  document.getElementById('nav-link-contributors')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openContributorsView();
+  });
+
+  document.getElementById('nav-link-supporters')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openSupportersView();
+  });
+
+  // Header "Write" button (single primary button in header)
+  document.getElementById('header-write-btn')?.addEventListener('click', (e) => {
+    e.preventDefault();
     if (currentUserRole === 'admin' || currentUserRole === 'publisher') {
       openAdminView();
     } else {
       openWriterModal();
     }
   });
-  dom.heroSignupBtn?.addEventListener('click', () => {
-    if (currentUser) {
-      openPublicProfileView(currentUser.id, currentProfile?.username, currentProfile?.display_name);
-    } else {
-      openAuthModal('signup');
+
+  // Header Theme Toggle button (Light / Dark / Cyberpunk)
+  dom.themeToggle?.addEventListener('click', (e) => {
+    e.preventDefault();
+    toggleTheme();
+  });
+
+  // Footer "Donate Pizza" button
+  document.getElementById('footer-support-btn')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openSupportersView();
+  });
+
+  // --------------------------------------------------------------------------
+  // Featured Story Carousel Handlers
+  // --------------------------------------------------------------------------
+  const featuredWrap = document.getElementById('featured-story-card-wrap');
+  const featuredCard = document.getElementById('featured-story-card');
+  const featuredPrev = document.getElementById('featured-nav-prev');
+  const featuredNext = document.getElementById('featured-nav-next');
+
+  featuredPrev?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    prevFeaturedStory();
+  });
+
+  featuredNext?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    nextFeaturedStory();
+  });
+
+  featuredCard?.addEventListener('click', (e) => {
+    if (e.target.closest('.featured-nav-arrow') || e.target.closest('button')) return;
+    const currentPost = featuredStories[currentFeaturedIndex];
+    if (currentPost) {
+      openArticleView(currentPost);
     }
   });
 
-  // Hero Top Writers Card Actions
-  dom.heroViewAllWritersBtn?.addEventListener('click', openContributorsView);
-  dom.heroWritersApplyBtn?.addEventListener('click', () => {
-    if (currentUserRole === 'admin' || currentUserRole === 'publisher') {
-      openAdminView();
-    } else {
-      openWriterModal();
+  featuredCard?.addEventListener('keydown', (e) => {
+    if (e.target.closest('button')) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      const currentPost = featuredStories[currentFeaturedIndex];
+      if (currentPost) {
+        openArticleView(currentPost);
+      }
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      prevFeaturedStory();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      nextFeaturedStory();
     }
   });
 
-  // Writer & Top Writers Modals Handlers
-  dom.writerModalCloseBtn?.addEventListener('click', closeWriterModal);
-  dom.topWritersCloseBtn?.addEventListener('click', closeTopWritersModal);
-  dom.topWritersApplyBtn?.addEventListener('click', () => {
-    closeTopWritersModal();
+  // Pause auto-rotation on hover & touch
+  featuredWrap?.addEventListener('mouseenter', () => { isFeaturedPaused = true; });
+  featuredWrap?.addEventListener('mouseleave', () => { isFeaturedPaused = false; });
+  featuredWrap?.addEventListener('touchstart', () => { isFeaturedPaused = true; }, { passive: true });
+  featuredWrap?.addEventListener('touchend', () => {
+    setTimeout(() => { isFeaturedPaused = false; }, 1000);
+  }, { passive: true });
+
+  // Mobile swipe support for Featured Story
+  let featuredTouchStartX = 0;
+  let featuredTouchStartY = 0;
+  featuredWrap?.addEventListener('touchstart', (e) => {
+    if (e.touches && e.touches[0]) {
+      featuredTouchStartX = e.touches[0].clientX;
+      featuredTouchStartY = e.touches[0].clientY;
+    }
+  }, { passive: true });
+
+  featuredWrap?.addEventListener('touchend', (e) => {
+    if (!featuredTouchStartX) return;
+    const touchEndX = e.changedTouches ? e.changedTouches[0].clientX : 0;
+    const touchEndY = e.changedTouches ? e.changedTouches[0].clientY : 0;
+    const diffX = touchEndX - featuredTouchStartX;
+    const diffY = touchEndY - featuredTouchStartY;
+
+    if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY)) {
+      if (diffX < 0) {
+        nextFeaturedStory();
+      } else {
+        prevFeaturedStory();
+      }
+    }
+    featuredTouchStartX = 0;
+    featuredTouchStartY = 0;
+  }, { passive: true });
+
+  // --------------------------------------------------------------------------
+  // Top Contributors Toggle Handlers (Tabs 1, 2, 3 and Prev/Next)
+  // --------------------------------------------------------------------------
+  const writersCard = document.getElementById('hero-writers-card');
+  const writerPrev = document.getElementById('hero-writer-prev');
+  const writerNext = document.getElementById('hero-writer-next');
+
+  writerPrev?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    prevHeroContributor();
+  });
+
+  writerNext?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    nextHeroContributor();
+  });
+
+  document.querySelectorAll('.hero-rank-tab').forEach((tab) => {
+    tab.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const rankIdx = parseInt(tab.getAttribute('data-rank-index'), 10) || 0;
+      goToHeroContributor(rankIdx);
+    });
+  });
+
+  // Pause top contributors on hover & touch
+  writersCard?.addEventListener('mouseenter', () => { isHeroContributorPaused = true; });
+  writersCard?.addEventListener('mouseleave', () => { isHeroContributorPaused = false; });
+  writersCard?.addEventListener('touchstart', () => { isHeroContributorPaused = true; }, { passive: true });
+  writersCard?.addEventListener('touchend', () => {
+    setTimeout(() => { isHeroContributorPaused = false; }, 1000);
+  }, { passive: true });
+
+  // "View All" Contributors button (Top right of Contributors card)
+  const viewAllWritersBtn = dom.heroViewAllWritersBtn || document.getElementById('hero-view-all-writers-btn');
+  viewAllWritersBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openContributorsView();
+  });
+
+  // "Be a Publisher" button in Top Contributors card
+  const heroWritersApplyBtn = dom.heroWritersApplyBtn || document.getElementById('hero-writers-apply-btn');
+  heroWritersApplyBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     openWriterModal();
   });
 
-  // Writer Email Copy Action
-  dom.writerCopyEmailBtn?.addEventListener('click', async () => {
-    const emailToCopy = 'oceanmallik@oceanmallik.com';
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(emailToCopy);
-      } else {
-        const tempInput = document.createElement('input');
-        tempInput.value = emailToCopy;
-        document.body.appendChild(tempInput);
-        tempInput.select();
-        document.execCommand('copy');
-        document.body.removeChild(tempInput);
-      }
-      if (dom.writerCopyFeedback) {
-        dom.writerCopyFeedback.textContent = 'Copied!';
-        setTimeout(() => {
-          if (dom.writerCopyFeedback) dom.writerCopyFeedback.textContent = 'Copy';
-        }, 2000);
-      }
-      showToast('Email address copied to clipboard!', 'info');
-    } catch (err) {
-      console.warn('Clipboard write error:', err);
-      showToast('Failed to copy email address', 'error');
+  // --------------------------------------------------------------------------
+  // Trending Now List Click Delegation
+  // --------------------------------------------------------------------------
+  const trendingList = document.getElementById('trending-list');
+  trendingList?.addEventListener('click', (e) => {
+    const row = e.target.closest('.trending-row');
+    if (!row) return;
+    const postId = row.getAttribute('data-post-id');
+    const postsPool = (allPosts && allPosts.length > 0) ? allPosts : (typeof DEMO_PREVIEW_POSTS !== 'undefined' ? DEMO_PREVIEW_POSTS : []);
+    const post = postsPool.find(p => String(p.id) === String(postId) || (p.slug && p.slug === postId));
+    if (post) {
+      openArticleView(post);
+    } else if (postId) {
+      openArticleView({ id: postId, title: row.querySelector('.trending-headline')?.textContent });
     }
   });
 
-  // Modal backdrop click handlers
-  dom.writerModal?.addEventListener('click', (e) => {
-    if (e.target === dom.writerModal) closeWriterModal();
-  });
-  dom.topWritersModal?.addEventListener('click', (e) => {
-    if (e.target === dom.topWritersModal) closeTopWritersModal();
+  trendingList?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      const row = e.target.closest('.trending-row');
+      if (!row) return;
+      e.preventDefault();
+      row.click();
+    }
   });
 
-  // Theme toggle
-  dom.themeToggle?.addEventListener('click', toggleTheme);
+  // Featured Story Author Chip click -> author public profile
+  document.getElementById('featured-author-chip')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const currentPost = (typeof featuredStories !== 'undefined' && featuredStories[currentFeaturedIndex]) || null;
+    const authorId = currentPost?.author_id || currentPost?.author_username || 'bartawire';
+    const authorUsername = currentPost?.author_username || 'bartawire';
+    const authorName = currentPost?.author_name || 'BartaWire';
+    openPublicProfileView(authorId, authorUsername, authorName);
+  });
 
-  // Copy Article Link
+  // Top Contributors Single Card Click Delegation
+  dom.heroTopWritersList?.addEventListener('click', (e) => {
+    const card = e.target.closest('.hero-single-writer-card, .hero-writer-item');
+    if (!card) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const writer = (heroTopContributors && heroTopContributors[currentHeroContributorIndex]) || null;
+    if (writer) {
+      openPublicProfileView(writer.id, writer.username, writer.name);
+    } else {
+      const username = card.querySelector('.hero-single-username, .hero-writer-meta')?.textContent.replace('@', '').trim();
+      const name = card.querySelector('.hero-single-name, .hero-writer-name')?.textContent.trim();
+      if (username || name) {
+        openPublicProfileView(username, username, name);
+      }
+    }
+  });
+
+  // --------------------------------------------------------------------------
+  // Article Actions: Copy Link & Print Article
+  // --------------------------------------------------------------------------
   dom.copyLinkBtn?.addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
@@ -12851,6 +13550,7 @@ function initEventListeners() {
       setTimeout(() => {
         dom.copyFeedback?.classList.add('hidden');
       }, 2000);
+      showToast('Article link copied to clipboard!', 'info');
     } catch {
       alert('Link copied to clipboard: ' + window.location.href);
     }
@@ -12860,14 +13560,6 @@ function initEventListeners() {
     dom.copyLinkBtn?.click();
   });
 
-  // Photocard Studio Triggers
-  dom.articlePhotocardBtn?.addEventListener('click', () => {
-    if (activePost) openPhotocardStudio(activePost);
-  });
-  dom.sidebarPhotocardBtn?.addEventListener('click', () => {
-    if (activePost) openPhotocardStudio(activePost);
-  });
-
   // Print Article Triggers
   dom.articlePrintBtn?.addEventListener('click', printArticle);
   dom.sidebarPrintBtn?.addEventListener('click', printArticle);
@@ -12875,7 +13567,16 @@ function initEventListeners() {
     if (activePost) updatePrintMetadata(activePost);
   });
 
-  // Photocard Studio Modal Actions
+  // --------------------------------------------------------------------------
+  // Photocard Studio Triggers & Modal Actions
+  // --------------------------------------------------------------------------
+  dom.articlePhotocardBtn?.addEventListener('click', () => {
+    if (activePost) openPhotocardStudio(activePost);
+  });
+  dom.sidebarPhotocardBtn?.addEventListener('click', () => {
+    if (activePost) openPhotocardStudio(activePost);
+  });
+
   dom.photocardModalCloseBtn?.addEventListener('click', closePhotocardStudio);
   dom.photocardDoneBtn?.addEventListener('click', closePhotocardStudio);
   dom.photocardDoneBtnBottom?.addEventListener('click', closePhotocardStudio);
@@ -13574,6 +14275,70 @@ function initEventListeners() {
     openDonatePizzaModal();
   });
 
+  // Writer Access Modal Listeners (Apply for Writer Access / Be a Publisher)
+  const writerModalCloseBtn = dom.writerModalCloseBtn || document.getElementById('writer-modal-close-btn');
+  writerModalCloseBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeWriterModal();
+  });
+
+  const writerModal = dom.writerModal || document.getElementById('writer-modal');
+  writerModal?.addEventListener('click', (e) => {
+    if (e.target === writerModal) {
+      closeWriterModal();
+    }
+  });
+
+  const writerCopyEmailBtn = dom.writerCopyEmailBtn || document.getElementById('writer-copy-email-btn');
+  writerCopyEmailBtn?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const emailToCopy = 'oceanmallik@oceanmallik.com';
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(emailToCopy);
+      } else {
+        const tempInput = document.createElement('input');
+        tempInput.value = emailToCopy;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+      }
+      const feedbackEl = dom.writerCopyFeedback || document.getElementById('writer-copy-feedback');
+      if (feedbackEl) {
+        feedbackEl.textContent = 'Copied!';
+        setTimeout(() => {
+          if (feedbackEl) feedbackEl.textContent = 'Copy';
+        }, 2000);
+      }
+      showToast('Email address copied to clipboard!', 'info');
+    } catch (err) {
+      console.warn('Clipboard write error:', err);
+      showToast('Failed to copy email address', 'error');
+    }
+  });
+
+  // Top Writers Modal Listeners
+  const topWritersCloseBtn = dom.topWritersCloseBtn || document.getElementById('top-writers-close-btn');
+  topWritersCloseBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeTopWritersModal();
+  });
+
+  const topWritersModal = dom.topWritersModal || document.getElementById('top-writers-modal');
+  topWritersModal?.addEventListener('click', (e) => {
+    if (e.target === topWritersModal) {
+      closeTopWritersModal();
+    }
+  });
+
+  const topWritersApplyBtn = dom.topWritersApplyBtn || document.getElementById('top-writers-apply-btn');
+  topWritersApplyBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeTopWritersModal();
+    openWriterModal();
+  });
+
   // Footer Brand Link
   dom.footerBrandLogo?.addEventListener('click', (e) => {
     e.preventDefault();
@@ -13798,6 +14563,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   initTheme();
   initEventListeners();
   initTopicFilters();
+  initFeaturedStories(typeof DEMO_PREVIEW_POSTS !== 'undefined' ? DEMO_PREVIEW_POSTS : []);
+  renderTrendingPanel();
+  renderHeroTopWriters();
   initSupabase();
   const openedFromPostQuery = await checkInitialPostQuery();
   if (!openedFromPostQuery) {

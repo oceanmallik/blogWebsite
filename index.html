@@ -48,7 +48,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=9.8">
+  <link rel="stylesheet" href="style.css?v=10.1">
 </head>
 <body>
   <!-- Header / Navigation -->
@@ -63,11 +63,26 @@
         </div>
       </a>
 
+      <!-- Header Navigation Links -->
+      <nav class="header-nav" id="header-nav" aria-label="Main Navigation">
+        <button type="button" class="header-nav-link active" id="nav-link-home">Home</button>
+        <button type="button" class="header-nav-link" id="nav-link-contributors">Contributors</button>
+        <button type="button" class="header-nav-link" id="nav-link-supporters">Pizza Supporters</button>
+      </nav>
+
       <div class="header-right">
+        <!-- Single Primary Button: Write (Icon only) -->
+        <button type="button" id="header-write-btn" class="header-write-btn" title="Write a post / Apply for writer access" aria-label="Write a post">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16" aria-hidden="true">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+          </svg>
+        </button>
+
         <!-- Supabase Auth Actions -->
         <div id="nav-auth-container" class="nav-auth-container">
           <!-- Logged out button -->
-          <button id="nav-login-btn" class="btn-sm btn-primary nav-login-btn">
+          <button id="nav-login-btn" class="btn-sm btn-outline nav-login-btn">
             <svg class="nav-auth-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
               <polyline points="10 17 15 12 10 7"></polyline>
@@ -104,7 +119,7 @@
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <span>My Public Profile</span>
+                <span>My Profile</span>
               </button>
               <button type="button" id="dropdown-item-settings" class="dropdown-item" role="menuitem">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
@@ -112,10 +127,6 @@
                   <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                 </svg>
                 <span>Account Settings &amp; Profile</span>
-              </button>
-              <button type="button" id="dropdown-item-support" class="dropdown-item" role="menuitem">
-                <span style="font-size: 15px; line-height: 1;" aria-hidden="true">🍕</span>
-                <span>Donate Pizza</span>
               </button>
               <div id="dropdown-writer-section" class="dropdown-writer-section hidden">
                 <div class="dropdown-divider"></div>
@@ -154,7 +165,7 @@
         <!-- Theme Toggle (Light / Dark / Cyberpunk) — Positioned after profile / auth -->
         <button id="theme-toggle" class="theme-toggle-btn" title="Toggle theme" aria-label="Toggle theme">
           <span class="theme-toggle-icon">
-            <svg class="sun-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="5"></circle>
               <line x1="12" y1="1" x2="12" y2="3"></line>
               <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -165,7 +176,7 @@
               <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
               <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
             </svg>
-            <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="moon-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
             </svg>
             <svg class="zap-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -187,71 +198,193 @@
       <!-- Hero Section -->
       <section class="hero-section">
         <div class="hero-layout">
-          <!-- Left: Title & Actions -->
-          <div class="hero-content">
-            <div class="hero-badge">
-              <span class="pulse-dot"></span>
-              <span>BartaWire Journal</span>
+          <!-- Left: Featured Story Card with toggle -->
+          <div class="hero-featured" id="hero-featured-section">
+            <div class="featured-story-header-line">
+              <div class="hero-badge">
+                <span class="pulse-dot"></span>
+                <span>BartaWire Journal</span>
+              </div>
+              <span class="featured-story-tagline">Stories, ideas, and perspectives from the digital tide.</span>
             </div>
-            <h1 class="hero-title">Explore insightful articles, in-depth guides &amp; ideas that matter.</h1>
-            <p class="hero-subtitle">
-              A curated space for informative articles, practical tutorials, and reliable knowledge designed to keep curious minds informed.
-            </p>
-            <div class="hero-actions">
-              <button type="button" id="hero-become-writer-btn" class="btn-primary hero-btn" title="Apply for Writer Access • Be a Publisher">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16" aria-hidden="true">
-                  <path d="M12 20h9"></path>
-                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                </svg>
-                <span>Apply for Writer Access</span>
-              </button>
-              <button type="button" id="hero-signup-btn" class="btn-outline hero-btn" title="Create an account or open your profile">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16" aria-hidden="true">
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="8.5" cy="7" r="4"></circle>
-                  <line x1="20" y1="8" x2="20" y2="14"></line>
-                  <line x1="23" y1="11" x2="17" y2="11"></line>
-                </svg>
-                <span id="hero-signup-btn-text">Sign Up</span>
-              </button>
-              <button type="button" id="nav-support-btn" class="hero-btn hero-btn-support" title="Donate Pizza • Support BartaWire" aria-label="Donate Pizza to BartaWire">
-                <span class="nav-support-pizza" aria-hidden="true">🍕</span>
-                <span>Donate Pizza</span>
-              </button>
+
+            <div class="featured-story-card-wrap" id="featured-story-card-wrap">
+              <article class="featured-story-card" id="featured-story-card" role="button" tabindex="0" aria-label="Featured Story" aria-roledescription="slide">
+                <!-- Large Image with floating category tag and prev/next arrows -->
+                <div class="featured-media-wrap">
+                  <img id="featured-story-img" class="featured-story-img" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80" alt="The Architecture of the Modern Ocean: Designing Resilient Web Systems" loading="eager">
+                  <div id="featured-story-fallback" class="featured-story-fallback hidden" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="featured-placeholder-icon">
+                      <path d="M2 12c2.5-3 5-3 7.5 0s5 3 7.5 0 5-3 5-3"></path>
+                      <path d="M2 17c2.5-3 5-3 7.5 0s5 3 7.5 0 5-3 5-3"></path>
+                    </svg>
+                  </div>
+                  <span id="featured-story-tag" class="featured-story-tag">Technology</span>
+
+                  <!-- Prev / Next Navigation Arrows -->
+                  <button type="button" id="featured-nav-prev" class="featured-nav-arrow featured-nav-prev" aria-label="Previous featured story" title="Previous story">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16" aria-hidden="true">
+                      <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                  </button>
+                  <button type="button" id="featured-nav-next" class="featured-nav-arrow featured-nav-next" aria-label="Next featured story" title="Next story">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16" aria-hidden="true">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Story Info: Headline, Author, Read time, Time ago -->
+                <div class="featured-body">
+                  <h2 id="featured-story-title" class="featured-story-title">The Architecture of the Modern Ocean: Designing Resilient Web Systems</h2>
+                  <div class="featured-story-meta">
+                    <div class="featured-author-chip" id="featured-author-chip">
+                      <div id="featured-author-avatar" class="featured-author-avatar">BW</div>
+                      <span id="featured-author-name" class="featured-author-name">BartaWire</span>
+                    </div>
+                    <span class="featured-meta-dot" aria-hidden="true">•</span>
+                    <span id="featured-story-readtime" class="featured-story-readtime">4 min read</span>
+                    <span class="featured-meta-dot" aria-hidden="true">•</span>
+                    <span id="featured-story-timeago" class="featured-story-timeago">2 days ago</span>
+                  </div>
+                </div>
+              </article>
+
+              <!-- Carousel Controls: 5 Dots & Counter -->
+              <div class="featured-carousel-bar">
+                <div class="featured-dots-group" id="featured-dots-group" role="tablist" aria-label="Featured Story selection">
+                  <!-- 5 dots populated dynamically -->
+                </div>
+                <div class="featured-carousel-info">
+                  <span class="featured-counter" id="featured-counter" aria-live="polite">1 / 5</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- Right: Top Contributors (Only Top 3) -->
-          <aside class="hero-top-writers" aria-label="Top Contributors">
-            <div class="hero-writers-card">
-              <div class="hero-writers-header">
-                <div class="hero-writers-title-group">
-                  <span class="hero-writers-badge">🏆 Top Contributors</span>
-                  <span class="hero-writers-rank-tag">Top 3</span>
+          <!-- Right: Trending now & Top Contributors (stacked) -->
+          <aside class="hero-sidebar" id="hero-sidebar" aria-label="Trending and Top Contributors">
+            <!-- 1. Trending Now Panel -->
+            <section class="trending-card" id="trending-card" aria-label="Trending now">
+              <div class="trending-header">
+                <div class="trending-title-group">
+                  <span class="trending-badge">
+                    <span class="trending-icon" aria-hidden="true">🔥</span>
+                    <span>Trending now</span>
+                  </span>
+                  <span class="trending-period-tag">TOP 3</span>
                 </div>
-                <button type="button" id="hero-view-all-writers-btn" class="hero-writers-view-all-btn" title="View all contributors">
-                  <span>View All</span>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="11" height="11" aria-hidden="true">
-                    <polyline points="9 18 15 12 9 6"></polyline>
-                  </svg>
-                </button>
               </div>
 
-              <div id="hero-top-writers-list" class="hero-writers-list">
-                <!-- Top 3 Contributors populated dynamically by renderHeroTopWriters() -->
-                <div class="hero-writer-skeleton">
-                  <div class="hero-writer-skeleton-avatar"></div>
-                  <div class="hero-writer-skeleton-info">
-                    <div class="hero-skeleton-bar bar-long"></div>
-                    <div class="hero-skeleton-bar bar-short"></div>
+              <div id="trending-list" class="trending-list" role="list">
+                <!-- Top 3 Trending posts rendered with real initial rows and updated by renderTrendingPanel() -->
+                <div class="trending-row is-featured" role="button" tabindex="0" data-post-id="demo-1" aria-label="Trending #1: The Architecture of the Modern Ocean: Designing Resilient Web Systems">
+                  <span class="trending-rank" aria-hidden="true">1</span>
+                  <div class="trending-info">
+                    <div class="trending-headline-row">
+                      <h4 class="trending-headline">The Architecture of the Modern Ocean: Designing Resilient Web Systems</h4>
+                    </div>
+                    <div class="trending-meta-row">
+                      <span class="trending-category-tag">Technology</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="trending-row" role="button" tabindex="0" data-post-id="demo-2" aria-label="Trending #2: Crafting High-Performance Vanilla JavaScript Applications">
+                  <span class="trending-rank" aria-hidden="true">2</span>
+                  <div class="trending-info">
+                    <div class="trending-headline-row">
+                      <h4 class="trending-headline">Crafting High-Performance Vanilla JavaScript Applications</h4>
+                    </div>
+                    <div class="trending-meta-row">
+                      <span class="trending-category-tag">Programming</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="trending-row" role="button" tabindex="0" data-post-id="demo-3" aria-label="Trending #3: Undercurrents: The Quiet Evolution of Edge Computing">
+                  <span class="trending-rank" aria-hidden="true">3</span>
+                  <div class="trending-info">
+                    <div class="trending-headline-row">
+                      <h4 class="trending-headline">Undercurrents: The Quiet Evolution of Edge Computing</h4>
+                    </div>
+                    <div class="trending-meta-row">
+                      <span class="trending-category-tag">AI</span>
+                    </div>
                   </div>
                 </div>
               </div>
+            </section>
 
-              <div class="hero-writers-footer">
-                <div class="hero-grade-rule">⭐ 1 Article = 10 pts • 1 Pizza = 100 pts • 1 Comment = 1 pt</div>
-                <div class="hero-writers-footer-row">
-                  <span class="hero-writers-footer-label">Want to share your ideas?</span>
+            <!-- 2. Top Contributors Toggle Card (unchanged) -->
+            <div class="hero-top-writers" aria-label="Top Contributors">
+              <div class="hero-writers-card" id="hero-writers-card">
+                <div class="hero-writers-header">
+                  <div class="hero-writers-title-group">
+                    <span class="hero-writers-badge">🏆 Top Contributors</span>
+                    <span class="hero-writers-rank-tag">Top 3</span>
+                  </div>
+                  <button type="button" id="hero-view-all-writers-btn" class="hero-writers-view-all-btn" title="View all contributors">
+                    <span>View All</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="11" height="11" aria-hidden="true">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Top Contributors Toggle Bar (Tabs 1, 2, 3 and Prev/Next Arrows) -->
+                <div class="hero-writers-nav-bar">
+                  <div class="hero-writers-tabs" id="hero-writers-tabs" role="tablist" aria-label="Contributor Rank Selection">
+                    <button type="button" class="hero-rank-tab active" data-rank-index="0" role="tab" aria-selected="true" aria-label="1st Place Contributor">
+                      <span class="hero-rank-tab-icon" aria-hidden="true">🥇</span>
+                      <span>#1</span>
+                    </button>
+                    <button type="button" class="hero-rank-tab" data-rank-index="1" role="tab" aria-selected="false" aria-label="2nd Place Contributor">
+                      <span class="hero-rank-tab-icon" aria-hidden="true">🥈</span>
+                      <span>#2</span>
+                    </button>
+                    <button type="button" class="hero-rank-tab" data-rank-index="2" role="tab" aria-selected="false" aria-label="3rd Place Contributor">
+                      <span class="hero-rank-tab-icon" aria-hidden="true">🥉</span>
+                      <span>#3</span>
+                    </button>
+                  </div>
+
+                  <div class="hero-writers-arrows">
+                    <button type="button" class="hero-writer-arrow" id="hero-writer-prev" aria-label="Previous contributor" title="Previous contributor">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13" aria-hidden="true">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                      </svg>
+                    </button>
+                    <button type="button" class="hero-writer-arrow" id="hero-writer-next" aria-label="Next contributor" title="Next contributor">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13" aria-hidden="true">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Single Contributor Display Area (Only 1 contributor shown at a time) -->
+                <div id="hero-top-writers-list" class="hero-writers-list hero-writers-single-view">
+                  <div class="hero-single-writer-card rank-1" role="button" tabindex="0" title="View Sarah Jenkins's public profile" aria-label="1st Place: Sarah Jenkins, 420 points">
+                    <div class="hero-single-writer-profile">
+                      <div class="hero-single-avatar-wrap">
+                        <div class="hero-single-avatar">SJ</div>
+                        <span class="hero-single-rank-badge rank-1" aria-hidden="true">🥇</span>
+                      </div>
+                      <div class="hero-single-info">
+                        <div class="hero-single-name-row">
+                          <div class="hero-single-name-group">
+                            <span class="hero-single-name">Sarah Jenkins</span>
+                          </div>
+                          <span class="hero-single-points-pill" title="420 pts">⭐ 420 pts</span>
+                        </div>
+                        <span class="hero-single-username">@sarahj</span>
+                        <span class="hero-single-stats-line">18 articles • 3 pizzas • 42 comments</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="hero-writers-footer">
+                  <span class="hero-grade-rule-inline">⭐ 1 Article = 10 pts • 1 Pizza = 100 pts • 1 Comment = 1 pt</span>
                   <button type="button" id="hero-writers-apply-btn" class="hero-writers-apply-link" title="Apply for writer access">
                     <span>Be a Publisher &rarr;</span>
                   </button>
@@ -3457,6 +3590,11 @@
         </div>
 
         <div class="footer-actions">
+          <button type="button" id="footer-support-btn" class="footer-btn footer-btn-support" title="Donate Pizza • Support BartaWire" aria-label="Donate Pizza">
+            <span class="nav-support-pizza" aria-hidden="true">🍕</span>
+            <span>Donate Pizza</span>
+          </button>
+
           <a href="https://www.instagram.com/bartawire/" target="_blank" rel="noopener noreferrer" class="footer-btn footer-btn-instagram" title="Follow on Instagram" aria-label="Instagram">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true">
               <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
@@ -3493,6 +3631,6 @@
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
   <!-- Application Logic -->
-  <script src="app.js?v=10.3"></script>
+  <script src="app.js?v=11.1"></script>
 </body>
 </html>
