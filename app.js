@@ -215,8 +215,8 @@ function initDOM() {
   dom.supportersCopyEmailBtn = document.getElementById('supporters-copy-email-btn');
   dom.supportersCopyEmailText = document.getElementById('supporters-copy-email-text');
   dom.supportersLoginBtn = document.getElementById('supporters-login-btn');
-  dom.supportersDonateBtn = document.getElementById('supporters-donate-btn');
-  dom.supportersPerksDonateBtn = document.getElementById('supporters-perks-donate-btn');
+  dom.supportersDonateBtn = document.getElementById('supporters-donate-btn') || document.getElementById('supporters-perks-donate-btn');
+  dom.supportersPerksDonateBtn = document.getElementById('supporters-perks-donate-btn') || dom.supportersDonateBtn;
   dom.supportersTotalPizzas = document.getElementById('supporters-total-pizzas');
   dom.supportersTotalTaka = document.getElementById('supporters-total-taka');
   dom.supportersTotalSupporters = document.getElementById('supporters-total-supporters');

@@ -1555,42 +1555,8 @@
         </div>
       </div>
 
-      <!-- Redesigned Supporters Callout Header: The Box on Left of BartaWire Pizza Supporter Text, Single Donate Button on Right -->
-      <div id="supporters-callout" class="supporters-callout-card">
-        <div class="supporters-header-left">
-          <!-- The Box: placed on the left of BartaWire Pizza Supporter text, not under -->
-          <div class="supporters-pizza-box" aria-hidden="true">
-            <span class="supporters-box-icon">🍕</span>
-          </div>
-
-          <div class="supporters-header-text">
-            <div class="supporters-tag-row">
-              <div class="hero-badge supporters-hero-badge">
-                <span class="pulse-dot"></span>
-                <span>Donate Pizza 🍕</span>
-              </div>
-              <span class="supporters-rate-pill">🍕 1 Pizza = 50৳ • Powered by SupportKori</span>
-              <span class="supporters-perk-badge-pill">🎖️ Get Golden Supporter Badge</span>
-            </div>
-            <h1 class="admin-title supporters-main-title">BartaWire Pizza Supporters</h1>
-            <p class="admin-subtitle supporters-main-subtitle">Donate a pizza (50৳) to unlock the exclusive Golden Supporter Badge, earn +100 contributor points, and power independent community journalism!</p>
-          </div>
-        </div>
-
-        <div class="supporters-header-right">
-          <button type="button" id="supporters-donate-btn" class="btn-primary supporters-donate-btn" aria-haspopup="dialog" aria-controls="donate-pizza-modal" title="Open donation instructions & donate pizza">
-            <span class="cta-pizza-icon">🍕</span>
-            <span>Donate Pizza (50৳)</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16" aria-hidden="true">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </button>
-        </div>
-      </div>
-
       <!-- Supporter Perks & Donation Advertisement Banner -->
-      <section class="supporters-perks-banner" aria-label="Supporter Perks & Recognition">
+      <section id="supporters-callout" class="supporters-perks-banner" aria-label="Supporter Perks & Recognition">
         <div class="perks-banner-header">
           <div class="perks-banner-title-wrap">
             <div class="perks-banner-badge-preview" title="Golden Pizza Supporter Badge">
@@ -1603,8 +1569,11 @@
               </svg>
             </div>
             <div class="perks-banner-text">
-              <span class="perks-banner-eyebrow">SUPPORTER REWARDS &amp; RECOGNITION</span>
-              <h2 class="perks-banner-title">Donate a Pizza &amp; Unlock the Golden Supporter Badge</h2>
+              <div class="supporters-tag-row" style="margin-bottom:0.25rem;">
+                <span class="perks-banner-eyebrow">BartaWire Pizza Supporters</span>
+                <span class="supporters-rate-pill" style="font-size:0.72rem; padding:0.12rem 0.45rem;">🍕 1 Pizza = 50৳ • Powered by SupportKori</span>
+              </div>
+              <h1 class="perks-banner-title">Donate a Pizza &amp; Unlock the Golden Supporter Badge</h1>
             </div>
           </div>
           <span class="perks-banner-pill">⚡ Instant Rewards</span>
@@ -1668,7 +1637,7 @@
               <span>Takes less than 1 minute via bKash, Nagad, Rocket, or card • Instant badge activation</span>
             </div>
           </div>
-          <button type="button" id="supporters-perks-donate-btn" class="btn-primary perks-footer-cta-btn" aria-haspopup="dialog" aria-controls="donate-pizza-modal" title="Donate a pizza and get your supporter badge">
+          <button type="button" id="supporters-donate-btn" class="btn-primary perks-footer-cta-btn" aria-haspopup="dialog" aria-controls="donate-pizza-modal" title="Donate a pizza and get your supporter badge">
             <span class="cta-pizza-icon">🍕</span>
             <span>Donate Pizza &amp; Claim Badge (50৳) &rarr;</span>
           </button>
