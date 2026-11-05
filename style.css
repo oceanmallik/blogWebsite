@@ -15617,21 +15617,35 @@ button:active:not(:disabled),
   }
 }
 
-/* --------------------------------------------------------------------------
-   Supporter Perks & Donation Advertisement Banner
-   -------------------------------------------------------------------------- */
-.supporters-perks-banner {
+/* ==========================================================================
+   SUPPORTERS VIEW REDESIGN - 40/60 Split Layout
+   Left 40%: Why Donate Pizza + Donate Button
+   Right 60%: Supporters & Corresponding Messages (with Cover Image Fade)
+   ========================================================================== */
+
+.supporters-split-section {
+  display: grid;
+  grid-template-columns: calc(40% - 1rem) calc(60% - 1rem);
+  gap: 2rem;
+  align-items: stretch;
+  margin-bottom: 2.25rem;
+}
+
+/* Left Column: 40% (Why Donate Pizza Card) */
+.supporters-pitch-card {
   background: var(--bg-surface);
   border: var(--border-width) solid var(--border-color);
   box-shadow: var(--shadow-md);
-  margin-bottom: 2rem;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  justify-content: space-between;
+  gap: 1.25rem;
   position: relative;
+  overflow: hidden;
 }
 
-.supporters-perks-banner::before {
+.supporters-pitch-card::before {
   content: '';
   position: absolute;
   top: 0;
@@ -15639,386 +15653,464 @@ button:active:not(:disabled),
   right: 0;
   height: 4px;
   background: var(--accent-yellow);
-  z-index: 1;
 }
 
-[data-theme="dark"] .supporters-perks-banner::before {
+[data-theme="dark"] .supporters-pitch-card::before {
   background: var(--accent-yellow);
 }
 
-[data-theme="cyberpunk"] .supporters-perks-banner::before {
+[data-theme="cyberpunk"] .supporters-pitch-card::before {
   background: var(--accent-pink);
 }
 
-.perks-banner-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1.15rem 1.5rem;
-  background: var(--bg-elevated);
-  border-bottom: var(--border-width) solid var(--border-color);
-}
-
-.perks-banner-title-wrap {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  min-width: 0;
-}
-
-.perks-banner-badge-preview {
-  width: 44px;
-  height: 44px;
-  background: var(--accent-yellow);
-  border: var(--border-width) solid var(--border-color);
-  box-shadow: var(--shadow-xs);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-[data-theme="dark"] .perks-banner-badge-preview {
-  background: var(--accent-yellow);
-  border-color: #000000;
-  box-shadow: 2px 2px 0px #000000;
-}
-
-[data-theme="cyberpunk"] .perks-banner-badge-preview {
-  background: var(--accent-pink);
-  border-color: #04010A;
-  box-shadow: 2px 2px 0px #04010A;
-}
-
-.perks-banner-text {
+.supporters-pitch-top {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
-  min-width: 0;
+  gap: 0.35rem;
 }
 
-.perks-banner-eyebrow {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  color: var(--ocean-primary);
-  text-transform: uppercase;
-}
-
-[data-theme="dark"] .perks-banner-eyebrow {
-  color: var(--accent-yellow);
-}
-
-[data-theme="cyberpunk"] .perks-banner-eyebrow {
-  color: var(--accent-cyan);
-}
-
-.perks-banner-title {
+.supporters-pitch-title {
   font-family: var(--font-heading);
-  font-size: 1.25rem;
+  font-size: 1.65rem;
   font-weight: 800;
   color: var(--text-primary);
-  margin: 0;
-  line-height: 1.25;
+  margin: 0.25rem 0 0.15rem 0;
+  line-height: 1.2;
   letter-spacing: -0.02em;
 }
 
-.perks-banner-pill {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 0.25rem 0.65rem;
-  background: var(--accent-yellow);
-  color: #0A0A0A;
-  border: 1.5px solid var(--border-color);
-  box-shadow: 2px 2px 0px var(--border-color);
-  white-space: nowrap;
-  flex-shrink: 0;
-  text-transform: uppercase;
+.supporters-pitch-desc {
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  margin: 0;
 }
 
-[data-theme="dark"] .perks-banner-pill {
-  background: var(--accent-yellow);
-  color: #0A0A0A;
-  border-color: #000000;
-  box-shadow: 2px 2px 0px #000000;
-}
-
-[data-theme="cyberpunk"] .perks-banner-pill {
-  background: var(--accent-pink);
-  color: #FFFFFF;
-  border-color: #04010A;
-  box-shadow: 2px 2px 0px #04010A;
-}
-
-.perks-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.15rem;
-  padding: 1.5rem;
-  background: var(--bg-surface);
-}
-
-.perk-item-card {
+.supporters-pitch-perks {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
-  padding: 1.25rem;
-  background: var(--bg-surface);
-  border: var(--border-width) solid var(--border-color);
-  box-shadow: var(--shadow-xs);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  gap: 0.75rem;
 }
 
-.perk-item-card:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: var(--shadow-sm);
-}
-
-.perk-item-card.perk-item-highlight {
-  background: var(--bg-elevated);
-  border-color: var(--border-color);
-}
-
-.perk-item-header {
+.supporters-pitch-perk-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  margin-bottom: 0.25rem;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  background: var(--bg-elevated);
+  border: 1.5px solid var(--border-color);
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
 }
 
-.perk-badge-icon-box,
-.perk-icon-box {
-  width: 38px;
-  height: 38px;
-  border: var(--border-width) solid var(--border-color);
-  box-shadow: 2px 2px 0px var(--border-color);
+.supporters-pitch-perk-row:hover {
+  transform: translate(-1px, -1px);
+  background: var(--bg-surface);
+}
+
+.pitch-perk-icon-box {
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid var(--border-color);
+  box-shadow: 1.5px 1.5px 0 var(--border-color);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
+  font-size: 1rem;
   line-height: 1;
   flex-shrink: 0;
 }
 
-.perk-badge-icon-box {
+.pitch-badge-box {
   background: var(--accent-yellow);
 }
 
-[data-theme="dark"] .perk-badge-icon-box {
-  background: var(--accent-yellow);
-  border-color: #000000;
-  box-shadow: 2px 2px 0px #000000;
-}
-
-[data-theme="cyberpunk"] .perk-badge-icon-box {
-  background: var(--accent-pink);
-  border-color: #04010A;
-  box-shadow: 2px 2px 0px #04010A;
-}
-
-.perk-points-box {
+.pitch-points-box {
   background: var(--accent-lime);
   color: #0A0A0A;
 }
 
-.perk-fame-box {
+.pitch-fame-box {
   background: var(--accent-blue);
   color: #FFFFFF;
 }
 
-.perk-heart-box {
+.pitch-heart-box {
   background: var(--accent-yellow);
 }
 
-[data-theme="dark"] .perk-icon-box {
+[data-theme="dark"] .pitch-perk-icon-box {
   border-color: #000000;
-  box-shadow: 2px 2px 0px #000000;
+  box-shadow: 1.5px 1.5px 0 #000000;
 }
 
-[data-theme="cyberpunk"] .perk-icon-box {
+[data-theme="cyberpunk"] .pitch-perk-icon-box {
   border-color: #04010A;
-  box-shadow: 2px 2px 0px #04010A;
+  box-shadow: 1.5px 1.5px 0 #04010A;
 }
 
-.perk-item-tag {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  font-weight: 700;
-  padding: 0.15rem 0.45rem;
-  background: var(--bg-elevated);
-  border: 1.5px solid var(--border-color);
-  color: var(--text-primary);
-  white-space: nowrap;
-}
-
-.perk-item-card.perk-item-highlight .perk-item-tag {
-  background: var(--accent-yellow);
-  color: #0A0A0A;
-}
-
-[data-theme="dark"] .perk-item-card.perk-item-highlight .perk-item-tag {
-  background: var(--accent-yellow);
-  color: #0A0A0A;
-  border-color: #000000;
-}
-
-[data-theme="cyberpunk"] .perk-item-card.perk-item-highlight .perk-item-tag {
-  background: var(--accent-pink);
-  color: #FFFFFF;
-  border-color: #04010A;
-}
-
-.perk-item-title {
-  font-family: var(--font-heading);
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-  line-height: 1.2;
-}
-
-.perk-item-desc {
-  font-size: 0.85rem;
-  line-height: 1.45;
-  color: var(--text-secondary);
-  margin: 0;
-  flex: 1;
-}
-
-.perks-banner-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.25rem;
-  padding: 1rem 1.5rem;
-  background: var(--bg-elevated);
-  border-top: var(--border-width) solid var(--border-color);
-}
-
-.perks-footer-info {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  min-width: 0;
-}
-
-.perks-footer-icon {
-  font-size: 1.5rem;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.perks-footer-text {
+.pitch-perk-text {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
+  min-width: 0;
 }
 
-.perks-footer-text strong {
-  font-size: 0.95rem;
+.pitch-perk-title {
+  font-family: var(--font-heading);
+  font-size: 0.88rem;
+  font-weight: 700;
   color: var(--text-primary);
+  line-height: 1.2;
 }
 
-.perks-footer-text span {
-  font-size: 0.82rem;
+.pitch-perk-sub {
+  font-size: 0.78rem;
+  line-height: 1.35;
   color: var(--text-secondary);
 }
 
-.perks-footer-cta-btn {
+.supporters-pitch-action {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.supporters-main-donate-btn {
+  width: 100%;
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
-  padding: 0.75rem 1.35rem;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 0.9rem 1.5rem;
   font-family: var(--font-sans);
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   background: var(--accent-yellow);
   color: #0A0A0A;
   border: var(--border-width) solid var(--border-color);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
   white-space: nowrap;
-  flex-shrink: 0;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
 }
 
-.perks-footer-cta-btn:hover {
+.supporters-main-donate-btn:hover {
   transform: translate(-2px, -2px);
   box-shadow: var(--shadow-md);
   background: #FFD166;
 }
 
-[data-theme="dark"] .perks-footer-cta-btn {
+[data-theme="dark"] .supporters-main-donate-btn {
   background: var(--accent-yellow);
   color: #050507;
   border-color: var(--border-color);
-  box-shadow: 3px 3px 0px #000000;
-}
-
-[data-theme="dark"] .perks-footer-cta-btn:hover {
-  background: #FFE500;
   box-shadow: 4px 4px 0px #000000;
 }
 
-[data-theme="cyberpunk"] .perks-footer-cta-btn {
+[data-theme="dark"] .supporters-main-donate-btn:hover {
+  background: #FFE500;
+  box-shadow: 6px 6px 0px #000000;
+}
+
+[data-theme="cyberpunk"] .supporters-main-donate-btn {
   background: var(--accent-pink);
   color: #FFFFFF;
   border-color: var(--border-color);
-  box-shadow: 3px 3px 0px var(--accent-cyan);
+  box-shadow: 4px 4px 0px var(--accent-cyan);
 }
 
-[data-theme="cyberpunk"] .perks-footer-cta-btn:hover {
+[data-theme="cyberpunk"] .supporters-main-donate-btn:hover {
   background: var(--accent-cyan);
   color: #000000;
-  box-shadow: 4px 4px 0px var(--accent-pink);
+  box-shadow: 6px 6px 0px var(--accent-pink);
 }
 
-@media (max-width: 1080px) {
-  .perks-cards-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.supporters-action-note {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-align: center;
 }
 
-@media (max-width: 768px) {
-  .perks-banner-header {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 1rem;
-    gap: 0.75rem;
-  }
+/* Right Column: 60% (Supporter & Message Showcase with Cover Fade) */
+.supporters-showcase-card {
+  background: var(--bg-surface);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
 
-  .perks-banner-pill {
-    align-self: flex-start;
-  }
+.supporters-showcase-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--ocean-primary);
+}
 
-  .perks-cards-grid {
+[data-theme="dark"] .supporters-showcase-card::before {
+  background: var(--accent-yellow);
+}
+
+[data-theme="cyberpunk"] .supporters-showcase-card::before {
+  background: var(--accent-cyan);
+}
+
+.supporters-showcase-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.15rem 1.35rem;
+  background: var(--bg-elevated);
+  border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.supporters-showcase-title {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.supporters-showcase-badge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  background: var(--accent-yellow);
+  color: #0A0A0A;
+  border: 1.5px solid var(--border-color);
+  box-shadow: 1.5px 1.5px 0 var(--border-color);
+  text-transform: uppercase;
+}
+
+[data-theme="dark"] .supporters-showcase-badge {
+  background: var(--accent-yellow);
+  color: #0A0A0A;
+  border-color: #000000;
+  box-shadow: 1.5px 1.5px 0 #000000;
+}
+
+[data-theme="cyberpunk"] .supporters-showcase-badge {
+  background: var(--accent-pink);
+  color: #FFFFFF;
+  border-color: #04010A;
+  box-shadow: 1.5px 1.5px 0 #04010A;
+}
+
+.supporters-messages-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
+  overflow-y: auto;
+  max-height: 580px;
+}
+
+/* Supporter Message Card with Cover Image Fade (identical to contributor tab cards) */
+.supporter-message-card {
+  position: relative;
+  background: var(--bg-surface);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-xs);
+  padding: 1.15rem 1.25rem;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.supporter-message-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.supporter-message-card-cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.16;
+  filter: saturate(1.2);
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
+  mask-image: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.25) 100%);
+  -webkit-mask-image: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.25) 100%);
+}
+
+.supporter-message-card:hover .supporter-message-card-cover {
+  opacity: 0.28;
+  transform: scale(1.04);
+}
+
+[data-theme="dark"] .supporter-message-card-cover {
+  opacity: 0.18;
+  filter: brightness(0.85) contrast(1.1);
+}
+
+[data-theme="dark"] .supporter-message-card:hover .supporter-message-card-cover {
+  opacity: 0.30;
+}
+
+[data-theme="cyberpunk"] .supporter-message-card-cover {
+  opacity: 0.22;
+  filter: hue-rotate(15deg) contrast(1.15);
+}
+
+[data-theme="cyberpunk"] .supporter-message-card:hover .supporter-message-card-cover {
+  opacity: 0.34;
+}
+
+.supporter-message-card.has-cover::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent-yellow);
+  z-index: 2;
+  opacity: 0.85;
+}
+
+.supporter-message-card-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.supporter-message-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.supporter-message-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.supporter-message-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 0;
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: 2px 2px 0 var(--border-color);
+  background: var(--accent-yellow);
+  color: #0A0A0A;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.supporter-message-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.supporter-message-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.supporter-message-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.supporter-message-name {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.supporter-message-username {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.supporter-message-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.supporter-message-time {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.supporter-message-quote {
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  font-style: italic;
+  line-height: 1.45;
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0.65rem 0.85rem;
+  background: rgba(0, 0, 0, 0.03);
+  border-left: 3px solid var(--accent-yellow);
+}
+
+[data-theme="dark"] .supporter-message-quote {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+[data-theme="cyberpunk"] .supporter-message-quote {
+  background: rgba(0, 240, 255, 0.06);
+  border-left-color: var(--accent-pink);
+}
+
+.supporters-leaderboard-container {
+  margin-top: 2rem;
+}
+
+.supporters-leaderboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 960px) {
+  .supporters-split-section {
     grid-template-columns: 1fr;
-    padding: 1rem;
-    gap: 1rem;
-  }
-
-  .perks-banner-footer {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 1rem;
-    gap: 1rem;
-    text-align: center;
-  }
-
-  .perks-footer-info {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .perks-footer-cta-btn {
-    width: 100%;
-    justify-content: center;
+    gap: 1.5rem;
   }
 }
 

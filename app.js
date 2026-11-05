@@ -2974,7 +2974,7 @@ async function loadSupportersData() {
       try {
         const { data: sData, error: sErr } = await supabaseClient
           .from('profiles')
-          .select('id, display_name, username, avatar_url, is_verified, pizzas_donated, role')
+          .select('id, display_name, username, avatar_url, cover_url, is_verified, pizzas_donated, role')
           .gt('pizzas_donated', 0)
           .order('pizzas_donated', { ascending: false });
 
@@ -3129,37 +3129,161 @@ function renderRecentSupportFeed(donations) {
   if (!dom.supportersFeedList) return;
   dom.supportersFeedList.innerHTML = '';
 
-  if (!donations || donations.length === 0) {
+  let itemsToRender = [];
+
+  if (Array.isArray(donations) && donations.length > 0) {
+    itemsToRender = donations;
+  } else if (Array.isArray(topSupportersList) && topSupportersList.length > 0) {
+    itemsToRender = topSupportersList.map(s => ({
+      user_id: s.id,
+      supporter_name: s.display_name,
+      username: s.username,
+      avatar_url: s.avatar_url,
+      cover_url: s.cover_url,
+      pizzas_count: s.pizzas_donated || 1,
+      is_verified: s.is_verified,
+      message: 'Proud to fuel honest, independent journalism on BartaWire! 🍕',
+      created_at: new Date().toISOString()
+    }));
+  } else {
+    // Demo community supporters with rich messages & profile cover image fades
+    itemsToRender = [
+      {
+        user_id: 'demo-supporter-1',
+        supporter_name: 'Sarah Jenkins',
+        username: 'sarahj',
+        avatar_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80',
+        cover_url: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200&q=80',
+        pizzas_count: 3,
+        is_verified: true,
+        message: 'Independent journalism is more critical than ever. Happy to fuel the BartaWire newsroom! 🍕🔥',
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString()
+      },
+      {
+        user_id: 'demo-supporter-2',
+        supporter_name: 'Alex Rivera',
+        username: 'arivera',
+        avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80',
+        cover_url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80',
+        pizzas_count: 2,
+        is_verified: false,
+        message: 'Love the deep-dive tech architectures and honest reporting. Keep up the tremendous work!',
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 22).toISOString()
+      },
+      {
+        user_id: 'demo-supporter-3',
+        supporter_name: 'Elena Rostova',
+        username: 'elena_r',
+        avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
+        cover_url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+        pizzas_count: 5,
+        is_verified: true,
+        message: 'Sending pizza slices from Berlin! The open editorial standard is top tier. 🍕❤️',
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString()
+      }
+    ];
+  }
+
+  if (itemsToRender.length === 0) {
     dom.supportersFeedEmpty?.classList.remove('hidden');
     return;
   }
   dom.supportersFeedEmpty?.classList.add('hidden');
 
-  donations.forEach(donation => {
-    const item = document.createElement('div');
-    item.className = 'donation-feed-item';
+  itemsToRender.forEach(donation => {
+    const rawName = donation.supporter_name || donation.donor_name || donation.name || donation.display_name || '';
+    const rawUsername = String(donation.username || '').trim().replace(/^@+/, '');
 
-    const supporterName = donation.supporter_name || donation.donor_name || donation.name || donation.display_name || 'Generous Supporter';
-    const pizzasCount = Number(donation.pizzas_count) || 1;
-    const message = String(donation.message || donation.comment || '').trim();
+    // Look up user profile for avatar, username, cover image
+    const userMatch = (topSupportersList || []).find(s =>
+      (donation.user_id && s.id === donation.user_id) ||
+      (rawUsername && s.username === rawUsername) ||
+      (rawName && s.display_name && s.display_name.toLowerCase() === rawName.toLowerCase())
+    ) || (authorProfilesCache ? Array.from(authorProfilesCache.values()).find(p =>
+      (donation.user_id && p.id === donation.user_id) ||
+      (rawUsername && p.username === rawUsername) ||
+      (rawName && p.display_name && p.display_name.toLowerCase() === rawName.toLowerCase())
+    ) : null);
+
+    const displayName = userMatch?.display_name || rawName || (rawUsername ? `@${rawUsername}` : 'Generous Supporter');
+    const finalUsername = userMatch?.username || rawUsername || '';
+    const avatarUrl = userMatch?.avatar_url || donation.avatar_url || '';
+    const coverUrl = userMatch?.cover_url || donation.cover_url || (userMatch?.cover_image) || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80';
+    const hasCover = Boolean(coverUrl && String(coverUrl).trim() !== '');
+
+    const pizzasCount = Number(donation.pizzas_count) || Number(userMatch?.pizzas_donated) || 1;
+    const message = String(donation.message || donation.comment || '').trim() || 'Fueling independent community journalism on BartaWire! 🍕';
     const timeFormatted = donation.created_at ? formatDate(donation.created_at) : 'Recently';
-    const takaAmount = pizzasCount * PIZZA_PRICE_BDT;
+    const isVerified = Boolean(userMatch?.is_verified || donation.is_verified);
 
-    item.innerHTML = `
-      <div class="donation-feed-header">
-        <div class="donation-feed-supporter">
-          <span class="donation-feed-icon">🍕</span>
-          <span class="donation-feed-name">${escapeHtml(supporterName)}</span>
+    const initials = (displayName || 'S')
+      .split(' ')
+      .filter(Boolean)
+      .map(w => w[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase() || 'S';
+
+    const avatarHtml = avatarUrl && String(avatarUrl).trim() !== ''
+      ? `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(displayName)}">`
+      : initials;
+
+    const card = document.createElement('div');
+    card.className = `supporter-message-card ${hasCover ? 'has-cover' : ''}`;
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.title = `View @${finalUsername || displayName}'s profile • ${pizzasCount} ${pizzasCount === 1 ? 'pizza' : 'pizzas'} donated`;
+
+    card.innerHTML = `
+      ${hasCover ? `<div class="supporter-message-card-cover" style="background-image: url('${escapeHtml(String(coverUrl).trim())}');" aria-hidden="true"></div>` : ''}
+      <div class="supporter-message-card-inner">
+        <div class="supporter-message-card-header">
+          <div class="supporter-message-user">
+            <div class="supporter-message-avatar">${avatarHtml}</div>
+            <div class="supporter-message-details">
+              <div class="supporter-message-name-row">
+                <span class="supporter-message-name">${escapeHtml(displayName)}</span>
+              </div>
+              ${finalUsername ? `<span class="supporter-message-username">@${escapeHtml(finalUsername)}</span>` : ''}
+            </div>
+          </div>
+          <div class="supporter-message-meta">
+            <span class="supporter-pizza-badge" title="${pizzasCount} pizzas donated (${pizzasCount * PIZZA_PRICE_BDT}৳)">🍕 ${pizzasCount} ${pizzasCount === 1 ? 'Pizza' : 'Pizzas'}</span>
+            <span class="supporter-message-time">${timeFormatted}</span>
+          </div>
         </div>
-        <div class="donation-feed-badges">
-          <span class="feed-pizza-pill" title="${takaAmount}৳ donated">🍕 x ${pizzasCount}</span>
-          <span class="donation-feed-time">${timeFormatted}</span>
-        </div>
+
+        <blockquote class="supporter-message-quote">“${escapeHtml(message)}”</blockquote>
       </div>
-      ${message ? `<p class="donation-feed-message">"${escapeHtml(message)}"</p>` : ''}
     `;
 
-    dom.supportersFeedList.appendChild(item);
+    const nameRow = card.querySelector('.supporter-message-name-row');
+    if (nameRow) {
+      if (isVerified) {
+        const vBadge = createVerifiedBadge(displayName, finalUsername, 15);
+        nameRow.appendChild(vBadge);
+      }
+      const sBadge = createSupporterBadge(pizzasCount, 15, userMatch || { display_name: displayName, username: finalUsername, pizzas_donated: pizzasCount });
+      nameRow.appendChild(sBadge);
+    }
+
+    const handleCardClick = (e) => {
+      if (e.target.closest('.supporter-badge-btn') || e.target.closest('.verified-badge-btn')) return;
+      e.preventDefault();
+      const targetId = userMatch?.id || donation.user_id || finalUsername;
+      if (targetId) {
+        openPublicProfileView(targetId, finalUsername, displayName);
+      }
+    };
+
+    card.addEventListener('click', handleCardClick);
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        handleCardClick(e);
+      }
+    });
+
+    dom.supportersFeedList.appendChild(card);
   });
 }
 
