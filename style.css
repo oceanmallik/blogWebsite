@@ -15475,6 +15475,34 @@ button:active:not(:disabled),
   box-shadow: 1px 1px 0px var(--border-color);
 }
 
+.supporters-perk-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.65rem;
+  background: var(--accent-yellow);
+  border: var(--border-width) solid var(--border-color);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #0A0A0A;
+  box-shadow: 1px 1px 0px var(--border-color);
+}
+
+[data-theme="dark"] .supporters-perk-badge-pill {
+  background: var(--accent-yellow);
+  color: #050507;
+  border-color: #000000;
+  box-shadow: 1px 1px 0px #000000;
+}
+
+[data-theme="cyberpunk"] .supporters-perk-badge-pill {
+  background: var(--accent-pink);
+  color: #FFFFFF;
+  border-color: #04010A;
+  box-shadow: 1px 1px 0px #04010A;
+}
+
 .supporters-main-title {
   font-family: var(--font-heading);
   font-size: 1.65rem;
@@ -15584,6 +15612,411 @@ button:active:not(:disabled),
   }
 
   .supporters-header-right .supporters-donate-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Supporter Perks & Donation Advertisement Banner
+   -------------------------------------------------------------------------- */
+.supporters-perks-banner {
+  background: var(--bg-surface);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.supporters-perks-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--accent-yellow);
+  z-index: 1;
+}
+
+[data-theme="dark"] .supporters-perks-banner::before {
+  background: var(--accent-yellow);
+}
+
+[data-theme="cyberpunk"] .supporters-perks-banner::before {
+  background: var(--accent-pink);
+}
+
+.perks-banner-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.15rem 1.5rem;
+  background: var(--bg-elevated);
+  border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.perks-banner-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.perks-banner-badge-preview {
+  width: 44px;
+  height: 44px;
+  background: var(--accent-yellow);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .perks-banner-badge-preview {
+  background: var(--accent-yellow);
+  border-color: #000000;
+  box-shadow: 2px 2px 0px #000000;
+}
+
+[data-theme="cyberpunk"] .perks-banner-badge-preview {
+  background: var(--accent-pink);
+  border-color: #04010A;
+  box-shadow: 2px 2px 0px #04010A;
+}
+
+.perks-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.perks-banner-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--ocean-primary);
+  text-transform: uppercase;
+}
+
+[data-theme="dark"] .perks-banner-eyebrow {
+  color: var(--accent-yellow);
+}
+
+[data-theme="cyberpunk"] .perks-banner-eyebrow {
+  color: var(--accent-cyan);
+}
+
+.perks-banner-title {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.perks-banner-pill {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  background: var(--accent-yellow);
+  color: #0A0A0A;
+  border: 1.5px solid var(--border-color);
+  box-shadow: 2px 2px 0px var(--border-color);
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+[data-theme="dark"] .perks-banner-pill {
+  background: var(--accent-yellow);
+  color: #0A0A0A;
+  border-color: #000000;
+  box-shadow: 2px 2px 0px #000000;
+}
+
+[data-theme="cyberpunk"] .perks-banner-pill {
+  background: var(--accent-pink);
+  color: #FFFFFF;
+  border-color: #04010A;
+  box-shadow: 2px 2px 0px #04010A;
+}
+
+.perks-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.15rem;
+  padding: 1.5rem;
+  background: var(--bg-surface);
+}
+
+.perk-item-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 1.25rem;
+  background: var(--bg-surface);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-xs);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.perk-item-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.perk-item-card.perk-item-highlight {
+  background: var(--bg-elevated);
+  border-color: var(--border-color);
+}
+
+.perk-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.perk-badge-icon-box,
+.perk-icon-box {
+  width: 38px;
+  height: 38px;
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: 2px 2px 0px var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.perk-badge-icon-box {
+  background: var(--accent-yellow);
+}
+
+[data-theme="dark"] .perk-badge-icon-box {
+  background: var(--accent-yellow);
+  border-color: #000000;
+  box-shadow: 2px 2px 0px #000000;
+}
+
+[data-theme="cyberpunk"] .perk-badge-icon-box {
+  background: var(--accent-pink);
+  border-color: #04010A;
+  box-shadow: 2px 2px 0px #04010A;
+}
+
+.perk-points-box {
+  background: var(--accent-lime);
+  color: #0A0A0A;
+}
+
+.perk-fame-box {
+  background: var(--accent-blue);
+  color: #FFFFFF;
+}
+
+.perk-heart-box {
+  background: var(--accent-yellow);
+}
+
+[data-theme="dark"] .perk-icon-box {
+  border-color: #000000;
+  box-shadow: 2px 2px 0px #000000;
+}
+
+[data-theme="cyberpunk"] .perk-icon-box {
+  border-color: #04010A;
+  box-shadow: 2px 2px 0px #04010A;
+}
+
+.perk-item-tag {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  background: var(--bg-elevated);
+  border: 1.5px solid var(--border-color);
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.perk-item-card.perk-item-highlight .perk-item-tag {
+  background: var(--accent-yellow);
+  color: #0A0A0A;
+}
+
+[data-theme="dark"] .perk-item-card.perk-item-highlight .perk-item-tag {
+  background: var(--accent-yellow);
+  color: #0A0A0A;
+  border-color: #000000;
+}
+
+[data-theme="cyberpunk"] .perk-item-card.perk-item-highlight .perk-item-tag {
+  background: var(--accent-pink);
+  color: #FFFFFF;
+  border-color: #04010A;
+}
+
+.perk-item-title {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.perk-item-desc {
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  margin: 0;
+  flex: 1;
+}
+
+.perks-banner-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 1rem 1.5rem;
+  background: var(--bg-elevated);
+  border-top: var(--border-width) solid var(--border-color);
+}
+
+.perks-footer-info {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.perks-footer-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.perks-footer-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.perks-footer-text strong {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.perks-footer-text span {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.perks-footer-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.75rem 1.35rem;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--accent-yellow);
+  color: #0A0A0A;
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+.perks-footer-cta-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-md);
+  background: #FFD166;
+}
+
+[data-theme="dark"] .perks-footer-cta-btn {
+  background: var(--accent-yellow);
+  color: #050507;
+  border-color: var(--border-color);
+  box-shadow: 3px 3px 0px #000000;
+}
+
+[data-theme="dark"] .perks-footer-cta-btn:hover {
+  background: #FFE500;
+  box-shadow: 4px 4px 0px #000000;
+}
+
+[data-theme="cyberpunk"] .perks-footer-cta-btn {
+  background: var(--accent-pink);
+  color: #FFFFFF;
+  border-color: var(--border-color);
+  box-shadow: 3px 3px 0px var(--accent-cyan);
+}
+
+[data-theme="cyberpunk"] .perks-footer-cta-btn:hover {
+  background: var(--accent-cyan);
+  color: #000000;
+  box-shadow: 4px 4px 0px var(--accent-pink);
+}
+
+@media (max-width: 1080px) {
+  .perks-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .perks-banner-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .perks-banner-pill {
+    align-self: flex-start;
+  }
+
+  .perks-cards-grid {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .perks-banner-footer {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .perks-footer-info {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .perks-footer-cta-btn {
     width: 100%;
     justify-content: center;
   }

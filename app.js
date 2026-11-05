@@ -216,6 +216,7 @@ function initDOM() {
   dom.supportersCopyEmailText = document.getElementById('supporters-copy-email-text');
   dom.supportersLoginBtn = document.getElementById('supporters-login-btn');
   dom.supportersDonateBtn = document.getElementById('supporters-donate-btn');
+  dom.supportersPerksDonateBtn = document.getElementById('supporters-perks-donate-btn');
   dom.supportersTotalPizzas = document.getElementById('supporters-total-pizzas');
   dom.supportersTotalTaka = document.getElementById('supporters-total-taka');
   dom.supportersTotalSupporters = document.getElementById('supporters-total-supporters');
@@ -14056,6 +14057,10 @@ function initEventListeners() {
   dom.supportersBackBtn?.addEventListener('click', returnToHomeView);
   dom.supportersRefreshBtn?.addEventListener('click', loadSupportersData);
   dom.supportersDonateBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openDonatePizzaModal();
+  });
+  dom.supportersPerksDonateBtn?.addEventListener('click', (e) => {
     e.preventDefault();
     openDonatePizzaModal();
   });
