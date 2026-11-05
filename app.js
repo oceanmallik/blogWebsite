@@ -2413,33 +2413,12 @@ function getTrendingPosts(limit = 5) {
     return timeB - timeA;
   };
 
-  // 1. Primary: Posts explicitly marked with is_trending in public.posts
-  const trendingExplicit = postsPool.filter(p => isTruthful(p.is_trending)).sort(sortFn);
+  // Strictly ONLY include posts explicitly marked as trending (is_trending === true)
+  const trendingOnly = postsPool
+    .filter(p => isTruthful(p.is_trending) && p.is_published !== false)
+    .sort(sortFn);
 
-  let combined = [...trendingExplicit];
-
-  // 2. Secondary: If fewer than limit, backfill with top posts by engagement
-  if (combined.length < limit) {
-    const nonTrending = postsPool.filter(p => !isTruthful(p.is_trending)).sort(sortFn);
-    for (const post of nonTrending) {
-      if (!combined.some(p => String(p.id) === String(post.id))) {
-        combined.push(post);
-        if (combined.length >= limit) break;
-      }
-    }
-  }
-
-  // 3. Fallback: Pad with demo preview posts if still fewer than limit
-  if (combined.length < limit && typeof DEMO_PREVIEW_POSTS !== 'undefined') {
-    for (const demo of DEMO_PREVIEW_POSTS) {
-      if (!combined.some(p => String(p.id) === String(demo.id) || p.title === demo.title)) {
-        combined.push(demo);
-        if (combined.length >= limit) break;
-      }
-    }
-  }
-
-  return combined.slice(0, limit);
+  return trendingOnly.slice(0, limit);
 }
 
 function renderTrendingPanel() {
@@ -2449,13 +2428,13 @@ function renderTrendingPanel() {
   const trendingPosts = getTrendingPosts(5);
   const countTag = document.getElementById('trending-period-tag') || dom.trendingPeriodTag;
   if (countTag) {
-    countTag.textContent = `TOP ${trendingPosts.length || 5}`;
+    countTag.textContent = trendingPosts.length > 0 ? `TOP ${trendingPosts.length}` : 'TRENDING';
   }
 
   if (trendingPosts.length === 0) {
     container.innerHTML = `
       <div class="trending-empty-state">
-        <span>No trending posts yet. Check back soon!</span>
+        <span>No trending posts at the moment.</span>
       </div>
     `;
     return;
@@ -2467,10 +2446,9 @@ function renderTrendingPanel() {
   trendingPosts.forEach((post, index) => {
     const rank = index + 1;
     const isFeatured = Boolean(currentlyFeaturedId && String(currentlyFeaturedId) === String(post.id));
-    const isTrending = isTruthful(post.is_trending);
 
     const row = document.createElement('div');
-    row.className = 'trending-row' + (isFeatured ? ' is-featured' : '') + (isTrending ? ' has-trending-flag' : '');
+    row.className = 'trending-row has-trending-flag' + (isFeatured ? ' is-featured' : '');
     row.setAttribute('role', 'button');
     row.setAttribute('tabindex', '0');
     row.setAttribute('data-post-id', String(post.id));
@@ -2480,10 +2458,6 @@ function renderTrendingPanel() {
     const banglaClass = isBangla ? ' is-bangla' : '';
     const langAttr = isBangla ? ' lang="bn"' : '';
 
-    const trendingBadgeHtml = isTrending
-      ? `<span class="trending-fire-tag" title="Flagged as Trending">🔥 Trending</span>`
-      : '';
-
     row.innerHTML = `
       <span class="trending-rank" aria-hidden="true">${rank}</span>
       <div class="trending-info">
@@ -2492,7 +2466,7 @@ function renderTrendingPanel() {
         </div>
         <div class="trending-meta-row">
           <span class="trending-category-tag">${escapeHtml(post.topic || 'News')}</span>
-          ${trendingBadgeHtml}
+          <span class="trending-fire-tag" title="Flagged as Trending">🔥 Trending</span>
         </div>
       </div>
     `;
