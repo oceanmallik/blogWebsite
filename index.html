@@ -1555,6 +1555,31 @@
         </div>
       </div>
 
+      <!-- Stats Summary Dashboard -->
+      <div class="supporters-stats-grid">
+        <div class="supporter-stat-card">
+          <div class="stat-card-icon">🍕</div>
+          <div class="stat-card-body">
+            <span id="supporters-total-pizzas" class="stat-card-value">0</span>
+            <span class="stat-card-label">Total Pizzas Donated</span>
+          </div>
+        </div>
+        <div class="supporter-stat-card">
+          <div class="stat-card-icon">৳</div>
+          <div class="stat-card-body">
+            <span id="supporters-total-taka" class="stat-card-value">0৳</span>
+            <span class="stat-card-label">Total Taka Raised (50৳/pizza)</span>
+          </div>
+        </div>
+        <div class="supporter-stat-card">
+          <div class="stat-card-icon">🤝</div>
+          <div class="stat-card-body">
+            <span id="supporters-total-supporters" class="stat-card-value">0</span>
+            <span class="stat-card-label">Generous Supporters</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Redesigned Supporters Hero: 40% Why Donate & CTA / 60% Supporters & Messages with Cover Fade -->
       <div id="supporters-callout" class="supporters-split-section">
         <!-- Left Column: 40% (Why Donate Pizza & Donate Button) -->
@@ -1641,53 +1666,6 @@
             <p class="empty-title">Be the first pizza supporter!</p>
             <p class="empty-desc">Donate a pizza to feature your message and claim your Golden Badge.</p>
           </div>
-        </div>
-      </div>
-
-      <!-- Stats Summary Cards -->
-      <div class="supporters-stats-grid">
-        <div class="supporter-stat-card">
-          <div class="stat-card-icon">🍕</div>
-          <div class="stat-card-body">
-            <span id="supporters-total-pizzas" class="stat-card-value">0</span>
-            <span class="stat-card-label">Total Pizzas Donated</span>
-          </div>
-        </div>
-        <div class="supporter-stat-card">
-          <div class="stat-card-icon">৳</div>
-          <div class="stat-card-body">
-            <span id="supporters-total-taka" class="stat-card-value">0৳</span>
-            <span class="stat-card-label">Total Taka Raised (50৳/pizza)</span>
-          </div>
-        </div>
-        <div class="supporter-stat-card">
-          <div class="stat-card-icon">🤝</div>
-          <div class="stat-card-body">
-            <span id="supporters-total-supporters" class="stat-card-value">0</span>
-            <span class="stat-card-label">Generous Supporters</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Leaderboard Section -->
-      <div class="supporters-leaderboard-container">
-        <div class="supporters-section-header">
-          <div class="section-title-wrap">
-            <span class="section-icon">🏆</span>
-            <h2 class="section-title">Top Pizza Supporters Leaderboard</h2>
-          </div>
-          <span class="section-badge">Ranked by Pizzas Donated</span>
-        </div>
-        <p class="section-desc">Community members who fueled BartaWire with the most pizzas.</p>
-
-        <div id="supporters-leaderboard-list" class="supporters-leaderboard-grid">
-          <!-- Dynamically populated top supporter cards -->
-        </div>
-
-        <div id="supporters-leaderboard-empty" class="supporters-empty-box hidden">
-          <div class="empty-icon">🍕</div>
-          <p class="empty-title">No pizza supporters yet</p>
-          <p class="empty-desc">Be the very first supporter! Donate a pizza to claim the #1 spot.</p>
         </div>
       </div>
     </section>
@@ -3561,118 +3539,140 @@
           <div class="donate-modal-badge-seal">🍕</div>
           <div>
             <h3 id="donate-modal-title" class="donate-modal-title">Donate Pizza to BartaWire</h3>
-            <p class="donate-modal-subtitle">1 Pizza = 50৳ • Powered by SupportKori</p>
+            <p id="donate-modal-subtitle" class="donate-modal-subtitle">1 Pizza = 50৳ • Direct Writer Support</p>
           </div>
         </div>
         <button type="button" id="donate-modal-close-btn" class="modal-close" aria-label="Close dialog">&times;</button>
       </div>
 
+      <!-- Step Navigation Tabs -->
+      <div class="donate-modal-step-tabs" role="tablist" aria-label="Donation steps">
+        <button type="button" id="donate-step-tab-1" class="donate-step-tab active" role="tab" aria-selected="true" aria-controls="donate-pizza-step-1">
+          <span class="step-tab-num">1</span>
+          <span class="step-tab-label">Copy Your Info</span>
+        </button>
+        <div class="donate-step-tab-arrow" aria-hidden="true">&rarr;</div>
+        <button type="button" id="donate-step-tab-2" class="donate-step-tab" role="tab" aria-selected="false" aria-controls="donate-pizza-step-2">
+          <span class="step-tab-num">2</span>
+          <span class="step-tab-label">Where to Paste</span>
+        </button>
+      </div>
+
       <div class="modal-body donate-pizza-modal-body">
-        <!-- HIGH-VISIBILITY BOLDED CALLOUT BANNER: Write username or email for auto showing -->
-        <div class="donate-modal-important-banner">
-          <div class="important-banner-icon">⚡</div>
-          <div class="important-banner-content">
-            <h4 class="important-banner-title">IMPORTANT FOR AUTOMATIC SHOWING:</h4>
-            <p class="important-banner-desc">
-              When paying on SupportKori, <strong>write your BartaWire username or email in the donor note or email field</strong> so pizzas and your 🍕 SUPPORTER badge <strong>automatically show on your profile and comments!</strong>
-            </p>
-          </div>
-        </div>
+        <!-- ==================== STEP 1 PANEL ==================== -->
+        <div id="donate-pizza-step-1" class="donate-step-panel">
+          <div class="donate-step-card">
+            <div class="donate-step-header">
+              <span class="donate-step-badge">Step 1</span>
+              <h4 class="donate-step-title">Copy your BartaWire username or email</h4>
+            </div>
+            <p class="donate-step-desc">Copy either one below. You'll paste it on SupportKori in the next step:</p>
 
-        <!-- Logged-in User Information Section -->
-        <div id="supporters-auth-info" class="donate-modal-auth-box hidden">
-          <div class="donate-modal-account-header">
-            <span class="auth-status-indicator">Connected BartaWire Account</span>
-            <span class="auto-link-badge">Auto-Credit Enabled</span>
-          </div>
+            <!-- Connected Account: Copy Options -->
+            <div id="supporters-auth-info" class="donate-step-auth-box hidden">
+              <div class="donate-copy-options-grid">
+                <div class="donate-copy-option">
+                  <span class="donate-copy-option-label">Option A: Username</span>
+                  <div class="donate-copy-option-row">
+                    <code id="supporters-user-handle" class="donate-field-value">@username</code>
+                    <button type="button" id="donate-modal-copy-username-btn" class="btn-sm btn-outline donate-copy-btn" title="Copy username">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                      </svg>
+                      <span id="donate-modal-copy-username-text">Copy Username</span>
+                    </button>
+                  </div>
+                </div>
 
-          <div class="donate-modal-fields-list">
-            <div class="donate-modal-field">
-              <div class="donate-field-top">
-                <label class="donate-field-label">Your Username (to paste on SupportKori):</label>
+                <div class="donate-copy-option">
+                  <span class="donate-copy-option-label">Option B: Account Email</span>
+                  <div class="donate-copy-option-row">
+                    <code id="supporters-user-email" class="donate-field-value">user@example.com</code>
+                    <button type="button" id="supporters-copy-email-btn" class="btn-sm btn-outline donate-copy-btn" title="Copy email">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                      </svg>
+                      <span id="supporters-copy-email-text">Copy Email</span>
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div class="donate-field-control">
-                <code id="supporters-user-handle" class="donate-field-value">@username</code>
-                <button type="button" id="donate-modal-copy-username-btn" class="btn-sm btn-outline donate-copy-btn" title="Copy username">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                  </svg>
-                  <span id="donate-modal-copy-username-text">Copy Username</span>
+            </div>
+
+            <!-- Guest: Prompt to sign in or write username -->
+            <div id="supporters-guest-info" class="donate-step-guest-box">
+              <div class="donate-guest-inline">
+                <span>Not signed in?</span>
+                <button type="button" id="supporters-login-btn" class="btn-sm btn-outline donate-guest-login-btn">
+                  <span>Sign In First</span>
                 </button>
-              </div>
-            </div>
-
-            <div class="donate-modal-field">
-              <div class="donate-field-top">
-                <label class="donate-field-label">Your Account Email (to paste on SupportKori):</label>
-              </div>
-              <div class="donate-field-control">
-                <code id="supporters-user-email" class="donate-field-value">user@example.com</code>
-                <button type="button" id="supporters-copy-email-btn" class="btn-sm btn-outline donate-copy-btn" title="Copy email">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                  </svg>
-                  <span id="supporters-copy-email-text">Copy Email</span>
-                </button>
+                <span class="donate-guest-note">to auto-copy, or simply remember your registered username.</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Logged-out Guest Information Section -->
-        <div id="supporters-guest-info" class="donate-modal-guest-box">
-          <div class="donate-guest-header">
-            <span class="guest-indicator">Not Signed In</span>
-            <button type="button" id="supporters-login-btn" class="btn-sm btn-outline donate-guest-login-btn">
-              <span>Sign In First</span>
-            </button>
-          </div>
-          <p class="donate-guest-desc">
-            You can donate right away without logging in! But if you want pizzas to <strong>automatically show on your profile &amp; comments</strong>, either <strong>sign in first</strong> or make sure to <strong>write your registered BartaWire username or email</strong> in SupportKori's payment form.
-          </p>
-        </div>
+        <!-- ==================== STEP 2 PANEL ==================== -->
+        <div id="donate-pizza-step-2" class="donate-step-panel hidden">
+          <div class="donate-step-card">
+            <div class="donate-step-header">
+              <span class="donate-step-badge">Step 2</span>
+              <h4 class="donate-step-title">Paste into "Username/Email Here" on SupportKori</h4>
+            </div>
+            <p class="donate-step-desc">When SupportKori opens, select <strong>50৳</strong> and paste your copied info into the field shown below:</p>
 
-        <!-- Step-by-Step Walkthrough Box -->
-        <div class="donate-steps-box">
-          <div class="donate-steps-header">
-            <span class="steps-heading">Quick 3-Step Guide</span>
-          </div>
-          <div class="donate-steps-list">
-            <div class="donate-step-item">
-              <span class="step-num">1</span>
-              <div class="step-text">
-                Click <strong>"Proceed to SupportKori"</strong> below to open the official donation checkout.
+            <!-- SupportKori Screenshot Preview Container -->
+            <div class="supportkori-screenshot-container">
+              <div class="supportkori-screenshot-header">
+                <span class="preview-dot dot-red"></span>
+                <span class="preview-dot dot-yellow"></span>
+                <span class="preview-dot dot-green"></span>
+                <span class="supportkori-screenshot-title">SupportKori Form Preview</span>
+              </div>
+              <div class="supportkori-screenshot-body">
+                <div class="supportkori-img-wrapper">
+                  <img src="supportkori.png" alt="SupportKori form with Username/Email field" class="supportkori-form-img">
+                </div>
+                <div class="supportkori-paste-hint">
+                  <span class="paste-hint-arrow">&uarr;</span>
+                  <span class="paste-hint-text">Paste your copied username or email into this field</span>
+                </div>
               </div>
             </div>
-            <div class="donate-step-item">
-              <span class="step-num">2</span>
-              <div class="step-text">
-                Choose pizza count (50৳ each) and <strong>enter your BartaWire username or email</strong> in the payment form.
-              </div>
-            </div>
-            <div class="donate-step-item">
-              <span class="step-num">3</span>
-              <div class="step-text">
-                Complete payment via bKash, Nagad, Rocket, or Card. Your donation will automatically show on the leaderboard and unlock the <strong>🍕 SUPPORTER</strong> badge!
-              </div>
+
+            <div class="donate-step-note">
+              <span class="note-icon">🍕</span>
+              <span>After paying (50৳ via bKash, Nagad, Rocket, or card), your donation and <strong>Golden Supporter Badge</strong> link to your profile automatically!</span>
             </div>
           </div>
         </div>
       </div>
 
+      <!-- Modal Footer with Step-Specific Actions -->
       <div class="modal-footer donate-pizza-modal-footer">
-        <button type="button" id="donate-modal-cancel-btn" class="btn-secondary">Cancel</button>
-        <a id="donate-modal-proceed-btn" href="https://supportkori.com/bartawire" target="_blank" rel="noopener noreferrer" class="btn-primary donate-proceed-cta">
-          <span class="cta-pizza-icon">🍕</span>
-          <span>Proceed to SupportKori (50৳)</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16" aria-hidden="true">
-            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-            <polyline points="15 3 21 3 21 9"></polyline>
-            <line x1="10" y1="14" x2="21" y2="3"></line>
-          </svg>
-        </a>
+        <!-- Step 1 Footer -->
+        <div id="donate-footer-step-1" class="donate-step-footer-actions">
+          <button type="button" id="donate-modal-cancel-btn" class="btn-secondary">Cancel</button>
+          <button type="button" id="donate-modal-next-btn" class="btn-primary donate-proceed-cta">
+            <span>Next: Where to Paste &rarr;</span>
+          </button>
+        </div>
+
+        <!-- Step 2 Footer (Hidden initially) -->
+        <div id="donate-footer-step-2" class="donate-step-footer-actions hidden">
+          <button type="button" id="donate-modal-back-btn" class="btn-secondary">&larr; Back</button>
+          <a id="donate-modal-proceed-btn" href="https://supportkori.com/bartawire" target="_blank" rel="noopener noreferrer" class="btn-primary donate-proceed-cta">
+            <span class="cta-pizza-icon">🍕</span>
+            <span>Proceed to SupportKori (50৳)</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16" aria-hidden="true">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </a>
+        </div>
       </div>
     </div>
   </div>

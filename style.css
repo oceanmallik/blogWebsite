@@ -16097,16 +16097,6 @@ button:active:not(:disabled),
   border-left-color: var(--accent-pink);
 }
 
-.supporters-leaderboard-container {
-  margin-top: 2rem;
-}
-
-.supporters-leaderboard-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1rem;
-}
-
 @media (max-width: 960px) {
   .supporters-split-section {
     grid-template-columns: 1fr;
@@ -16118,7 +16108,7 @@ button:active:not(:disabled),
    Donate Pizza Modal (Instructions & SupportKori Checkout)
    -------------------------------------------------------------------------- */
 .donate-pizza-modal-card {
-  max-width: 600px;
+  max-width: 620px;
   width: 100%;
   max-height: 90vh;
   display: flex;
@@ -16134,7 +16124,7 @@ button:active:not(:disabled),
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.25rem 1.5rem;
+  padding: 1rem 1.25rem;
   background: var(--bg-elevated);
   border-bottom: var(--border-width) solid var(--border-color);
 }
@@ -16189,189 +16179,134 @@ button:active:not(:disabled),
 }
 
 .donate-pizza-modal-body {
-  padding: 1.5rem;
+  padding: 1.15rem 1.35rem;
   overflow-y: auto;
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-/* HIGH-VISIBILITY BOLDED CALLOUT BANNER (Clean Theme Compatible) */
-.donate-modal-important-banner {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.9rem;
-  background: var(--bg-elevated);
-  color: var(--text-primary);
-  border: 2px solid var(--border-color);
-  border-left: 5px solid var(--accent-yellow);
-  box-shadow: var(--shadow-xs);
-  padding: 1rem 1.15rem;
-}
-
-[data-theme="dark"] .donate-modal-important-banner {
-  background: #18181C;
-  border-color: #3F3F46;
-  border-left: 5px solid var(--accent-yellow);
-  box-shadow: 3px 3px 0px #000000;
-}
-
-[data-theme="cyberpunk"] .donate-modal-important-banner {
-  background: #1A1030;
-  border-color: var(--border-color);
-  border-left: 5px solid var(--accent-pink);
-  box-shadow: 3px 3px 0px #04010A;
-}
-
-.important-banner-icon {
-  font-size: 1.4rem;
-  line-height: 1;
-  flex-shrink: 0;
-  margin-top: 0.1rem;
-}
-
-.important-banner-title {
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-primary);
-  margin: 0 0 0.35rem 0;
-  line-height: 1.2;
-}
-
-.important-banner-desc {
-  font-family: var(--font-sans);
-  font-size: 0.92rem;
-  line-height: 1.5;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-.important-banner-desc strong {
-  color: var(--text-primary);
-  font-weight: 800;
-  text-decoration: underline;
-  text-decoration-thickness: 1.5px;
-  text-underline-offset: 2px;
-}
-
-/* Auth / Guest info inside modal */
-.donate-modal-auth-box,
-.donate-modal-guest-box {
-  background: var(--bg-elevated);
-  border: var(--border-width) solid var(--border-color);
-  padding: 1.15rem;
-  box-shadow: var(--shadow-xs);
-}
-
-[data-theme="dark"] .donate-modal-auth-box,
-[data-theme="dark"] .donate-modal-guest-box {
-  background: #141418;
-  border-color: #2E2E33;
-  box-shadow: 3px 3px 0px #000000;
-}
-
-[data-theme="cyberpunk"] .donate-modal-auth-box,
-[data-theme="cyberpunk"] .donate-modal-guest-box {
-  background: #160D2C;
-  border-color: var(--border-color);
-  box-shadow: 3px 3px 0px #04010A;
-}
-
-.donate-modal-account-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.85rem;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.auth-status-indicator {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.2rem 0.55rem;
-  background: var(--accent-lime);
-  color: #0A0A0A;
-  border: 1px solid var(--border-color);
-}
-
-.auto-link-badge {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 0.15rem 0.5rem;
-  background: var(--accent-yellow);
-  color: #000;
-  border: 1px solid var(--border-color);
-}
-
-[data-theme="cyberpunk"] .auto-link-badge {
-  background: var(--accent-pink);
-  color: #FFFFFF;
-}
-
-/* Full-width clean list for username and email */
-.donate-modal-fields-list {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
 }
 
-.donate-modal-field {
+/* Step-by-Step Donate Pizza Modal */
+.donate-step-card {
+  background: var(--bg-surface);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-xs);
+  padding: 0.95rem 1.15rem;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  background: var(--bg-surface);
-  border: 1.5px solid var(--border-color);
-  padding: 0.75rem 0.85rem;
+  gap: 0.5rem;
 }
 
-[data-theme="dark"] .donate-modal-field {
-  background: #0E0E11;
-  border-color: #2A2A2E;
+[data-theme="dark"] .donate-step-card {
+  background: #141418;
+  border-color: #2E2E33;
+  box-shadow: 2px 2px 0px #000000;
 }
 
-[data-theme="cyberpunk"] .donate-modal-field {
-  background: #110822;
-  border-color: #381E60;
+[data-theme="cyberpunk"] .donate-step-card {
+  background: #160D2C;
+  border-color: var(--border-color);
+  box-shadow: 2px 2px 0px #04010A;
 }
 
-.donate-field-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.donate-field-label {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.donate-field-control {
+.donate-step-header {
   display: flex;
   align-items: center;
   gap: 0.65rem;
 }
 
+.donate-step-badge {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.55rem;
+  background: var(--accent-yellow);
+  color: #0A0A0A;
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+[data-theme="cyberpunk"] .donate-step-badge {
+  background: var(--accent-pink);
+  color: #FFFFFF;
+}
+
+.donate-step-title {
+  font-family: var(--font-heading);
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.25;
+}
+
+.donate-step-desc {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.donate-step-desc strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+/* Copy Options inside Step 1 */
+.donate-copy-options-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 0.25rem;
+}
+
+.donate-copy-option {
+  background: var(--bg-elevated);
+  border: 1.5px solid var(--border-color);
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+[data-theme="dark"] .donate-copy-option {
+  background: #18181C;
+  border-color: #38383E;
+}
+
+[data-theme="cyberpunk"] .donate-copy-option {
+  background: #1C1036;
+  border-color: var(--border-color);
+}
+
+.donate-copy-option-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.donate-copy-option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
 .donate-field-value {
   flex: 1;
   min-width: 0;
-  padding: 0.5rem 0.75rem;
-  background: var(--bg-elevated);
+  padding: 0.45rem 0.65rem;
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   font-family: var(--font-mono);
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--text-primary);
   overflow: hidden;
@@ -16380,12 +16315,12 @@ button:active:not(:disabled),
 }
 
 [data-theme="dark"] .donate-field-value {
-  background: #1A1A1F;
-  border-color: #3F3F46;
+  background: #0E0E11;
+  border-color: #2E2E33;
 }
 
 [data-theme="cyberpunk"] .donate-field-value {
-  background: #1E1139;
+  background: #110822;
   border-color: var(--border-color);
   color: #00FFCC;
 }
@@ -16394,9 +16329,9 @@ button:active:not(:disabled),
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.5rem 0.85rem;
+  padding: 0.45rem 0.75rem;
   font-family: var(--font-sans);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 700;
   background: var(--bg-surface);
   color: var(--text-primary);
@@ -16437,110 +16372,244 @@ button:active:not(:disabled),
   color: #FFFFFF;
 }
 
-/* Guest inside modal */
-.donate-guest-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
+/* Guest inline helper */
+.donate-step-guest-box {
+  background: var(--bg-elevated);
+  border: 1.5px dashed var(--border-color);
+  padding: 0.65rem 0.85rem;
+  margin-top: 0.2rem;
 }
 
-.guest-indicator {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  padding: 0.15rem 0.5rem;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+[data-theme="dark"] .donate-step-guest-box {
+  background: #18181C;
+}
+
+[data-theme="cyberpunk"] .donate-step-guest-box {
+  background: #1C1036;
+}
+
+.donate-guest-inline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.85rem;
   color: var(--text-secondary);
 }
 
 .donate-guest-login-btn {
-  padding: 0.35rem 0.8rem;
-  font-size: 0.82rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.78rem;
   font-weight: 700;
 }
 
-.donate-guest-desc {
-  font-family: var(--font-sans);
-  font-size: 0.88rem;
-  line-height: 1.45;
-  color: var(--text-secondary);
-  margin: 0;
+.donate-guest-note {
+  color: var(--text-muted);
 }
 
-.donate-guest-desc strong {
-  color: var(--text-primary);
-  font-weight: 700;
-}
-
-/* Step-by-Step Walkthrough Box */
-.donate-steps-box {
-  background: var(--bg-elevated);
-  border: 1.5px solid var(--border-color);
-  padding: 1rem 1.15rem;
-  box-shadow: var(--shadow-xs);
-}
-
-[data-theme="dark"] .donate-steps-box {
-  background: #141418;
-  border-color: #2E2E33;
-  box-shadow: 3px 3px 0px #000000;
-}
-
-[data-theme="cyberpunk"] .donate-steps-box {
-  background: #160D2C;
-  border-color: var(--border-color);
-  box-shadow: 3px 3px 0px #04010A;
-}
-
-.donate-steps-header {
-  margin-bottom: 0.75rem;
-}
-
-.steps-heading {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-secondary);
-}
-
-.donate-steps-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-}
-
-.donate-step-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  font-size: 0.88rem;
-  line-height: 1.45;
-  color: var(--text-secondary);
-}
-
-.donate-step-item strong {
-  color: var(--text-primary);
-}
-
-.step-num {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--text-primary);
-  color: var(--bg-surface);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 900;
+/* Step Navigation Tabs */
+.donate-modal-step-tabs {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0.75rem;
+  padding: 0.55rem 1.25rem;
+  background: var(--bg-surface);
+  border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.donate-step-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: transparent;
+  border: 1.5px solid transparent;
+  padding: 0.3rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.donate-step-tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+}
+
+.donate-step-tab.active {
+  background: var(--bg-elevated);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+  box-shadow: 2px 2px 0px var(--border-color);
+}
+
+[data-theme="dark"] .donate-step-tab.active {
+  background: #18181C;
+  border-color: #3F3F46;
+  box-shadow: 2px 2px 0px #000000;
+}
+
+[data-theme="cyberpunk"] .donate-step-tab.active {
+  background: #1C1036;
+  border-color: var(--border-color);
+  box-shadow: 2px 2px 0px #04010A;
+}
+
+.step-tab-num {
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: var(--border-color);
+  color: var(--bg-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.donate-step-tab.active .step-tab-num {
+  background: var(--accent-yellow);
+  color: #0A0A0A;
+}
+
+[data-theme="cyberpunk"] .donate-step-tab.active .step-tab-num {
+  background: var(--accent-pink);
+  color: #FFFFFF;
+}
+
+.donate-step-tab-arrow {
+  color: var(--text-muted);
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.donate-step-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Step 2: SupportKori Screenshot Preview */
+.supportkori-screenshot-container {
+  background: var(--bg-elevated);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  margin-top: 0.25rem;
+}
+
+[data-theme="dark"] .supportkori-screenshot-container {
+  background: #18181C;
+  border-color: #38383E;
+  box-shadow: 2px 2px 0px #000000;
+}
+
+[data-theme="cyberpunk"] .supportkori-screenshot-container {
+  background: #160D2C;
+  border-color: var(--border-color);
+  box-shadow: 2px 2px 0px #04010A;
+}
+
+.supportkori-screenshot-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.preview-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.dot-red { background: #FF5F56; }
+.dot-yellow { background: #FFBD2E; }
+.dot-green { background: #27C93F; }
+
+.supportkori-screenshot-title {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-left: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.supportkori-screenshot-body {
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.supportkori-img-wrapper {
+  max-width: 380px;
+  width: 100%;
+  border: 1.5px solid var(--border-color);
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+  background: #FFFFFF;
+}
+
+.supportkori-form-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.supportkori-paste-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.65rem;
+  background: var(--accent-yellow);
+  color: #0A0A0A;
+  border: 1.5px solid var(--border-color);
+  box-shadow: 2px 2px 0px var(--border-color);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.supportkori-paste-hint .paste-hint-arrow {
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+[data-theme="cyberpunk"] .supportkori-paste-hint {
+  background: var(--accent-cyan);
+  color: #000000;
+}
+
+.donate-step-note {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.85rem;
+  background: var(--bg-elevated);
+  border: 1px dashed var(--border-color);
+  font-size: 0.84rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.donate-step-note .note-icon {
+  font-size: 1.25rem;
   flex-shrink: 0;
-  margin-top: 0.1rem;
+}
+
+.donate-step-note strong {
+  color: var(--text-primary);
 }
 
 /* Modal Footer */
@@ -16548,10 +16617,17 @@ button:active:not(:disabled),
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.75rem;
-  padding: 1rem 1.5rem;
+  padding: 0.85rem 1.35rem;
   background: var(--bg-elevated);
   border-top: var(--border-width) solid var(--border-color);
+}
+
+.donate-step-footer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  width: 100%;
 }
 
 .donate-proceed-cta {

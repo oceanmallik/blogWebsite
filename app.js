@@ -2878,9 +2878,42 @@ function updateSupportersCallout() {
   }
 }
 
+let currentDonateModalStep = 1;
+
+function setDonateModalStep(step) {
+  currentDonateModalStep = (step === 2) ? 2 : 1;
+  const step1Panel = document.getElementById('donate-pizza-step-1');
+  const step2Panel = document.getElementById('donate-pizza-step-2');
+  const footer1 = document.getElementById('donate-footer-step-1');
+  const footer2 = document.getElementById('donate-footer-step-2');
+  const tab1 = document.getElementById('donate-step-tab-1');
+  const tab2 = document.getElementById('donate-step-tab-2');
+
+  if (currentDonateModalStep === 1) {
+    step1Panel?.classList.remove('hidden');
+    step2Panel?.classList.add('hidden');
+    footer1?.classList.remove('hidden');
+    footer2?.classList.add('hidden');
+    tab1?.classList.add('active');
+    tab1?.setAttribute('aria-selected', 'true');
+    tab2?.classList.remove('active');
+    tab2?.setAttribute('aria-selected', 'false');
+  } else {
+    step1Panel?.classList.add('hidden');
+    step2Panel?.classList.remove('hidden');
+    footer1?.classList.add('hidden');
+    footer2?.classList.remove('hidden');
+    tab1?.classList.remove('active');
+    tab1?.setAttribute('aria-selected', 'false');
+    tab2?.classList.add('active');
+    tab2?.setAttribute('aria-selected', 'true');
+  }
+}
+
 function openDonatePizzaModal() {
   if (!dom.donatePizzaModal) return;
   updateSupportersCallout();
+  setDonateModalStep(1);
   dom.donatePizzaModal.classList.remove('hidden');
   if (document.body?.style) document.body.style.overflow = 'hidden';
 }
@@ -2910,10 +2943,10 @@ async function handleSupportersCopyUsername() {
     if (dom.donateModalCopyUsernameText) {
       dom.donateModalCopyUsernameText.textContent = 'Copied!';
       setTimeout(() => {
-        if (dom.donateModalCopyUsernameText) dom.donateModalCopyUsernameText.textContent = 'Copy';
+        if (dom.donateModalCopyUsernameText) dom.donateModalCopyUsernameText.textContent = 'Copy Username';
       }, 2000);
     }
-    showToast(`Username "${cleanUsername}" copied! Write it on SupportKori so pizzas are credited to your profile.`, 'success');
+    showToast(`Username "${cleanUsername}" copied! Paste it into the Name field on SupportKori.`, 'success');
   } catch (err) {
     showToast('Could not copy username to clipboard', 'info');
   }
@@ -2940,7 +2973,7 @@ async function handleSupportersCopyEmail() {
         if (dom.supportersCopyEmailText) dom.supportersCopyEmailText.textContent = 'Copy Email';
       }, 2000);
     }
-    showToast('BartaWire email copied! Write or paste it into SupportKori so pizzas are credited to your profile.', 'success');
+    showToast('Email copied! Paste it into the Name field on SupportKori.', 'success');
   } catch (err) {
     showToast('Could not copy email to clipboard', 'info');
   }
@@ -14197,6 +14230,10 @@ function initEventListeners() {
   });
   dom.donateModalCopyUsernameBtn?.addEventListener('click', handleSupportersCopyUsername);
   dom.supportersCopyEmailBtn?.addEventListener('click', handleSupportersCopyEmail);
+  document.getElementById('donate-modal-next-btn')?.addEventListener('click', () => setDonateModalStep(2));
+  document.getElementById('donate-modal-back-btn')?.addEventListener('click', () => setDonateModalStep(1));
+  document.getElementById('donate-step-tab-1')?.addEventListener('click', () => setDonateModalStep(1));
+  document.getElementById('donate-step-tab-2')?.addEventListener('click', () => setDonateModalStep(2));
   dom.supportersLoginBtn?.addEventListener('click', () => {
     closeDonatePizzaModal();
     openAuthModal('signin');
