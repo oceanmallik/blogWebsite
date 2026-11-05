@@ -185,9 +185,85 @@
           </span>
           <span class="theme-toggle-label">Theme</span>
         </button>
+
+        <!-- Mobile Navigation Menu Toggle Button (visible on mobile screens <= 768px) -->
+        <button type="button" id="mobile-nav-toggle" class="mobile-nav-toggle" aria-label="Open Navigation Menu" aria-controls="mobile-nav-drawer" aria-expanded="false" title="Open navigation menu">
+          <svg class="mobile-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
       </div>
     </div>
   </header>
+
+  <!-- ==============================================
+       MOBILE RIGHT-SIDE NAVIGATION DRAWER
+       ============================================== -->
+  <div id="mobile-nav-backdrop" class="mobile-nav-backdrop" aria-hidden="true"></div>
+  <aside id="mobile-nav-drawer" class="mobile-nav-drawer" aria-label="Mobile Navigation Menu" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="mobile-drawer-header">
+      <div class="mobile-drawer-brand">
+        <img src="bartawire.png" alt="BartaWire" class="mobile-drawer-logo" width="28" height="28">
+        <span class="mobile-drawer-title">Navigation</span>
+      </div>
+      <button type="button" id="mobile-nav-close-btn" class="mobile-drawer-close-btn" aria-label="Close navigation menu">&times;</button>
+    </div>
+
+    <div class="mobile-drawer-body">
+      <div class="mobile-drawer-section-label">Sections</div>
+      <nav class="mobile-drawer-nav" aria-label="Mobile Navigation Links">
+        <button type="button" class="mobile-drawer-link active" id="mobile-nav-link-home">
+          <span class="mobile-drawer-icon">🏠</span>
+          <div class="mobile-drawer-link-info">
+            <span class="mobile-drawer-label">Home</span>
+            <span class="mobile-drawer-sublabel">Latest posts &amp; feed</span>
+          </div>
+          <span class="mobile-drawer-pill">Feed</span>
+        </button>
+
+        <button type="button" class="mobile-drawer-link" id="mobile-nav-link-contributors">
+          <span class="mobile-drawer-icon">✍️</span>
+          <div class="mobile-drawer-link-info">
+            <span class="mobile-drawer-label">Contributors</span>
+            <span class="mobile-drawer-sublabel">Writers &amp; leaderboard</span>
+          </div>
+          <span class="mobile-drawer-pill">Writers</span>
+        </button>
+
+        <button type="button" class="mobile-drawer-link" id="mobile-nav-link-supporters">
+          <span class="mobile-drawer-icon">🍕</span>
+          <div class="mobile-drawer-link-info">
+            <span class="mobile-drawer-label">Pizza Supporters</span>
+            <span class="mobile-drawer-sublabel">Supporters &amp; perks</span>
+          </div>
+          <span class="mobile-drawer-pill badge-pizza">Supporters</span>
+        </button>
+      </nav>
+
+      <div class="mobile-drawer-divider"></div>
+
+      <div class="mobile-drawer-section-label">Quick Actions</div>
+      <div class="mobile-drawer-actions">
+        <button type="button" id="mobile-drawer-write-action" class="btn-primary mobile-drawer-action-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16" aria-hidden="true">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+          </svg>
+          <span>Write a Post</span>
+        </button>
+
+        <button type="button" id="mobile-drawer-support-action" class="btn-secondary mobile-drawer-action-btn">
+          <span>🍕 Donate Pizza (50৳)</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="mobile-drawer-footer">
+      <span class="mobile-drawer-copy">BartaWire • Your Daily News Dose</span>
+    </div>
+  </aside>
 
   <!-- Main Container -->
   <main class="main-content">
