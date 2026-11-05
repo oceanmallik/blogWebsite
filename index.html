@@ -277,11 +277,11 @@
           <!-- Left: Featured Story Card with toggle -->
           <div class="hero-featured" id="hero-featured-section">
             <div class="featured-story-header-line">
-              <div class="hero-badge">
+              <div class="hero-badge" id="hero-featured-badge">
                 <span class="pulse-dot"></span>
-                <span>BartaWire Journal</span>
+                <span>Top 5 Sliding Posts</span>
               </div>
-              <span class="featured-story-tagline">Stories, ideas, and perspectives from the digital tide.</span>
+              <span class="featured-story-tagline">Editor's Picks curated by BartaWire.</span>
             </div>
 
             <div class="featured-story-card-wrap" id="featured-story-card-wrap">
@@ -296,6 +296,7 @@
                     </svg>
                   </div>
                   <span id="featured-story-tag" class="featured-story-tag">Technology</span>
+                  <span id="featured-editor-badge" class="featured-editor-badge">★ Editor's Pick</span>
 
                   <!-- Prev / Next Navigation Arrows -->
                   <button type="button" id="featured-nav-prev" class="featured-nav-arrow featured-nav-prev" aria-label="Previous featured story" title="Previous story">
@@ -346,15 +347,15 @@
                 <div class="trending-title-group">
                   <span class="trending-badge">
                     <span class="trending-icon" aria-hidden="true">🔥</span>
-                    <span>Trending now</span>
+                    <span>Trending Now</span>
                   </span>
-                  <span class="trending-period-tag">TOP 3</span>
+                  <span class="trending-period-tag" id="trending-period-tag">TOP 5</span>
                 </div>
               </div>
 
               <div id="trending-list" class="trending-list" role="list">
-                <!-- Top 3 Trending posts rendered with real initial rows and updated by renderTrendingPanel() -->
-                <div class="trending-row is-featured" role="button" tabindex="0" data-post-id="demo-1" aria-label="Trending #1: The Architecture of the Modern Ocean: Designing Resilient Web Systems">
+                <!-- Top 5 Trending posts rendered with real initial rows and updated by renderTrendingPanel() -->
+                <div class="trending-row is-featured has-trending-flag" role="button" tabindex="0" data-post-id="demo-1" aria-label="Trending #1: The Architecture of the Modern Ocean: Designing Resilient Web Systems">
                   <span class="trending-rank" aria-hidden="true">1</span>
                   <div class="trending-info">
                     <div class="trending-headline-row">
@@ -362,10 +363,11 @@
                     </div>
                     <div class="trending-meta-row">
                       <span class="trending-category-tag">Technology</span>
+                      <span class="trending-fire-tag" title="Flagged as Trending">🔥 Trending</span>
                     </div>
                   </div>
                 </div>
-                <div class="trending-row" role="button" tabindex="0" data-post-id="demo-2" aria-label="Trending #2: Crafting High-Performance Vanilla JavaScript Applications">
+                <div class="trending-row has-trending-flag" role="button" tabindex="0" data-post-id="demo-2" aria-label="Trending #2: Crafting High-Performance Vanilla JavaScript Applications">
                   <span class="trending-rank" aria-hidden="true">2</span>
                   <div class="trending-info">
                     <div class="trending-headline-row">
@@ -373,10 +375,11 @@
                     </div>
                     <div class="trending-meta-row">
                       <span class="trending-category-tag">Programming</span>
+                      <span class="trending-fire-tag" title="Flagged as Trending">🔥 Trending</span>
                     </div>
                   </div>
                 </div>
-                <div class="trending-row" role="button" tabindex="0" data-post-id="demo-3" aria-label="Trending #3: Undercurrents: The Quiet Evolution of Edge Computing">
+                <div class="trending-row has-trending-flag" role="button" tabindex="0" data-post-id="demo-3" aria-label="Trending #3: Undercurrents: The Quiet Evolution of Edge Computing">
                   <span class="trending-rank" aria-hidden="true">3</span>
                   <div class="trending-info">
                     <div class="trending-headline-row">
@@ -384,6 +387,31 @@
                     </div>
                     <div class="trending-meta-row">
                       <span class="trending-category-tag">AI</span>
+                      <span class="trending-fire-tag" title="Flagged as Trending">🔥 Trending</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="trending-row has-trending-flag" role="button" tabindex="0" data-post-id="demo-4" aria-label="Trending #4: Neo-Brutalist Web Aesthetics: Why Harsh Borders Are Back">
+                  <span class="trending-rank" aria-hidden="true">4</span>
+                  <div class="trending-info">
+                    <div class="trending-headline-row">
+                      <h4 class="trending-headline">Neo-Brutalist Web Aesthetics: Why Harsh Borders Are Back</h4>
+                    </div>
+                    <div class="trending-meta-row">
+                      <span class="trending-category-tag">Design</span>
+                      <span class="trending-fire-tag" title="Flagged as Trending">🔥 Trending</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="trending-row has-trending-flag" role="button" tabindex="0" data-post-id="demo-5" aria-label="Trending #5: Decentralized Consensus and the Future of Open Journalism">
+                  <span class="trending-rank" aria-hidden="true">5</span>
+                  <div class="trending-info">
+                    <div class="trending-headline-row">
+                      <h4 class="trending-headline">Decentralized Consensus and the Future of Open Journalism</h4>
+                    </div>
+                    <div class="trending-meta-row">
+                      <span class="trending-category-tag">News</span>
+                      <span class="trending-fire-tag" title="Flagged as Trending">🔥 Trending</span>
                     </div>
                   </div>
                 </div>
@@ -1119,6 +1147,22 @@
                 </label>
               </div>
 
+              <div class="form-group-checkbox">
+                <label class="checkbox-container">
+                  <input type="checkbox" id="admin-is-editor-pick">
+                  <span class="checkbox-custom"></span>
+                  <span class="checkbox-label">Editor's Pick (Display in the top 5 sliding posts carousel)</span>
+                </label>
+              </div>
+
+              <div class="form-group-checkbox">
+                <label class="checkbox-container">
+                  <input type="checkbox" id="admin-is-trending">
+                  <span class="checkbox-custom"></span>
+                  <span class="checkbox-label">Trending Now (Display in the Trending Now section)</span>
+                </label>
+              </div>
+
               <div id="admin-form-msg" class="config-status-msg hidden"></div>
 
               <div class="admin-form-actions">
@@ -1154,6 +1198,8 @@
                 <div class="card-body" id="preview-card-body">
                   <div class="card-topic-row" id="preview-card-topic-row">
                     <button type="button" class="card-topic-badge" id="preview-card-topic">Technology</button>
+                    <span class="card-badge-editor-pick hidden" id="preview-card-editor-badge">★ Editor's Pick</span>
+                    <span class="card-badge-trending hidden" id="preview-card-trending-badge">🔥 Trending</span>
                   </div>
                   <div class="card-meta">
                     <span class="card-date" id="preview-card-date">Just now</span>

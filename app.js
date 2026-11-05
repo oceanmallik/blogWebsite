@@ -131,6 +131,8 @@ const DEMO_PREVIEW_POSTS = [
     content: `## The Fluid Nature of Modern Systems\n\nSoftware architectures, much like tidal systems, must adapt to immense pressure and sudden shifts in volume. When designing scalable applications, rigidity leads to breakage.\n\n### Core Tenets of Resilient Design\n\n- **Loose Coupling:** Services should function independently with well-defined contracts.\n- **Graceful Degradation:** When a component fails, the system provides a predictable fallback rather than a complete blackout.\n- **Stateless Horizons:** Treating compute as ephemeral allows systems to scale effortlessly.\n\n> "The sea does not ask the storm to cease; it adjusts its surface to endure."\n\n\`\`\`javascript\n// Embracing resilience with retry backoffs\nasync function fetchWithResilience(url, retries = 3) {\n  for (let attempt = 0; attempt < retries; attempt++) {\n    try {\n      return await fetch(url);\n    } catch (err) {\n      if (attempt === retries - 1) throw err;\n      await new Promise(r => setTimeout(r, Math.pow(2, attempt) * 1000));\n    }\n  }\n}\n\`\`\`\n\nBy treating web systems with fluid design principles, we craft user experiences that feel smooth, dependable, and enduring.`,
     cover_image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
     is_published: true,
+    is_editor_pick: true,
+    is_trending: true,
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString()
   },
   {
@@ -144,6 +146,8 @@ const DEMO_PREVIEW_POSTS = [
     content: `## The Power of the Native Web\n\nIn an era dominated by sprawling framework ecosystems, the power of modern vanilla JavaScript is often underestimated. Browsers today are faster, more capable, and more standardized than ever before.\n\n### Why Vanilla JS Still Reigns\n\n1. **Zero Bundle Overhead:** No 300KB runtime shipped before the first render.\n2. **Direct DOM Interaction:** Using \`DocumentFragment\` and modern CSS containment yields incredible frame rates.\n3. **Future Proofing:** Code written to web standards remains functional decade after decade.\n\n\`\`\`javascript\n// Efficient batched DOM updates\nconst fragment = document.createDocumentFragment();\nposts.forEach(post => {\n  const card = createPostCard(post);\n  fragment.appendChild(card);\n});\ndocument.getElementById('posts-grid').appendChild(fragment);\n\`\`\`\n\nBy mastering the web platform's built-in APIs, you build experiences that load instantly on any network.`,
     cover_image: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1200&q=80',
     is_published: true,
+    is_editor_pick: true,
+    is_trending: true,
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString()
   },
   {
@@ -157,6 +161,8 @@ const DEMO_PREVIEW_POSTS = [
     content: `## Beyond Centralized Horizons\n\nFor decades, computing oscillated between centralized mainframes and localized client hardware. Today, the edge represents a harmonious equilibrium — data processed precisely where it is generated.\n\n### Why the Edge Matters\n\n- **Sub-millisecond Latency:** Processing requests in local edge clusters eliminates round-trip lag across oceanic fiber cables.\n- **Resilience Under Pressure:** If an origin datacenter experiences disruption, edge nodes continue serving cached and dynamic workloads.\n- **Smart Data Routing:** Intelligent routing steers requests dynamically along optimal paths.\n\n> "Speed is not merely a feature; it is the silent foundation of trust in digital spaces."\n\nAs web platforms evolve, embracing edge computing ensures that every reader experiences instantaneous, seamless engagement regardless of where they reside on the globe.`,
     cover_image: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?auto=format&fit=crop&w=1200&q=80',
     is_published: true,
+    is_editor_pick: true,
+    is_trending: true,
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9).toISOString()
   },
   {
@@ -170,6 +176,8 @@ const DEMO_PREVIEW_POSTS = [
     content: `## The Rebirth of High Contrast\n\nFor over a decade, digital interfaces chased frictionless minimalism. Rounded corners, subtle drop shadows, and low-contrast typography reigned supreme.\n\nNow, the tide is turning. Neo-brutalism reclaims web personality with bold borders, hard offset shadows, vibrant primary palettes, and uncompromising functional typography.`,
     cover_image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80',
     is_published: true,
+    is_editor_pick: true,
+    is_trending: true,
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString()
   },
   {
@@ -183,6 +191,8 @@ const DEMO_PREVIEW_POSTS = [
     content: `## The Next Era of the Wire\n\nIndependent reporting requires verifiable integrity. By combining open protocols with distributed storage, decentralized journalism empowers writers to own their archives permanently.`,
     cover_image: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=1200&q=80',
     is_published: true,
+    is_editor_pick: true,
+    is_trending: true,
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString()
   }
 ];
@@ -265,6 +275,8 @@ function initDOM() {
   dom.previewCardImageWrap = document.getElementById('preview-card-image-wrap');
   dom.previewCardTopicRow = document.getElementById('preview-card-topic-row');
   dom.previewCardTopic = document.getElementById('preview-card-topic');
+  dom.previewCardEditorBadge = document.getElementById('preview-card-editor-badge');
+  dom.previewCardTrendingBadge = document.getElementById('preview-card-trending-badge');
   dom.previewCardTitle = document.getElementById('preview-card-title');
   dom.previewCardSummary = document.getElementById('preview-card-summary');
   dom.previewCardDate = document.getElementById('preview-card-date');
@@ -318,10 +330,12 @@ function initDOM() {
   dom.footerSupportBtn = document.getElementById('footer-support-btn');
   dom.featuredStoryCard = document.getElementById('featured-story-card');
   dom.featuredStoryImg = document.getElementById('featured-story-img');
+  dom.featuredEditorBadge = document.getElementById('featured-editor-badge');
   dom.featuredNavPrev = document.getElementById('featured-nav-prev');
   dom.featuredNavNext = document.getElementById('featured-nav-next');
   dom.trendingCard = document.getElementById('trending-card');
   dom.trendingList = document.getElementById('trending-list');
+  dom.trendingPeriodTag = document.getElementById('trending-period-tag');
 
   // Writer & Top Writers Modals
   dom.writerModal = document.getElementById('writer-modal');
@@ -534,6 +548,8 @@ function initDOM() {
   dom.adminClearDateBtn = document.getElementById('admin-clear-date-btn');
   dom.adminContent = document.getElementById('admin-content');
   dom.adminIsPublished = document.getElementById('admin-is-published');
+  dom.adminIsEditorPick = document.getElementById('admin-is-editor-pick');
+  dom.adminIsTrending = document.getElementById('admin-is-trending');
   dom.adminFormMsg = document.getElementById('admin-form-msg');
   dom.adminResetFormBtn = document.getElementById('admin-reset-form-btn');
   dom.adminDeleteBtn = document.getElementById('admin-delete-btn');
@@ -2097,21 +2113,29 @@ function stopHeroContributorTimer() {
 }
 
 // ============================================================================
-// FEATURED STORIES CAROUSEL (Top 5 News Articles with 6s Auto-Rotation)
+// FEATURED STORIES CAROUSEL (Top 5 Sliding Posts driven by is_editor_pick)
 // ============================================================================
 let featuredStories = [];
 let currentFeaturedIndex = 0;
 let featuredRotateTimer = null;
 let isFeaturedPaused = false;
 
+function isTruthful(val) {
+  return val === true || val === 'true' || val === 1 || val === '1' || val === 't';
+}
+
 function initFeaturedStories(posts) {
   let pool = posts && posts.length > 0 ? posts : ((allPosts && allPosts.length > 0) ? allPosts : (typeof DEMO_PREVIEW_POSTS !== 'undefined' ? DEMO_PREVIEW_POSTS : []));
   if (!pool || pool.length === 0) return;
 
-  // Filter latest 5 news posts, fallback to any latest posts if fewer than 5
-  const newsPosts = pool.filter(p => (p.topic || '').toLowerCase() === 'news');
-  const otherPosts = pool.filter(p => (p.topic || '').toLowerCase() !== 'news');
-  const combined = [...newsPosts, ...otherPosts];
+  // 1. Primary: Posts marked with is_editor_pick in public.posts
+  const editorPicks = pool.filter(p => isTruthful(p.is_editor_pick));
+
+  // 2. Secondary: Other published posts to ensure up to 5 sliding posts
+  const otherPosts = pool.filter(p => !isTruthful(p.is_editor_pick));
+  const combined = [...editorPicks, ...otherPosts];
+
+  // 3. Fallback: Pad with demo preview posts if still fewer than 5
   if (combined.length < 5 && typeof DEMO_PREVIEW_POSTS !== 'undefined') {
     for (const demo of DEMO_PREVIEW_POSTS) {
       if (!combined.some(p => String(p.id) === String(demo.id) || p.title === demo.title)) {
@@ -2142,14 +2166,15 @@ function initFeaturedStories(posts) {
   startFeaturedTimer();
 }
 
-function renderFeaturedStoryCard(index, animate = true) {
+function renderFeaturedStoryCard(index, animate = true, direction = 'next') {
   const post = featuredStories[index];
   if (!post) return;
 
-  const card = document.getElementById('featured-story-card');
-  const imgEl = document.getElementById('featured-story-img');
+  const card = document.getElementById('featured-story-card') || dom.featuredStoryCard;
+  const imgEl = document.getElementById('featured-story-img') || dom.featuredStoryImg;
   const fallbackEl = document.getElementById('featured-story-fallback');
   const tagEl = document.getElementById('featured-story-tag');
+  const editorBadgeEl = document.getElementById('featured-editor-badge') || dom.featuredEditorBadge;
   const titleEl = document.getElementById('featured-story-title');
   const avatarEl = document.getElementById('featured-author-avatar');
   const nameEl = document.getElementById('featured-author-name');
@@ -2180,6 +2205,15 @@ function renderFeaturedStoryCard(index, animate = true) {
     // Category / Tag
     if (tagEl) {
       tagEl.textContent = post.topic || 'News';
+    }
+
+    // Editor's Pick Badge
+    if (editorBadgeEl) {
+      if (isTruthful(post.is_editor_pick)) {
+        editorBadgeEl.classList.remove('hidden');
+      } else {
+        editorBadgeEl.classList.add('hidden');
+      }
     }
 
     // Headline / Title
@@ -2259,11 +2293,15 @@ function renderFeaturedStoryCard(index, animate = true) {
   };
 
   if (animate && !prefersReduced && card) {
-    card.classList.add('fade-transition');
+    const animClass = direction === 'prev' ? 'slide-prev' : 'slide-next';
+    card.classList.remove('slide-next', 'slide-prev', 'fade-transition');
+    card.classList.add('fade-transition', animClass);
     setTimeout(() => {
       updateCardDOM();
-      card.classList.remove('fade-transition');
-    }, 150);
+      setTimeout(() => {
+        card.classList.remove('fade-transition', 'slide-next', 'slide-prev');
+      }, 150);
+    }, 100);
   } else {
     updateCardDOM();
   }
@@ -2272,19 +2310,20 @@ function renderFeaturedStoryCard(index, animate = true) {
 function nextFeaturedStory() {
   if (featuredStories.length <= 1) return;
   currentFeaturedIndex = (currentFeaturedIndex + 1) % featuredStories.length;
-  renderFeaturedStoryCard(currentFeaturedIndex);
+  renderFeaturedStoryCard(currentFeaturedIndex, true, 'next');
 }
 
 function prevFeaturedStory() {
   if (featuredStories.length <= 1) return;
   currentFeaturedIndex = (currentFeaturedIndex - 1 + featuredStories.length) % featuredStories.length;
-  renderFeaturedStoryCard(currentFeaturedIndex);
+  renderFeaturedStoryCard(currentFeaturedIndex, true, 'prev');
 }
 
 function goToFeaturedStory(index) {
-  if (index < 0 || index >= featuredStories.length) return;
+  if (index < 0 || index >= featuredStories.length || index === currentFeaturedIndex) return;
+  const direction = index > currentFeaturedIndex ? 'next' : 'prev';
   currentFeaturedIndex = index;
-  renderFeaturedStoryCard(currentFeaturedIndex);
+  renderFeaturedStoryCard(currentFeaturedIndex, true, direction);
 }
 
 function renderFeaturedDots() {
@@ -2337,10 +2376,10 @@ function stopFeaturedTimer() {
 }
 
 // ============================================================================
-// TRENDING NOW PANEL (Top 3 Posts by views or comments/reactions in last 7 days)
+// TRENDING NOW PANEL (Top 5 Posts driven by is_trending)
 // ============================================================================
 
-function getTrendingPosts(limit = 3) {
+function getTrendingPosts(limit = 5) {
   let postsPool = (allPosts && allPosts.length > 0) ? allPosts : ((window.allPosts && window.allPosts.length > 0) ? window.allPosts : (typeof DEMO_PREVIEW_POSTS !== 'undefined' ? DEMO_PREVIEW_POSTS : []));
   if (!postsPool || postsPool.length === 0) return [];
 
@@ -2355,63 +2394,64 @@ function getTrendingPosts(limit = 3) {
     });
   }
 
-  // 2. Filter posts published within the last 7 days
-  const now = Date.now();
-  const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
-  const recentPosts = postsPool.filter(p => {
-    if (!p) return false;
-    const createdAt = p.created_at ? new Date(p.created_at).getTime() : 0;
-    return !isNaN(createdAt) && createdAt > 0 && (now - createdAt) <= sevenDaysMs;
-  });
 
-  // Fallback: If fewer than 3 posts in last 7 days, fallback to all published posts
-  const candidatePosts = recentPosts.length >= 3 ? recentPosts : postsPool.slice();
 
-  // 3. Determine if views are explicitly tracked
-  const hasTrackedViews = candidatePosts.some(p => {
-    const v = Number(p.views ?? p.view_count ?? p.views_count ?? 0);
-    return !isNaN(v) && v > 0;
-  });
+  // Sorter helper: views -> comments -> recency
+  const sortFn = (a, b) => {
+    const viewsA = Number(a.views ?? a.view_count ?? a.views_count ?? 0);
+    const viewsB = Number(b.views ?? b.view_count ?? b.views_count ?? 0);
+    if (viewsB !== viewsA) return viewsB - viewsA;
 
-  // 4. Sort posts
-  const sorted = [...candidatePosts].sort((a, b) => {
-    if (hasTrackedViews) {
-      const viewsA = Number(a.views ?? a.view_count ?? a.views_count ?? 0);
-      const viewsB = Number(b.views ?? b.view_count ?? b.views_count ?? 0);
-      if (viewsB !== viewsA) return viewsB - viewsA;
-    }
-
-    // Secondary / Fallback: comments count
     const pIdA = String(a.id);
     const pIdB = String(b.id);
     const commentsA = commentCountsByPost.get(pIdA) || (Array.isArray(a.comments) ? a.comments.length : 0);
     const commentsB = commentCountsByPost.get(pIdB) || (Array.isArray(b.comments) ? b.comments.length : 0);
     if (commentsB !== commentsA) return commentsB - commentsA;
 
-    // Tertiary: recency
     const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
     const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
     return timeB - timeA;
-  });
+  };
 
-  // Pad with demo preview posts if fewer than limit so 3 real rows are ALWAYS returned
-  if (sorted.length < limit && typeof DEMO_PREVIEW_POSTS !== 'undefined') {
-    for (const demo of DEMO_PREVIEW_POSTS) {
-      if (!sorted.some(p => String(p.id) === String(demo.id) || p.title === demo.title)) {
-        sorted.push(demo);
-        if (sorted.length >= limit) break;
+  // 1. Primary: Posts explicitly marked with is_trending in public.posts
+  const trendingExplicit = postsPool.filter(p => isTruthful(p.is_trending)).sort(sortFn);
+
+  let combined = [...trendingExplicit];
+
+  // 2. Secondary: If fewer than limit, backfill with top posts by engagement
+  if (combined.length < limit) {
+    const nonTrending = postsPool.filter(p => !isTruthful(p.is_trending)).sort(sortFn);
+    for (const post of nonTrending) {
+      if (!combined.some(p => String(p.id) === String(post.id))) {
+        combined.push(post);
+        if (combined.length >= limit) break;
       }
     }
   }
 
-  return sorted.slice(0, limit);
+  // 3. Fallback: Pad with demo preview posts if still fewer than limit
+  if (combined.length < limit && typeof DEMO_PREVIEW_POSTS !== 'undefined') {
+    for (const demo of DEMO_PREVIEW_POSTS) {
+      if (!combined.some(p => String(p.id) === String(demo.id) || p.title === demo.title)) {
+        combined.push(demo);
+        if (combined.length >= limit) break;
+      }
+    }
+  }
+
+  return combined.slice(0, limit);
 }
 
 function renderTrendingPanel() {
-  const container = document.getElementById('trending-list');
+  const container = document.getElementById('trending-list') || dom.trendingList;
   if (!container) return;
 
-  const trendingPosts = getTrendingPosts(3);
+  const trendingPosts = getTrendingPosts(5);
+  const countTag = document.getElementById('trending-period-tag') || dom.trendingPeriodTag;
+  if (countTag) {
+    countTag.textContent = `TOP ${trendingPosts.length || 5}`;
+  }
+
   if (trendingPosts.length === 0) {
     container.innerHTML = `
       <div class="trending-empty-state">
@@ -2427,9 +2467,10 @@ function renderTrendingPanel() {
   trendingPosts.forEach((post, index) => {
     const rank = index + 1;
     const isFeatured = Boolean(currentlyFeaturedId && String(currentlyFeaturedId) === String(post.id));
+    const isTrending = isTruthful(post.is_trending);
 
     const row = document.createElement('div');
-    row.className = 'trending-row' + (isFeatured ? ' is-featured' : '');
+    row.className = 'trending-row' + (isFeatured ? ' is-featured' : '') + (isTrending ? ' has-trending-flag' : '');
     row.setAttribute('role', 'button');
     row.setAttribute('tabindex', '0');
     row.setAttribute('data-post-id', String(post.id));
@@ -2439,6 +2480,10 @@ function renderTrendingPanel() {
     const banglaClass = isBangla ? ' is-bangla' : '';
     const langAttr = isBangla ? ' lang="bn"' : '';
 
+    const trendingBadgeHtml = isTrending
+      ? `<span class="trending-fire-tag" title="Flagged as Trending">🔥 Trending</span>`
+      : '';
+
     row.innerHTML = `
       <span class="trending-rank" aria-hidden="true">${rank}</span>
       <div class="trending-info">
@@ -2447,6 +2492,7 @@ function renderTrendingPanel() {
         </div>
         <div class="trending-meta-row">
           <span class="trending-category-tag">${escapeHtml(post.topic || 'News')}</span>
+          ${trendingBadgeHtml}
         </div>
       </div>
     `;
@@ -4360,6 +4406,22 @@ function createCardElement(post, options = {}) {
       pinnedHeader.appendChild(topicBadge);
     }
 
+    if (isTruthful(post.is_editor_pick)) {
+      const pickBadge = document.createElement('span');
+      pickBadge.className = 'card-badge-editor-pick';
+      pickBadge.title = "Editor's Pick";
+      pickBadge.innerHTML = '★ Editor\'s Pick';
+      pinnedHeader.appendChild(pickBadge);
+    }
+
+    if (isTruthful(post.is_trending)) {
+      const trendingBadge = document.createElement('span');
+      trendingBadge.className = 'card-badge-trending';
+      trendingBadge.title = 'Trending Post';
+      trendingBadge.innerHTML = '🔥 Trending';
+      pinnedHeader.appendChild(trendingBadge);
+    }
+
     // Pin / Unpin button inside pinned header row on the left side
     if (options && options.isProfileOwnerView) {
       const pinActionBtn = document.createElement('button');
@@ -4391,11 +4453,11 @@ function createCardElement(post, options = {}) {
 
     body.appendChild(pinnedHeader);
   } else {
-    // Topic Badge for regular unpinned cards
-    if (post.topic && typeof post.topic === 'string' && post.topic.trim() !== '') {
-      const topicRow = document.createElement('div');
-      topicRow.className = 'card-topic-row';
+    // Topic Badge for regular unpinned cards & special flags
+    const topicRow = document.createElement('div');
+    topicRow.className = 'card-topic-row';
 
+    if (post.topic && typeof post.topic === 'string' && post.topic.trim() !== '') {
       const topicBadge = document.createElement('button');
       topicBadge.type = 'button';
       topicBadge.className = 'card-topic-badge';
@@ -4408,6 +4470,25 @@ function createCardElement(post, options = {}) {
       });
 
       topicRow.appendChild(topicBadge);
+    }
+
+    if (isTruthful(post.is_editor_pick)) {
+      const pickBadge = document.createElement('span');
+      pickBadge.className = 'card-badge-editor-pick';
+      pickBadge.title = "Editor's Pick";
+      pickBadge.innerHTML = '★ Editor\'s Pick';
+      topicRow.appendChild(pickBadge);
+    }
+
+    if (isTruthful(post.is_trending)) {
+      const trendingBadge = document.createElement('span');
+      trendingBadge.className = 'card-badge-trending';
+      trendingBadge.title = 'Trending Post';
+      trendingBadge.innerHTML = '🔥 Trending';
+      topicRow.appendChild(trendingBadge);
+    }
+
+    if (topicRow.children.length > 0) {
       body.appendChild(topicRow);
     }
 
@@ -6002,6 +6083,8 @@ function renderManagePostsGrid(posts) {
       <h3 class="card-title ${isBanglaText(post.title) ? 'is-bangla' : ''}">${escapeHtml(post.title || 'Untitled Post')}</h3>
       <div class="card-meta">
         ${post.topic ? `<span class="admin-topic-tag">${escapeHtml(post.topic)}</span><span class="card-dot">•</span>` : ''}
+        ${isTruthful(post.is_editor_pick) ? `<span class="manage-editor-badge">★ Editor's Pick</span><span class="card-dot">•</span>` : ''}
+        ${isTruthful(post.is_trending) ? `<span class="manage-trending-badge">🔥 Trending</span><span class="card-dot">•</span>` : ''}
         <span class="card-date">${dateFormatted}</span>
         <span class="card-dot">•</span>
         <span class="card-reading-time">${timeAgo || '0 days ago'}</span>
@@ -6381,6 +6464,8 @@ async function handleAdminPostSubmit(e) {
   const photo_source = (photoSourceInput?.value || '').trim() || 'BartaWire';
   const content = dom.adminContent.value.trim();
   const is_published = dom.adminIsPublished.checked;
+  const is_editor_pick = Boolean(dom.adminIsEditorPick?.checked);
+  const is_trending = Boolean(dom.adminIsTrending?.checked);
   const topic = dom.adminTopic ? dom.adminTopic.value.trim() : '';
 
   if (!title) {
@@ -6455,18 +6540,34 @@ async function handleAdminPostSubmit(e) {
         photo_source,
         content,
         is_published,
-        topic
+        topic,
+        is_editor_pick,
+        is_trending
       };
       if (customCreatedAt) {
         updatePayload.created_at = customCreatedAt;
       }
 
-      const { data, error } = await supabaseClient
+      let updateResult = await supabaseClient
         .from('posts')
         .update(updatePayload)
         .eq('id', editingPostId)
         .eq('author_id', currentUser.id)
         .select();
+
+      // Fallback if is_editor_pick or is_trending columns do not exist yet in DB schema
+      if (updateResult.error && (String(updateResult.error.message || '').includes('is_editor_pick') || String(updateResult.error.message || '').includes('is_trending') || updateResult.error.code === 'PGRST204')) {
+        console.warn('DB columns is_editor_pick/is_trending not found, retrying update without them:', updateResult.error.message);
+        const { is_editor_pick: _e, is_trending: _t, ...strippedPayload } = updatePayload;
+        updateResult = await supabaseClient
+          .from('posts')
+          .update(strippedPayload)
+          .eq('id', editingPostId)
+          .eq('author_id', currentUser.id)
+          .select();
+      }
+
+      const { data, error } = updateResult;
 
       if (error) throw error;
 
@@ -6490,30 +6591,43 @@ async function handleAdminPostSubmit(e) {
         content,
         is_published,
         topic,
-        author_id: currentUser.id
+        author_id: currentUser.id,
+        is_editor_pick,
+        is_trending
       };
       if (customCreatedAt) {
         insertPayload.created_at = customCreatedAt;
       }
 
       let finalSlug = slug;
-      let { data, error } = await supabaseClient
+      let insertResult = await supabaseClient
         .from('posts')
         .insert({ ...insertPayload, slug: finalSlug })
         .select();
 
-      // If duplicate slug constraint, generate a fresh 6-char random slug and retry
-      if (error && (error.code === '23505' || String(error.message).includes('slug') || String(error.message).includes('duplicate'))) {
-        finalSlug = generateRandomSlug();
-        const retryResult = await supabaseClient
+      // Fallback if is_editor_pick or is_trending columns do not exist yet in DB schema
+      if (insertResult.error && (String(insertResult.error.message || '').includes('is_editor_pick') || String(insertResult.error.message || '').includes('is_trending') || insertResult.error.code === 'PGRST204')) {
+        console.warn('DB columns is_editor_pick/is_trending not found, retrying insert without them:', insertResult.error.message);
+        const { is_editor_pick: _e, is_trending: _t, ...strippedPayload } = insertPayload;
+        insertResult = await supabaseClient
           .from('posts')
-          .insert({ ...insertPayload, slug: finalSlug })
+          .insert({ ...strippedPayload, slug: finalSlug })
           .select();
-        data = retryResult.data;
-        error = retryResult.error;
       }
 
-      if (error) throw error;
+      // If duplicate slug constraint, generate a fresh 6-char random slug and retry
+      if (insertResult.error && (insertResult.error.code === '23505' || String(insertResult.error.message).includes('slug') || String(insertResult.error.message).includes('duplicate'))) {
+        finalSlug = generateRandomSlug();
+        const fallbackPayload = (insertResult.error && (String(insertResult.error.message || '').includes('is_editor_pick') || String(insertResult.error.message || '').includes('is_trending')))
+          ? (() => { const { is_editor_pick: _e, is_trending: _t, ...rest } = insertPayload; return rest; })()
+          : insertPayload;
+        insertResult = await supabaseClient
+          .from('posts')
+          .insert({ ...fallbackPayload, slug: finalSlug })
+          .select();
+      }
+
+      const { data, error } = insertResult;
 
       showAdminMsg('Post created successfully!', 'success');
       resetAdminEditor();
@@ -6563,6 +6677,12 @@ function editPost(postId) {
   hideCoverStatus();
   dom.adminContent.value = post.content || '';
   dom.adminIsPublished.checked = Boolean(post.is_published);
+  if (dom.adminIsEditorPick) {
+    dom.adminIsEditorPick.checked = isTruthful(post.is_editor_pick);
+  }
+  if (dom.adminIsTrending) {
+    dom.adminIsTrending.checked = isTruthful(post.is_trending);
+  }
   if (dom.adminTopic) {
     dom.adminTopic.value = post.topic || '';
   }
@@ -6601,6 +6721,12 @@ function resetAdminEditor() {
     dom.adminSlug.readOnly = true;
   }
   dom.adminIsPublished.checked = true;
+  if (dom.adminIsEditorPick) {
+    dom.adminIsEditorPick.checked = false;
+  }
+  if (dom.adminIsTrending) {
+    dom.adminIsTrending.checked = false;
+  }
   if (dom.adminTopic) {
     dom.adminTopic.value = '';
   }
@@ -7014,6 +7140,16 @@ function updateAdminCardPreview() {
   }
   if (dom.previewCardTopicRow) {
     dom.previewCardTopicRow.style.display = topic ? '' : 'none';
+  }
+
+  // Live badge preview for Editor's Pick & Trending
+  if (dom.previewCardEditorBadge) {
+    const isEditor = Boolean(dom.adminIsEditorPick?.checked);
+    dom.previewCardEditorBadge.classList.toggle('hidden', !isEditor);
+  }
+  if (dom.previewCardTrendingBadge) {
+    const isTrending = Boolean(dom.adminIsTrending?.checked);
+    dom.previewCardTrendingBadge.classList.toggle('hidden', !isTrending);
   }
 
   // Cover image
@@ -14267,9 +14403,11 @@ function initEventListeners() {
   dom.adminCoverImage?.addEventListener('input', () => updateCoverPreview());
   dom.adminCoverImage?.addEventListener('change', () => updateCoverPreview());
 
-  // Live card preview - topic and cover
+  // Live card preview - topic, cover, and editorial badges
   dom.adminTopic?.addEventListener('change', updateAdminCardPreview);
   dom.adminCoverImage?.addEventListener('input', updateAdminCardPreview);
+  dom.adminIsEditorPick?.addEventListener('change', updateAdminCardPreview);
+  dom.adminIsTrending?.addEventListener('change', updateAdminCardPreview);
 
   // Manage View navigation
   dom.adminManageBtn?.addEventListener('click', openManageView);
