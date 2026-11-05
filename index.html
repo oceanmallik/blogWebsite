@@ -397,9 +397,36 @@
 
       <!-- View Header / Stats Bar -->
       <div class="posts-header-bar" id="posts-toolbar">
-        <div class="posts-count-indicator">
-          <span id="posts-count-text">Loading posts...</span>
+        <div class="posts-header-left">
+          <!-- Top Posts Pagination (on the left) -->
+          <nav id="posts-pagination-top" class="posts-pagination-top hidden" aria-label="Posts pagination (top)">
+            <div class="pagination-container" id="pagination-top-container">
+              <button type="button" id="pagination-top-prev-btn" class="pagination-btn pagination-nav-btn" aria-label="Previous page">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" aria-hidden="true">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                <span>Previous</span>
+              </button>
+              
+              <div id="pagination-top-pages" class="pagination-pages" role="navigation" aria-label="Page navigation">
+                <!-- Dynamic page numbers injected here -->
+              </div>
+
+              <button type="button" id="pagination-top-next-btn" class="pagination-btn pagination-nav-btn" aria-label="Next page">
+                <span>Next</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" aria-hidden="true">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
+          </nav>
+
+          <div class="posts-count-indicator">
+            <span id="posts-count-text">Loading posts...</span>
+          </div>
         </div>
+
+        <!-- The others (Filter, Search, Refresh) on the right side -->
         <div class="posts-controls">
           <!-- Filter Button (on the left side of search bar) -->
           <button type="button" id="topics-toggle-btn" class="filter-btn" aria-expanded="false" aria-controls="topics-expandable-panel" title="Filter posts by topic">

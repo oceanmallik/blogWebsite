@@ -278,6 +278,12 @@ function initDOM() {
   dom.paginationNextBtn = document.getElementById('pagination-next-btn');
   dom.paginationPages = document.getElementById('pagination-pages');
   dom.paginationInfo = document.getElementById('pagination-info');
+
+  // Top Page Navigator (left side of filter, search, refresh section)
+  dom.postsPaginationTop = document.getElementById('posts-pagination-top');
+  dom.paginationTopPrevBtn = document.getElementById('pagination-top-prev-btn');
+  dom.paginationTopNextBtn = document.getElementById('pagination-top-next-btn');
+  dom.paginationTopPages = document.getElementById('pagination-top-pages');
   dom.postsSkeleton = document.getElementById('posts-skeleton');
   dom.emptyState = document.getElementById('empty-state');
   dom.errorState = document.getElementById('error-state');
@@ -3869,6 +3875,7 @@ function renderPostsGrid(posts) {
     dom.errorState?.classList.add('hidden');
     dom.postsGrid?.classList.add('hidden');
     dom.postsPagination?.classList.add('hidden');
+    dom.postsPaginationTop?.classList.add('hidden');
     dom.emptyState?.classList.remove('hidden');
 
     const emptyTitle = dom.emptyState?.querySelector('.state-title');
@@ -3956,60 +3963,68 @@ function renderPostsGrid(posts) {
  * @param {number} endIndex
  */
 function renderPagination(totalPages, totalCount, startIndex, endIndex) {
-  if (!dom.postsPagination) return;
+  if (!dom.postsPagination && !dom.postsPaginationTop) return;
 
   if (totalPages <= 1) {
-    dom.postsPagination.classList.add('hidden');
+    dom.postsPagination?.classList.add('hidden');
+    dom.postsPaginationTop?.classList.add('hidden');
     return;
   }
 
-  dom.postsPagination.classList.remove('hidden');
+  const renderNav = (navEl, prevBtn, nextBtn, pagesEl) => {
+    if (!navEl) return;
+    navEl.classList.remove('hidden');
 
-  // 1. Previous button state
-  if (dom.paginationPrevBtn) {
-    const hasPrev = currentPage > 1;
-    dom.paginationPrevBtn.disabled = !hasPrev;
-    dom.paginationPrevBtn.setAttribute('aria-disabled', String(!hasPrev));
-  }
+    // 1. Previous button state
+    if (prevBtn) {
+      const hasPrev = currentPage > 1;
+      prevBtn.disabled = !hasPrev;
+      prevBtn.setAttribute('aria-disabled', String(!hasPrev));
+    }
 
-  // 2. Next button state
-  if (dom.paginationNextBtn) {
-    const hasNext = currentPage < totalPages;
-    dom.paginationNextBtn.disabled = !hasNext;
-    dom.paginationNextBtn.setAttribute('aria-disabled', String(!hasNext));
-  }
+    // 2. Next button state
+    if (nextBtn) {
+      const hasNext = currentPage < totalPages;
+      nextBtn.disabled = !hasNext;
+      nextBtn.setAttribute('aria-disabled', String(!hasNext));
+    }
 
-  // 3. Generate page number buttons with smart ellipsis
-  if (dom.paginationPages) {
-    dom.paginationPages.innerHTML = '';
-    const pages = getPaginationPageNumbers(currentPage, totalPages);
+    // 3. Generate page number buttons with smart ellipsis
+    if (pagesEl) {
+      pagesEl.innerHTML = '';
+      const pages = getPaginationPageNumbers(currentPage, totalPages);
 
-    pages.forEach(item => {
-      if (item === '...') {
-        const ellipsis = document.createElement('span');
-        ellipsis.className = 'pagination-ellipsis';
-        ellipsis.innerHTML = '&hellip;';
-        ellipsis.setAttribute('aria-hidden', 'true');
-        dom.paginationPages.appendChild(ellipsis);
-      } else {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'pagination-btn pagination-num' + (item === currentPage ? ' active' : '');
-        btn.textContent = String(item);
-        btn.setAttribute('data-page', String(item));
-        btn.setAttribute('aria-label', `Go to page ${item}`);
-        if (item === currentPage) {
-          btn.setAttribute('aria-current', 'page');
+      pages.forEach(item => {
+        if (item === '...') {
+          const ellipsis = document.createElement('span');
+          ellipsis.className = 'pagination-ellipsis';
+          ellipsis.innerHTML = '&hellip;';
+          ellipsis.setAttribute('aria-hidden', 'true');
+          pagesEl.appendChild(ellipsis);
+        } else {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'pagination-btn pagination-num' + (item === currentPage ? ' active' : '');
+          btn.textContent = String(item);
+          btn.setAttribute('data-page', String(item));
+          btn.setAttribute('aria-label', `Go to page ${item}`);
+          if (item === currentPage) {
+            btn.setAttribute('aria-current', 'page');
+          }
+          btn.addEventListener('click', () => {
+            goToPage(item);
+          });
+          pagesEl.appendChild(btn);
         }
-        btn.addEventListener('click', () => {
-          goToPage(item);
-        });
-        dom.paginationPages.appendChild(btn);
-      }
-    });
-  }
+      });
+    }
+  };
 
-  // 4. Update pagination info
+  // Render both bottom and top navigators
+  renderNav(dom.postsPagination, dom.paginationPrevBtn, dom.paginationNextBtn, dom.paginationPages);
+  renderNav(dom.postsPaginationTop, dom.paginationTopPrevBtn, dom.paginationTopNextBtn, dom.paginationTopPages);
+
+  // 4. Update pagination info (bottom only)
   if (dom.paginationInfo) {
     dom.paginationInfo.textContent = `Showing articles ${startIndex + 1}–${endIndex} of ${totalCount} (Page ${currentPage} of ${totalPages})`;
   }
@@ -8158,6 +8173,8 @@ function showLoadingState() {
   dom.postsGrid?.classList.add('hidden');
   dom.emptyState?.classList.add('hidden');
   dom.errorState?.classList.add('hidden');
+  dom.postsPagination?.classList.add('hidden');
+  dom.postsPaginationTop?.classList.add('hidden');
   if (dom.postsCountText) dom.postsCountText.textContent = 'Loading posts...';
   dom.refreshBtn?.classList.add('spinning');
 }
@@ -8167,6 +8184,8 @@ function showErrorState(message) {
   dom.postsGrid?.classList.add('hidden');
   dom.emptyState?.classList.add('hidden');
   dom.errorState?.classList.remove('hidden');
+  dom.postsPagination?.classList.add('hidden');
+  dom.postsPaginationTop?.classList.add('hidden');
   if (dom.errorMessage) dom.errorMessage.textContent = message || 'Unable to load articles right now. Please check your connection and try again.';
   if (dom.postsCountText) dom.postsCountText.textContent = 'Connection error';
 }
@@ -13302,7 +13321,7 @@ function initEventListeners() {
     await loadPosts();
   });
 
-  // Posts Pagination Navigation (Previous & Next)
+  // Posts Pagination Navigation (Previous & Next) - Bottom & Top
   dom.paginationPrevBtn?.addEventListener('click', () => {
     if (currentPage > 1) {
       goToPage(currentPage - 1);
@@ -13310,6 +13329,19 @@ function initEventListeners() {
   });
 
   dom.paginationNextBtn?.addEventListener('click', () => {
+    const totalPages = Math.ceil(currentFilteredCount / POSTS_PER_PAGE) || 1;
+    if (currentPage < totalPages) {
+      goToPage(currentPage + 1);
+    }
+  });
+
+  dom.paginationTopPrevBtn?.addEventListener('click', () => {
+    if (currentPage > 1) {
+      goToPage(currentPage - 1);
+    }
+  });
+
+  dom.paginationTopNextBtn?.addEventListener('click', () => {
     const totalPages = Math.ceil(currentFilteredCount / POSTS_PER_PAGE) || 1;
     if (currentPage < totalPages) {
       goToPage(currentPage + 1);
