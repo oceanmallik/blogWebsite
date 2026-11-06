@@ -384,6 +384,7 @@ function initDOM() {
   dom.scrollTopBtn = document.getElementById('scroll-top-btn');
   dom.copyLinkBtn = document.getElementById('copy-link-btn');
   dom.sidebarShareBtn = document.getElementById('sidebar-share-btn');
+  dom.sidebarShareText = document.getElementById('sidebar-share-text');
   dom.copyFeedback = document.getElementById('copy-feedback');
   dom.articlePhotocardBtn = document.getElementById('article-photocard-btn');
   dom.sidebarPhotocardBtn = document.getElementById('sidebar-photocard-btn');
@@ -13333,7 +13334,15 @@ function initEventListeners() {
     }
   });
   const handleArticleAuthorClick = (e) => {
-    if (e?.target?.closest?.('a') || e?.target?.closest?.('#article-topic-btn')) return;
+    if (
+      e?.target?.closest?.('a') ||
+      e?.target?.closest?.('#article-topic-btn') ||
+      e?.target?.closest?.('#article-topic-section') ||
+      e?.target?.closest?.('.sidebar-share-section') ||
+      e?.target?.closest?.('.sidebar-share-btn') ||
+      e?.target?.closest?.('.article-share-btn') ||
+      (e?.target?.closest?.('button') && !e?.target?.closest?.('#article-author-profile-btn'))
+    ) return;
     e?.preventDefault?.();
     e?.stopPropagation?.();
     const authorId = currentArticleAuthor?.id || activePost?.author_id;
@@ -13949,26 +13958,56 @@ function initEventListeners() {
   // --------------------------------------------------------------------------
   // Article Actions: Copy Link & Print Article
   // --------------------------------------------------------------------------
-  dom.copyLinkBtn?.addEventListener('click', async () => {
+  dom.copyLinkBtn?.addEventListener('click', async (e) => {
+    e?.stopPropagation?.();
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(window.location.href);
+      } else {
+        const temp = document.createElement('input');
+        temp.value = window.location.href;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+      }
       dom.copyFeedback?.classList.remove('hidden');
       setTimeout(() => {
         dom.copyFeedback?.classList.add('hidden');
       }, 2000);
       showToast('Article link copied to clipboard!', 'info');
     } catch {
-      alert('Link copied to clipboard: ' + window.location.href);
+      showToast('Article link copied to clipboard!', 'info');
     }
   });
 
-  dom.sidebarShareBtn?.addEventListener('click', () => {
+  dom.sidebarShareBtn?.addEventListener('click', (e) => {
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+    const textEl = dom.sidebarShareText || dom.sidebarShareBtn.querySelector('span');
+    if (textEl) {
+      if (!textEl.dataset.origText) {
+        textEl.dataset.origText = textEl.textContent;
+      }
+      textEl.textContent = 'Copied!';
+      setTimeout(() => {
+        if (textEl && textEl.dataset.origText) {
+          textEl.textContent = textEl.dataset.origText;
+        }
+      }, 2000);
+    }
     dom.copyLinkBtn?.click();
   });
 
   // Print Article Triggers
-  dom.articlePrintBtn?.addEventListener('click', printArticle);
-  dom.sidebarPrintBtn?.addEventListener('click', printArticle);
+  dom.articlePrintBtn?.addEventListener('click', (e) => {
+    e?.stopPropagation?.();
+    printArticle();
+  });
+  dom.sidebarPrintBtn?.addEventListener('click', (e) => {
+    e?.stopPropagation?.();
+    printArticle();
+  });
   window.addEventListener('beforeprint', () => {
     if (activePost) updatePrintMetadata(activePost);
   });
@@ -13976,10 +14015,12 @@ function initEventListeners() {
   // --------------------------------------------------------------------------
   // Photocard Studio Triggers & Modal Actions
   // --------------------------------------------------------------------------
-  dom.articlePhotocardBtn?.addEventListener('click', () => {
+  dom.articlePhotocardBtn?.addEventListener('click', (e) => {
+    e?.stopPropagation?.();
     if (activePost) openPhotocardStudio(activePost);
   });
-  dom.sidebarPhotocardBtn?.addEventListener('click', () => {
+  dom.sidebarPhotocardBtn?.addEventListener('click', (e) => {
+    e?.stopPropagation?.();
     if (activePost) openPhotocardStudio(activePost);
   });
 
