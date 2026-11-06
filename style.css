@@ -16,7 +16,7 @@
   --bg-primary: #FFFEF0;
   --bg-surface: #FFFFFF;
   --bg-elevated: #F5F4E0;
-  --bg-glass: rgba(255, 254, 240, 0.96);
+  --bg-glass: rgba(255, 254, 240, 0.85);
 
   --text-primary: #0A0A0A;
   --text-secondary: #2A2A2A;
@@ -79,7 +79,7 @@
   --bg-primary: #050507;
   --bg-surface: #0E0E11;
   --bg-elevated: #161619;
-  --bg-glass: rgba(14, 14, 17, 0.95);
+  --bg-glass: rgba(5, 5, 7, 0.82);
 
   /* Pristine high-contrast neutral zinc typography */
   --text-primary: #F4F4F6;
@@ -122,7 +122,7 @@
   --bg-primary: #0A0614;
   --bg-surface: #130B24;
   --bg-elevated: #1D1236;
-  --bg-glass: rgba(19, 11, 36, 0.95);
+  --bg-glass: rgba(10, 6, 20, 0.82);
 
   /* Neon illuminated typography */
   --text-primary: #F8F9FA;
@@ -256,9 +256,11 @@ img {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--bg-primary);
+  background: var(--bg-glass);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
   border-bottom: var(--border-width) solid var(--border-color);
-  transition: background-color var(--transition-normal);
+  transition: background-color var(--transition-normal), border-color var(--transition-normal);
 }
 
 .header-container {
