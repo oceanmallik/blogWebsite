@@ -118,84 +118,8 @@ window.currentUser = null;
 window.currentUserRole = null;
 window.currentProfile = null;
 
-// Built-in sample posts used only for preview when keys are not yet set
-const DEMO_PREVIEW_POSTS = [
-  {
-    id: 'demo-1',
-    author_id: null,
-    title: 'The Architecture of the Modern Ocean: Designing Resilient Web Systems',
-    slug: 'k9x2m4',
-    topic: 'Technology',
-    summary: 'A deep dive into distributed systems, modular frontend design, and how building resilient web platforms resembles the fluid dynamics of ocean currents.',
-    photo_source: 'BartaWire',
-    content: `## The Fluid Nature of Modern Systems\n\nSoftware architectures, much like tidal systems, must adapt to immense pressure and sudden shifts in volume. When designing scalable applications, rigidity leads to breakage.\n\n### Core Tenets of Resilient Design\n\n- **Loose Coupling:** Services should function independently with well-defined contracts.\n- **Graceful Degradation:** When a component fails, the system provides a predictable fallback rather than a complete blackout.\n- **Stateless Horizons:** Treating compute as ephemeral allows systems to scale effortlessly.\n\n> "The sea does not ask the storm to cease; it adjusts its surface to endure."\n\n\`\`\`javascript\n// Embracing resilience with retry backoffs\nasync function fetchWithResilience(url, retries = 3) {\n  for (let attempt = 0; attempt < retries; attempt++) {\n    try {\n      return await fetch(url);\n    } catch (err) {\n      if (attempt === retries - 1) throw err;\n      await new Promise(r => setTimeout(r, Math.pow(2, attempt) * 1000));\n    }\n  }\n}\n\`\`\`\n\nBy treating web systems with fluid design principles, we craft user experiences that feel smooth, dependable, and enduring.`,
-    cover_image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
-    is_published: true,
-    is_editor_pick: true,
-    is_trending: true,
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString()
-  },
-  {
-    id: 'demo-2',
-    author_id: null,
-    title: 'Crafting High-Performance Vanilla JavaScript Applications',
-    slug: 'b7y3q8',
-    topic: 'Programming',
-    summary: 'Why reaching for zero-dependency native JavaScript often delivers unmatched speed, clarity, and longevity for modern web frontends.',
-    photo_source: 'BartaWire',
-    content: `## The Power of the Native Web\n\nIn an era dominated by sprawling framework ecosystems, the power of modern vanilla JavaScript is often underestimated. Browsers today are faster, more capable, and more standardized than ever before.\n\n### Why Vanilla JS Still Reigns\n\n1. **Zero Bundle Overhead:** No 300KB runtime shipped before the first render.\n2. **Direct DOM Interaction:** Using \`DocumentFragment\` and modern CSS containment yields incredible frame rates.\n3. **Future Proofing:** Code written to web standards remains functional decade after decade.\n\n\`\`\`javascript\n// Efficient batched DOM updates\nconst fragment = document.createDocumentFragment();\nposts.forEach(post => {\n  const card = createPostCard(post);\n  fragment.appendChild(card);\n});\ndocument.getElementById('posts-grid').appendChild(fragment);\n\`\`\`\n\nBy mastering the web platform's built-in APIs, you build experiences that load instantly on any network.`,
-    cover_image: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1200&q=80',
-    is_published: true,
-    is_editor_pick: true,
-    is_trending: true,
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString()
-  },
-  {
-    id: 'demo-3',
-    author_id: null,
-    title: 'Undercurrents: The Quiet Evolution of Edge Computing',
-    slug: 'w2n5p9',
-    topic: 'AI',
-    summary: 'How shifting computation closer to the edge transforms distributed performance, latency, and real-time experiences.',
-    photo_source: 'BartaWire',
-    content: `## Beyond Centralized Horizons\n\nFor decades, computing oscillated between centralized mainframes and localized client hardware. Today, the edge represents a harmonious equilibrium — data processed precisely where it is generated.\n\n### Why the Edge Matters\n\n- **Sub-millisecond Latency:** Processing requests in local edge clusters eliminates round-trip lag across oceanic fiber cables.\n- **Resilience Under Pressure:** If an origin datacenter experiences disruption, edge nodes continue serving cached and dynamic workloads.\n- **Smart Data Routing:** Intelligent routing steers requests dynamically along optimal paths.\n\n> "Speed is not merely a feature; it is the silent foundation of trust in digital spaces."\n\nAs web platforms evolve, embracing edge computing ensures that every reader experiences instantaneous, seamless engagement regardless of where they reside on the globe.`,
-    cover_image: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?auto=format&fit=crop&w=1200&q=80',
-    is_published: true,
-    is_editor_pick: true,
-    is_trending: true,
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9).toISOString()
-  },
-  {
-    id: 'demo-4',
-    author_id: null,
-    title: 'Neo-Brutalist Web Aesthetics: Why Harsh Borders Are Back',
-    slug: 'm3p7k2',
-    topic: 'Design',
-    summary: 'From flat design fatigue to bold, high-contrast layouts: why developers and designers are embracing raw digital brutalism.',
-    photo_source: 'BartaWire',
-    content: `## The Rebirth of High Contrast\n\nFor over a decade, digital interfaces chased frictionless minimalism. Rounded corners, subtle drop shadows, and low-contrast typography reigned supreme.\n\nNow, the tide is turning. Neo-brutalism reclaims web personality with bold borders, hard offset shadows, vibrant primary palettes, and uncompromising functional typography.`,
-    cover_image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80',
-    is_published: true,
-    is_editor_pick: true,
-    is_trending: true,
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString()
-  },
-  {
-    id: 'demo-5',
-    author_id: null,
-    title: 'Decentralized Consensus and the Future of Open Journalism',
-    slug: 'z8v1r5',
-    topic: 'News',
-    summary: 'How distributed networks and cryptographic verification are reshaping news publishing, creator attribution, and censorship resistance.',
-    photo_source: 'BartaWire',
-    content: `## The Next Era of the Wire\n\nIndependent reporting requires verifiable integrity. By combining open protocols with distributed storage, decentralized journalism empowers writers to own their archives permanently.`,
-    cover_image: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=1200&q=80',
-    is_published: true,
-    is_editor_pick: true,
-    is_trending: true,
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString()
-  }
-];
+// Built-in sample posts placeholder (empty to avoid displaying mock posts)
+const DEMO_PREVIEW_POSTS = [];
 
 // ============================================================================
 // 3. DOM ELEMENTS CONTAINER
@@ -1652,7 +1576,7 @@ function getTopContributors(limit = 3, sortBy = currentContributorSort) {
   const contributorMap = new Map();
 
   const getOrCreateContributor = (userId, initialProfile = null) => {
-    const key = userId || 'demo-author';
+    const key = userId || 'contributor';
     if (!contributorMap.has(key)) {
       const cached = authorProfilesCache.get(key);
       const isSelf = currentUser && currentUser.id === key;
@@ -1730,7 +1654,7 @@ function getTopContributors(limit = 3, sortBy = currentContributorSort) {
   const postsPool = (window.allPosts && window.allPosts.length > 0) ? window.allPosts : allPosts;
   postsPool.forEach(post => {
     const prof = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
-    const authorId = post.author_id || prof?.id || 'demo-author';
+    const authorId = post.author_id || prof?.id || 'contributor';
     const cached = authorId ? authorProfilesCache.get(authorId) : null;
     const isSelf = currentUser && currentUser.id === authorId;
 
@@ -1762,10 +1686,10 @@ function getTopContributors(limit = 3, sortBy = currentContributorSort) {
       entry.coverUrl = initialProf.cover_url || post.cover_image;
     }
 
-    if ((entry.name === 'Contributor' || entry.name === 'Ocean Author') && initialProf.display_name) {
+    if (entry.name === 'Contributor' && initialProf.display_name) {
       entry.name = initialProf.display_name;
     }
-    if ((!entry.username || entry.username === 'contributor' || entry.username === 'ocean_author') && initialProf.username) {
+    if ((!entry.username || entry.username === 'contributor') && initialProf.username) {
       entry.username = initialProf.username;
     }
     if (!entry.avatarUrl && initialProf.avatar_url) {
@@ -1874,23 +1798,7 @@ function getTopContributors(limit = 3, sortBy = currentContributorSort) {
     }
   });
 
-  if (contributorMap.size === 0) {
-    contributorMap.set('demo-author', {
-      id: 'demo-author',
-      name: 'Ocean Author',
-      username: 'ocean_author',
-      avatarUrl: '',
-      coverUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80',
-      role: 'admin',
-      bio: '',
-      created_at: new Date().toISOString(),
-      isVerified: true,
-      postCount: 1,
-      commentCount: 0,
-      pizzasDonated: 0,
-      score: 10
-    });
-  }
+
 
   // Sort according to requested sortBy (5A)
   const sorted = Array.from(contributorMap.values()).sort((a, b) => {
@@ -2126,8 +2034,33 @@ function isTruthful(val) {
 }
 
 function initFeaturedStories(posts) {
-  let pool = posts && posts.length > 0 ? posts : ((allPosts && allPosts.length > 0) ? allPosts : (typeof DEMO_PREVIEW_POSTS !== 'undefined' ? DEMO_PREVIEW_POSTS : []));
-  if (!pool || pool.length === 0) return;
+  let pool = posts && posts.length > 0 ? posts : ((allPosts && allPosts.length > 0) ? allPosts : []);
+  if (!pool || pool.length === 0) {
+    if (featuredRotateTimer) {
+      clearInterval(featuredRotateTimer);
+      featuredRotateTimer = null;
+    }
+    featuredStories = [];
+    const titleEl = document.getElementById('featured-story-title');
+    if (titleEl) titleEl.textContent = 'No featured stories available';
+    const tagEl = document.getElementById('featured-story-tag');
+    if (tagEl) tagEl.classList.add('hidden');
+    const editorBadgeEl = document.getElementById('featured-editor-badge');
+    if (editorBadgeEl) editorBadgeEl.classList.add('hidden');
+    const imgEl = document.getElementById('featured-story-img');
+    if (imgEl) imgEl.classList.add('hidden');
+    const fallbackEl = document.getElementById('featured-story-fallback');
+    if (fallbackEl) fallbackEl.classList.remove('hidden');
+    const prevBtn = document.getElementById('featured-nav-prev');
+    const nextBtn = document.getElementById('featured-nav-next');
+    if (prevBtn) prevBtn.classList.add('hidden');
+    if (nextBtn) nextBtn.classList.add('hidden');
+    const dotsGroup = document.getElementById('featured-dots-group');
+    if (dotsGroup) dotsGroup.innerHTML = '';
+    const counterEl = document.getElementById('featured-counter');
+    if (counterEl) counterEl.textContent = '';
+    return;
+  }
 
   // 1. Primary: Posts marked with is_editor_pick in public.posts
   const editorPicks = pool.filter(p => isTruthful(p.is_editor_pick));
@@ -2136,20 +2069,10 @@ function initFeaturedStories(posts) {
   const otherPosts = pool.filter(p => !isTruthful(p.is_editor_pick));
   const combined = [...editorPicks, ...otherPosts];
 
-  // 3. Fallback: Pad with demo preview posts if still fewer than 5
-  if (combined.length < 5 && typeof DEMO_PREVIEW_POSTS !== 'undefined') {
-    for (const demo of DEMO_PREVIEW_POSTS) {
-      if (!combined.some(p => String(p.id) === String(demo.id) || p.title === demo.title)) {
-        combined.push(demo);
-        if (combined.length >= 5) break;
-      }
-    }
-  }
-
   const seen = new Set();
   featuredStories = [];
   for (const post of combined) {
-    if (!seen.has(post.id)) {
+    if (post && post.id && !seen.has(post.id)) {
       seen.add(post.id);
       featuredStories.push(post);
       if (featuredStories.length === 5) break;
@@ -2205,7 +2128,8 @@ function renderFeaturedStoryCard(index, animate = true, direction = 'next') {
 
     // Category / Tag
     if (tagEl) {
-      tagEl.textContent = post.topic || 'News';
+      tagEl.textContent = post.topic || 'Featured';
+      tagEl.classList.remove('hidden');
     }
 
     // Editor's Pick Badge
@@ -2267,6 +2191,7 @@ function renderFeaturedStoryCard(index, animate = true, direction = 'next') {
         ? calculateReadingTime(post.content || post.summary || '')
         : '3 min read';
       readtimeEl.textContent = rt;
+      readtimeEl.classList.remove('hidden');
     }
 
     // Time ago
@@ -2274,7 +2199,17 @@ function renderFeaturedStoryCard(index, animate = true, direction = 'next') {
       timeagoEl.textContent = typeof formatTimeAgo === 'function'
         ? (formatTimeAgo(post.created_at) || 'Recently')
         : 'Recently';
+      timeagoEl.classList.remove('hidden');
     }
+
+    // Unhide meta dots
+    document.querySelectorAll('.featured-story-meta .featured-meta-dot').forEach(dot => dot.classList.remove('hidden'));
+
+    // Prev / Next arrows visibility
+    const prevBtn = document.getElementById('featured-nav-prev');
+    const nextBtn = document.getElementById('featured-nav-next');
+    if (prevBtn) prevBtn.classList.toggle('hidden', featuredStories.length <= 1);
+    if (nextBtn) nextBtn.classList.toggle('hidden', featuredStories.length <= 1);
 
     // Counter
     if (counterEl) {
@@ -2381,7 +2316,7 @@ function stopFeaturedTimer() {
 // ============================================================================
 
 function getTrendingPosts(limit = 5) {
-  let postsPool = (allPosts && allPosts.length > 0) ? allPosts : ((window.allPosts && window.allPosts.length > 0) ? window.allPosts : (typeof DEMO_PREVIEW_POSTS !== 'undefined' ? DEMO_PREVIEW_POSTS : []));
+  let postsPool = (allPosts && allPosts.length > 0) ? allPosts : ((window.allPosts && window.allPosts.length > 0) ? window.allPosts : []);
   if (!postsPool || postsPool.length === 0) return [];
 
   // 1. Calculate comments per post from cachedComments
@@ -3254,42 +3189,7 @@ function renderRecentSupportFeed(donations) {
       created_at: new Date().toISOString()
     }));
   } else {
-    // Demo community supporters with rich messages & profile cover image fades
-    itemsToRender = [
-      {
-        user_id: 'demo-supporter-1',
-        supporter_name: 'Sarah Jenkins',
-        username: 'sarahj',
-        avatar_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80',
-        cover_url: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200&q=80',
-        pizzas_count: 3,
-        is_verified: true,
-        message: 'Independent journalism is more critical than ever. Happy to fuel the BartaWire newsroom! 🍕🔥',
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString()
-      },
-      {
-        user_id: 'demo-supporter-2',
-        supporter_name: 'Alex Rivera',
-        username: 'arivera',
-        avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80',
-        cover_url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80',
-        pizzas_count: 2,
-        is_verified: false,
-        message: 'Love the deep-dive tech architectures and honest reporting. Keep up the tremendous work!',
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 22).toISOString()
-      },
-      {
-        user_id: 'demo-supporter-3',
-        supporter_name: 'Elena Rostova',
-        username: 'elena_r',
-        avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
-        cover_url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
-        pizzas_count: 5,
-        is_verified: true,
-        message: 'Sending pizza slices from Berlin! The open editorial standard is top tier. 🍕❤️',
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString()
-      }
-    ];
+    itemsToRender = [];
   }
 
   if (itemsToRender.length === 0) {
@@ -4543,7 +4443,7 @@ function createCardElement(post, options = {}) {
     : (prof?.avatar_url || cachedAuthor?.avatar_url || post.author_avatar || '');
 
   if (!authorName) {
-    authorName = authorUsername || 'Ocean Author';
+    authorName = authorUsername || 'Contributor';
   }
   const handle = authorUsername || (authorName ? authorName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '') : 'author');
 
@@ -4654,18 +4554,18 @@ function getPlaceholderIconSvg() {
  * @returns {Promise<{id: string|null, display_name: string, username: string, email: string, avatar_url: string|null, role?: string}>}
  */
 async function getPostAuthorProfile(post) {
-  if (!post) return { id: null, display_name: 'Ocean Author', username: '', email: '', avatar_url: null, role: 'admin' };
+  if (!post) return { id: null, display_name: 'BartaWire Contributor', username: '', email: '', avatar_url: null, role: 'member' };
 
   // 1. Attached profiles object
   if (post.profiles && typeof post.profiles === 'object') {
     const p = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
     return {
       id: p.id || post.author_id || null,
-      display_name: p.display_name || post.author_name || 'Ocean Author',
+      display_name: p.display_name || post.author_name || 'BartaWire Contributor',
       username: p.username || '',
       email: p.email || '',
       avatar_url: p.avatar_url || null,
-      role: p.role || 'admin',
+      role: p.role || 'member',
       is_verified: !!p.is_verified,
       pinned_post_id: p.pinned_post_id || null
     };
@@ -4675,11 +4575,11 @@ async function getPostAuthorProfile(post) {
   if (currentUser && post.author_id && post.author_id === currentUser.id) {
     return {
       id: currentUser.id,
-      display_name: currentProfile?.display_name || currentUser.user_metadata?.display_name || (currentUser.email ? currentUser.email.split('@')[0] : 'Ocean Author'),
+      display_name: currentProfile?.display_name || currentUser.user_metadata?.display_name || (currentUser.email ? currentUser.email.split('@')[0] : 'Contributor'),
       username: currentProfile?.username || currentUser.user_metadata?.username || '',
       email: currentUser.email || currentProfile?.email || '',
       avatar_url: currentProfile?.avatar_url || currentUser.user_metadata?.avatar_url || null,
-      role: currentProfile?.role || currentUserRole || 'admin',
+      role: currentProfile?.role || currentUserRole || 'member',
       is_verified: !!currentProfile?.is_verified,
       pinned_post_id: currentProfile?.pinned_post_id || null
     };
@@ -4703,7 +4603,7 @@ async function getPostAuthorProfile(post) {
         const result = {
           ...data,
           id: data.id,
-          display_name: data.display_name || post.author_name || (data.email ? data.email.split('@')[0] : 'Ocean Author'),
+          display_name: data.display_name || post.author_name || (data.email ? data.email.split('@')[0] : 'Contributor'),
           username: data.username || '',
           email: data.email || '',
           avatar_url: data.avatar_url || null,
@@ -4733,14 +4633,14 @@ async function getPostAuthorProfile(post) {
     };
   }
 
-  // 6. Fallback for demo or unspecified authors
+  // 6. Fallback for unspecified authors
   return {
-    id: post.author_id || 'demo-author',
-    display_name: post.author_name || 'Ocean Author',
-    username: post.author_username || 'ocean_author',
+    id: post.author_id || '',
+    display_name: post.author_name || 'BartaWire Contributor',
+    username: post.author_username || 'bartawire',
     email: post.author_email || '',
     avatar_url: post.author_avatar || null,
-    role: 'admin'
+    role: 'member'
   };
 }
 
@@ -4784,7 +4684,7 @@ let currentArticleAuthor = null;
  */
 function renderArticleAuthor(author) {
   currentArticleAuthor = author;
-  const name = author?.display_name || 'Ocean Author';
+  const name = author?.display_name || 'BartaWire Contributor';
   const username = author?.username || '';
   const email = author?.email || '';
   const avatarUrl = author?.avatar_url || null;
@@ -5070,7 +4970,7 @@ async function openArticleView(post, updateHash = true) {
 
   // 1. Resolve full post object if missing essential fields (content, author_id, created_at)
   if (!post.content || !post.author_id) {
-    const postsPool = (allPosts && allPosts.length > 0) ? allPosts : ((window.allPosts && window.allPosts.length > 0) ? window.allPosts : (typeof DEMO_PREVIEW_POSTS !== 'undefined' ? DEMO_PREVIEW_POSTS : []));
+    const postsPool = (allPosts && allPosts.length > 0) ? allPosts : ((window.allPosts && window.allPosts.length > 0) ? window.allPosts : []);
     const inMemory = postsPool.find(p => (post.id && String(p.id) === String(post.id)) || (post.slug && p.slug === post.slug));
     if (inMemory && inMemory.content && inMemory.author_id) {
       post = { ...post, ...inMemory };
@@ -5286,9 +5186,9 @@ async function openPostByIdOrSlug(id, slug, fallbackPost = null, updateHash = tr
     }
   }
 
-  // 4. Fallback to fallbackPost or DEMO_PREVIEW_POSTS
+  // 4. Fallback to fallbackPost
   if (!targetPost) {
-    targetPost = fallbackPost || (typeof DEMO_PREVIEW_POSTS !== 'undefined' ? DEMO_PREVIEW_POSTS.find(p => (id && String(p.id) === String(id)) || (slug && p.slug === slug)) : null);
+    targetPost = fallbackPost || null;
   }
 
   if (targetPost) {
@@ -10786,24 +10686,23 @@ async function loadAndRenderPublicProfile(userIdentifier, fallbackUsername, fall
     }
   }
 
-  // 5. Fallback for demo or offline contributors
+  // 5. Fallback for offline or unfound contributors
   if (!profile) {
-    const isDemo = cleanId === 'demo-author' || cleanId === 'ocean_author' || (fallbackName && fallbackName.toLowerCase().includes('ocean'));
     profile = {
-      id: cleanId || 'demo-author',
-      display_name: fallbackName || (isDemo ? 'Ocean Author' : (cleanId || 'Community Member')),
-      username: fallbackUsername || (isDemo ? 'ocean_author' : (cleanId && !cleanId.includes('-') ? cleanId : 'member')),
+      id: cleanId || '',
+      display_name: fallbackName || (cleanId || 'Community Member'),
+      username: fallbackUsername || (cleanId && !cleanId.includes('-') ? cleanId : 'member'),
       avatar_url: null,
-      role: isDemo ? 'admin' : 'visitor',
-      created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(),
-      bio: isDemo ? 'Engineering resilient, ultra-fast web architectures and systems.' : '',
-      location: isDemo ? 'Global Web' : '',
-      institution: isDemo ? 'BartaWire Core' : '',
-      website_url: isDemo ? 'https://bartawire.dev' : '',
+      role: 'member',
+      created_at: new Date().toISOString(),
+      bio: '',
+      location: '',
+      institution: '',
+      website_url: '',
       cover_url: null,
-      skills: isDemo ? [{ name: 'Architecture', percentage: 95 }, { name: 'JavaScript', percentage: 90 }, { name: 'PostgreSQL', percentage: 85 }] : [],
-      social_links: isDemo ? { github: 'https://github.com', x: 'https://x.com' } : {},
-      is_verified: isDemo,
+      skills: [],
+      social_links: {},
+      is_verified: false,
       pizzas_donated: 0,
       pinned_post_id: null
     };
@@ -11072,7 +10971,7 @@ async function loadPublicUserPosts(profile, requestId) {
 
   let posts = [];
   try {
-    if (supabaseClient && profile.id && profile.id !== 'demo-author') {
+    if (supabaseClient && profile.id) {
       const { data, error } = await supabaseClient
         .from('posts')
         .select('*')
@@ -11088,13 +10987,11 @@ async function loadPublicUserPosts(profile, requestId) {
     console.warn('Error fetching user posts:', err);
   }
 
-  // Fallback: check allPosts in memory (handles demo posts or cached posts)
+  // Fallback: check allPosts in memory
   if (posts.length === 0) {
-    const isDemo = profile.id === 'demo-author' || profile.username === 'ocean_author' || profile.role === 'admin';
     posts = allPosts.filter(p => {
       if (profile.id && p.author_id === profile.id) return true;
       if (profile.username && (p.author_username === profile.username || p.profiles?.username === profile.username)) return true;
-      if (isDemo && (!p.author_id || p.id?.startsWith('demo-'))) return true;
       return false;
     });
   }
@@ -11197,7 +11094,7 @@ async function loadPublicUserComments(profile, requestId) {
 
   let comments = [];
   try {
-    if (supabaseClient && profile.id && profile.id !== 'demo-author') {
+    if (supabaseClient && profile.id) {
       const { data, error } = await supabaseClient
         .from('comments')
         .select('id, post_id, content, created_at, posts(id, title, slug, cover_image, author_id, content, summary, created_at, reading_time)')
@@ -11221,31 +11118,11 @@ async function loadPublicUserComments(profile, requestId) {
     console.warn('Error fetching user comments:', err);
   }
 
-  // Fallback: check cachedComments in memory or demo comments if empty
+  // Fallback: check cachedComments in memory
   if (comments.length === 0) {
-    const isDemo = profile.id === 'demo-author' || profile.username === 'ocean_author';
     const localMatches = cachedComments.filter(c => c.user_id === profile.id);
     if (localMatches.length > 0) {
       comments = localMatches;
-    } else if (isDemo && (allPosts.length > 0 || (typeof DEMO_PREVIEW_POSTS !== 'undefined' && DEMO_PREVIEW_POSTS.length > 0))) {
-      const p1 = allPosts[0] || DEMO_PREVIEW_POSTS[0];
-      const p2 = allPosts[1] || (typeof DEMO_PREVIEW_POSTS !== 'undefined' ? DEMO_PREVIEW_POSTS[1] : null) || p1;
-      comments = [
-        {
-          id: 'demo-comment-1',
-          post_id: p1.id,
-          content: 'Building resilient architectures with loose coupling and clear contracts is essential for modern web systems.',
-          created_at: new Date(Date.now() - 1000 * 60 * 60 * 18).toISOString(),
-          posts: p1
-        },
-        {
-          id: 'demo-comment-2',
-          post_id: p2.id,
-          content: 'Performance optimization in vanilla JavaScript is unmatched when DOM manipulation is minimized and state is kept predictable.',
-          created_at: new Date(Date.now() - 1000 * 60 * 60 * 42).toISOString(),
-          posts: p2
-        }
-      ];
     }
   }
 
@@ -11302,10 +11179,7 @@ async function loadPublicUserComments(profile, requestId) {
       post = commentPost;
     }
 
-    // Fallback to DEMO_PREVIEW_POSTS
-    if (!post && typeof DEMO_PREVIEW_POSTS !== 'undefined') {
-      post = DEMO_PREVIEW_POSTS.find(p => (postId && String(p.id) === String(postId)) || (postSlug && p.slug === postSlug));
-    }
+
 
     // Merge freshest fields if available
     if (post && commentPost) {
@@ -13908,7 +13782,7 @@ function initEventListeners() {
     const row = e.target.closest('.trending-row');
     if (!row) return;
     const postId = row.getAttribute('data-post-id');
-    const postsPool = (allPosts && allPosts.length > 0) ? allPosts : (typeof DEMO_PREVIEW_POSTS !== 'undefined' ? DEMO_PREVIEW_POSTS : []);
+    const postsPool = (allPosts && allPosts.length > 0) ? allPosts : [];
     const post = postsPool.find(p => String(p.id) === String(postId) || (p.slug && p.slug === postId));
     if (post) {
       openArticleView(post);
@@ -14972,23 +14846,33 @@ window.setActivePostForTesting = (post) => { activePost = post; };
 window.setCurrentUserForTesting = (user, profile) => { currentUser = user; currentProfile = profile; };
 
 /**
- * On initial page load, checks if ?post= is present in window.location.search,
- * fetches the matching post from public.posts where .eq('slug', slugParam), and opens that article directly.
+ * On initial page load, checks if ?post= or ?p= is present in window.location.search,
+ * fetches the matching post from public.posts where .eq('slug', slugParam) or .eq('id', slugParam), and opens that article directly.
  */
 async function checkInitialPostQuery() {
   try {
     const urlParams = new URLSearchParams(window.location.search);
-    const slugParam = urlParams.get('post')?.trim();
+    const slugParam = (urlParams.get('post') || urlParams.get('p'))?.trim();
     if (!slugParam) return false;
 
-    // 1. Fetch from Supabase public.posts where .eq('slug', slugParam)
+    // 1. Check in-memory allPosts first
+    const inMemory = allPosts.find(p => p.slug === slugParam || String(p.id) === slugParam);
+    if (inMemory) {
+      await openArticleView(inMemory, false);
+      return true;
+    }
+
+    // 2. Fetch from Supabase public.posts where slug = slugParam or id = slugParam
     if (supabaseClient) {
       try {
-        const { data, error } = await supabaseClient
-          .from('posts')
-          .select('*')
-          .eq('slug', slugParam)
-          .maybeSingle();
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slugParam);
+        let query = supabaseClient.from('posts').select('*');
+        if (isUuid) {
+          query = query.eq('id', slugParam);
+        } else {
+          query = query.eq('slug', slugParam);
+        }
+        const { data, error } = await query.maybeSingle();
 
         if (!error && data) {
           const idx = allPosts.findIndex(p => p.id === data.id);
@@ -15000,15 +14884,6 @@ async function checkInitialPostQuery() {
         }
       } catch (err) {
         console.warn('Failed to fetch post by slug from Supabase:', err);
-      }
-    }
-
-    // 2. Fallback: check DEMO_PREVIEW_POSTS
-    if (typeof DEMO_PREVIEW_POSTS !== 'undefined') {
-      const demoPost = DEMO_PREVIEW_POSTS.find(p => p.slug === slugParam || String(p.id) === slugParam);
-      if (demoPost) {
-        await openArticleView(demoPost, false);
-        return true;
       }
     }
   } catch (err) {
@@ -15025,14 +14900,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   initTheme();
   initEventListeners();
   initTopicFilters();
-  initFeaturedStories(typeof DEMO_PREVIEW_POSTS !== 'undefined' ? DEMO_PREVIEW_POSTS : []);
-  renderTrendingPanel();
-  renderHeroTopWriters();
   initSupabase();
+  await initAuth();
+  await loadPosts();
   const openedFromPostQuery = await checkInitialPostQuery();
   if (!openedFromPostQuery) {
     handleHashNavigation();
   }
-  await initAuth();
-  await loadPosts();
 });

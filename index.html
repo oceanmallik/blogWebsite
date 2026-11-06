@@ -288,23 +288,23 @@
               <article class="featured-story-card" id="featured-story-card" role="button" tabindex="0" aria-label="Featured Story" aria-roledescription="slide">
                 <!-- Large Image with floating category tag and prev/next arrows -->
                 <div class="featured-media-wrap">
-                  <img id="featured-story-img" class="featured-story-img" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80" alt="The Architecture of the Modern Ocean: Designing Resilient Web Systems" loading="eager">
-                  <div id="featured-story-fallback" class="featured-story-fallback hidden" aria-hidden="true">
+                  <img id="featured-story-img" class="featured-story-img hidden" src="" alt="Featured story cover" loading="eager">
+                  <div id="featured-story-fallback" class="featured-story-fallback" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="featured-placeholder-icon">
                       <path d="M2 12c2.5-3 5-3 7.5 0s5 3 7.5 0 5-3 5-3"></path>
                       <path d="M2 17c2.5-3 5-3 7.5 0s5 3 7.5 0 5-3 5-3"></path>
                     </svg>
                   </div>
-                  <span id="featured-story-tag" class="featured-story-tag">Technology</span>
-                  <span id="featured-editor-badge" class="featured-editor-badge">★ Editor's Pick</span>
+                  <span id="featured-story-tag" class="featured-story-tag hidden">Featured</span>
+                  <span id="featured-editor-badge" class="featured-editor-badge hidden">★ Editor's Pick</span>
 
                   <!-- Prev / Next Navigation Arrows -->
-                  <button type="button" id="featured-nav-prev" class="featured-nav-arrow featured-nav-prev" aria-label="Previous featured story" title="Previous story">
+                  <button type="button" id="featured-nav-prev" class="featured-nav-arrow featured-nav-prev hidden" aria-label="Previous featured story" title="Previous story">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16" aria-hidden="true">
                       <polyline points="15 18 9 12 15 6"></polyline>
                     </svg>
                   </button>
-                  <button type="button" id="featured-nav-next" class="featured-nav-arrow featured-nav-next" aria-label="Next featured story" title="Next story">
+                  <button type="button" id="featured-nav-next" class="featured-nav-arrow featured-nav-next hidden" aria-label="Next featured story" title="Next story">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16" aria-hidden="true">
                       <polyline points="9 18 15 12 9 6"></polyline>
                     </svg>
@@ -313,16 +313,16 @@
 
                 <!-- Story Info: Headline, Author, Read time, Time ago -->
                 <div class="featured-body">
-                  <h2 id="featured-story-title" class="featured-story-title">The Architecture of the Modern Ocean: Designing Resilient Web Systems</h2>
+                  <h2 id="featured-story-title" class="featured-story-title">Loading featured stories...</h2>
                   <div class="featured-story-meta">
                     <div class="featured-author-chip" id="featured-author-chip">
                       <div id="featured-author-avatar" class="featured-author-avatar">BW</div>
                       <span id="featured-author-name" class="featured-author-name">BartaWire</span>
                     </div>
-                    <span class="featured-meta-dot" aria-hidden="true">•</span>
-                    <span id="featured-story-readtime" class="featured-story-readtime">4 min read</span>
-                    <span class="featured-meta-dot" aria-hidden="true">•</span>
-                    <span id="featured-story-timeago" class="featured-story-timeago">2 days ago</span>
+                    <span class="featured-meta-dot hidden" aria-hidden="true">•</span>
+                    <span id="featured-story-readtime" class="featured-story-readtime hidden"></span>
+                    <span class="featured-meta-dot hidden" aria-hidden="true">•</span>
+                    <span id="featured-story-timeago" class="featured-story-timeago hidden"></span>
                   </div>
                 </div>
               </article>
@@ -330,10 +330,10 @@
               <!-- Carousel Controls: 5 Dots & Counter -->
               <div class="featured-carousel-bar">
                 <div class="featured-dots-group" id="featured-dots-group" role="tablist" aria-label="Featured Story selection">
-                  <!-- 5 dots populated dynamically -->
+                  <!-- Dots populated dynamically once real posts load -->
                 </div>
                 <div class="featured-carousel-info">
-                  <span class="featured-counter" id="featured-counter" aria-live="polite">1 / 5</span>
+                  <span class="featured-counter" id="featured-counter" aria-live="polite"></span>
                 </div>
               </div>
             </div>
@@ -354,66 +354,12 @@
               </div>
 
               <div id="trending-list" class="trending-list" role="list">
-                <!-- Top 5 Trending posts rendered with real initial rows and updated by renderTrendingPanel() -->
-                <div class="trending-row is-featured has-trending-flag" role="button" tabindex="0" data-post-id="demo-1" aria-label="Trending #1: The Architecture of the Modern Ocean: Designing Resilient Web Systems">
-                  <span class="trending-rank" aria-hidden="true">1</span>
-                  <div class="trending-info">
-                    <div class="trending-headline-row">
-                      <h4 class="trending-headline">The Architecture of the Modern Ocean: Designing Resilient Web Systems</h4>
-                    </div>
-                    <div class="trending-meta-row">
-                      <span class="trending-category-tag">Technology</span>
-                      <span class="trending-fire-tag" title="Flagged as Trending">🔥 Trending</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="trending-row has-trending-flag" role="button" tabindex="0" data-post-id="demo-2" aria-label="Trending #2: Crafting High-Performance Vanilla JavaScript Applications">
-                  <span class="trending-rank" aria-hidden="true">2</span>
-                  <div class="trending-info">
-                    <div class="trending-headline-row">
-                      <h4 class="trending-headline">Crafting High-Performance Vanilla JavaScript Applications</h4>
-                    </div>
-                    <div class="trending-meta-row">
-                      <span class="trending-category-tag">Programming</span>
-                      <span class="trending-fire-tag" title="Flagged as Trending">🔥 Trending</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="trending-row has-trending-flag" role="button" tabindex="0" data-post-id="demo-3" aria-label="Trending #3: Undercurrents: The Quiet Evolution of Edge Computing">
-                  <span class="trending-rank" aria-hidden="true">3</span>
-                  <div class="trending-info">
-                    <div class="trending-headline-row">
-                      <h4 class="trending-headline">Undercurrents: The Quiet Evolution of Edge Computing</h4>
-                    </div>
-                    <div class="trending-meta-row">
-                      <span class="trending-category-tag">AI</span>
-                      <span class="trending-fire-tag" title="Flagged as Trending">🔥 Trending</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="trending-row has-trending-flag" role="button" tabindex="0" data-post-id="demo-4" aria-label="Trending #4: Neo-Brutalist Web Aesthetics: Why Harsh Borders Are Back">
-                  <span class="trending-rank" aria-hidden="true">4</span>
-                  <div class="trending-info">
-                    <div class="trending-headline-row">
-                      <h4 class="trending-headline">Neo-Brutalist Web Aesthetics: Why Harsh Borders Are Back</h4>
-                    </div>
-                    <div class="trending-meta-row">
-                      <span class="trending-category-tag">Design</span>
-                      <span class="trending-fire-tag" title="Flagged as Trending">🔥 Trending</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="trending-row has-trending-flag" role="button" tabindex="0" data-post-id="demo-5" aria-label="Trending #5: Decentralized Consensus and the Future of Open Journalism">
-                  <span class="trending-rank" aria-hidden="true">5</span>
-                  <div class="trending-info">
-                    <div class="trending-headline-row">
-                      <h4 class="trending-headline">Decentralized Consensus and the Future of Open Journalism</h4>
-                    </div>
-                    <div class="trending-meta-row">
-                      <span class="trending-category-tag">News</span>
-                      <span class="trending-fire-tag" title="Flagged as Trending">🔥 Trending</span>
-                    </div>
-                  </div>
+                <div class="trending-skeleton">
+                  <div class="trending-skeleton-row"></div>
+                  <div class="trending-skeleton-row"></div>
+                  <div class="trending-skeleton-row"></div>
+                  <div class="trending-skeleton-row"></div>
+                  <div class="trending-skeleton-row"></div>
                 </div>
               </div>
             </section>
@@ -467,22 +413,11 @@
 
                 <!-- Single Contributor Display Area (Only 1 contributor shown at a time) -->
                 <div id="hero-top-writers-list" class="hero-writers-list hero-writers-single-view">
-                  <div class="hero-single-writer-card rank-1" role="button" tabindex="0" title="View Sarah Jenkins's public profile" aria-label="1st Place: Sarah Jenkins, 420 points">
-                    <div class="hero-single-writer-profile">
-                      <div class="hero-single-avatar-wrap">
-                        <div class="hero-single-avatar">SJ</div>
-                        <span class="hero-single-rank-badge rank-1" aria-hidden="true">🥇</span>
-                      </div>
-                      <div class="hero-single-info">
-                        <div class="hero-single-name-row">
-                          <div class="hero-single-name-group">
-                            <span class="hero-single-name">Sarah Jenkins</span>
-                          </div>
-                          <span class="hero-single-points-pill" title="420 pts">⭐ 420 pts</span>
-                        </div>
-                        <span class="hero-single-username">@sarahj</span>
-                        <span class="hero-single-stats-line">18 articles • 3 pizzas • 42 comments</span>
-                      </div>
+                  <div class="hero-writer-skeleton">
+                    <div class="hero-writer-skeleton-avatar"></div>
+                    <div class="hero-writer-skeleton-info">
+                      <div class="hero-skeleton-bar bar-long"></div>
+                      <div class="hero-skeleton-bar bar-short"></div>
                     </div>
                   </div>
                 </div>
@@ -716,9 +651,9 @@
 
             <div class="sidebar-section author-byline-section">
               <span class="sidebar-label">Written By</span>
-              <h3 id="article-author-name" class="sidebar-author-name">Ocean Author</h3>
+              <h3 id="article-author-name" class="sidebar-author-name">BartaWire Contributor</h3>
               <span id="article-author-username" class="sidebar-author-username hidden">@author</span>
-              <a id="article-author-email" href="" class="sidebar-author-email">author@example.com</a>
+              <a id="article-author-email" href="" class="sidebar-author-email hidden"></a>
             </div>
 
             <div class="sidebar-section author-profile-link-section">
@@ -851,7 +786,7 @@
                   <div class="mobile-author-info">
                     <div class="mobile-author-name-row">
                       <span class="mobile-author-by">by</span>
-                      <span id="article-mobile-author-name" class="mobile-author-name">Ocean Author</span>
+                      <span id="article-mobile-author-name" class="mobile-author-name">BartaWire Contributor</span>
                     </div>
                     <span id="article-mobile-author-username" class="mobile-author-handle hidden">@author</span>
                   </div>

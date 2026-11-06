@@ -1956,6 +1956,15 @@ body.mobile-nav-open {
   animation: pulseSkeleton 1.5s ease-in-out infinite;
 }
 
+@keyframes pulseSkeleton {
+  0%, 100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
 .trending-empty-state {
   font-family: var(--font-mono);
   font-size: 0.78rem;
