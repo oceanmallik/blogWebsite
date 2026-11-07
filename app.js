@@ -6339,8 +6339,9 @@ async function handleAdminPostSubmit(e) {
   const photo_source = (photoSourceInput?.value || '').trim() || 'BartaWire';
   const content = dom.adminContent.value.trim();
   const is_published = dom.adminIsPublished.checked;
-  const is_editor_pick = Boolean(dom.adminIsEditorPick?.checked);
-  const is_trending = Boolean(dom.adminIsTrending?.checked);
+  const existingPost = editingPostId ? (adminPosts.find(p => p.id === editingPostId) || allPosts.find(p => p.id === editingPostId)) : null;
+  const is_editor_pick = dom.adminIsEditorPick ? Boolean(dom.adminIsEditorPick.checked) : Boolean(existingPost?.is_editor_pick);
+  const is_trending = dom.adminIsTrending ? Boolean(dom.adminIsTrending.checked) : Boolean(existingPost?.is_trending);
   const topic = dom.adminTopic ? dom.adminTopic.value.trim() : '';
 
   if (!title) {
@@ -7018,12 +7019,13 @@ function updateAdminCardPreview() {
   }
 
   // Live badge preview for Editor's Pick & Trending
+  const existingPost = editingPostId ? (adminPosts.find(p => p.id === editingPostId) || allPosts.find(p => p.id === editingPostId)) : null;
   if (dom.previewCardEditorBadge) {
-    const isEditor = Boolean(dom.adminIsEditorPick?.checked);
+    const isEditor = dom.adminIsEditorPick ? Boolean(dom.adminIsEditorPick.checked) : Boolean(existingPost?.is_editor_pick);
     dom.previewCardEditorBadge.classList.toggle('hidden', !isEditor);
   }
   if (dom.previewCardTrendingBadge) {
-    const isTrending = Boolean(dom.adminIsTrending?.checked);
+    const isTrending = dom.adminIsTrending ? Boolean(dom.adminIsTrending.checked) : Boolean(existingPost?.is_trending);
     dom.previewCardTrendingBadge.classList.toggle('hidden', !isTrending);
   }
 
