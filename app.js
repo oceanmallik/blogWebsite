@@ -11791,7 +11791,7 @@ function getDefaultPhotocardPlaceholder() {
         <path d="M -24 -2 C -18 -10 -12 -10 -6 -2 C 0 6 6 6 12 -2 C 18 -10 24 -10 24 -10" fill="none" stroke="#0A0A0A" stroke-width="4.5" stroke-linecap="round"/>
         <path d="M -24 14 C -18 6 -12 6 -6 14 C 0 22 6 22 12 14 C 18 6 24 6 24 6" fill="none" stroke="#0A0A0A" stroke-width="4.5" stroke-linecap="round"/>
       </g>
-      <text x="540" y="405" font-family="'Space Grotesk', sans-serif" font-size="52" font-weight="800" fill="#FFFFFF" text-anchor="middle">BARTA<tspan fill="#FFE500">WIRE</tspan></text>
+      <text x="540" y="405" font-family="'Plus Jakarta Sans', sans-serif" font-size="52" font-weight="800" fill="#FFFFFF" text-anchor="middle">BARTA<tspan fill="#FFE500">WIRE</tspan></text>
       <text x="540" y="460" font-family="'Space Mono', monospace" font-size="20" font-weight="700" fill="#FFE500" letter-spacing="4" text-anchor="middle">BARTAWIRE.COM.BD</text>
     </svg>
   `);

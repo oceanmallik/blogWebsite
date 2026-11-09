@@ -4,9 +4,9 @@
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   Google Fonts Import (Space Grotesk + Space Mono)
+   Google Fonts Import (Plus Jakarta Sans + Space Grotesk + Space Mono)
    -------------------------------------------------------------------------- */
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
 
 /* --------------------------------------------------------------------------
    Design Tokens
@@ -60,8 +60,9 @@
   --radius-lg: 6px;
   --radius-full: 4px;
 
-  /* Typography — Space Grotesk for English, Anek Bangla & Hind Siliguri for Bengali */
-  --font-sans: 'Space Grotesk', 'Anek Bangla', 'Hind Siliguri', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  /* Typography — Plus Jakarta Sans for English, Anek Bangla & Hind Siliguri for Bengali */
+  --font-sans: 'Plus Jakarta Sans', 'Anek Bangla', 'Hind Siliguri', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading: 'Plus Jakarta Sans', 'Anek Bangla', 'Hind Siliguri', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: 'Space Mono', 'Hind Siliguri', ui-monospace, monospace;
   --font-body: var(--font-sans);
   --font-bangla-heading: 'Anek Bangla', 'Hind Siliguri', 'Noto Serif Bengali', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -343,7 +344,7 @@ img {
 .brand-subtitle {
   font-size: 0.8rem;
   font-weight: 600;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   color: var(--text-muted);
   letter-spacing: -0.01em;
   white-space: nowrap;
@@ -12854,7 +12855,7 @@ input[type="datetime-local"] {
   background: var(--pc-body-bg, #FFFEF0) !important;
   overflow: hidden !important;
   position: relative !important;
-  font-family: 'Space Grotesk', 'Anek Bangla', 'Hind Siliguri', -apple-system, sans-serif !important;
+  font-family: 'Plus Jakarta Sans', 'Anek Bangla', 'Hind Siliguri', -apple-system, sans-serif !important;
   box-shadow: 8px 8px 0px var(--pc-border, #0A0A0A);
   border: 3px solid var(--pc-border, #0A0A0A);
   text-align: left;
@@ -13093,7 +13094,7 @@ input[type="datetime-local"] {
 }
 
 .photocard-brand-name {
-  font-family: 'Space Grotesk', sans-serif !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
   font-size: 22px !important;
   font-weight: 800 !important;
   letter-spacing: -0.03em !important;
@@ -13169,7 +13170,7 @@ input[type="datetime-local"] {
 
 /* Headline */
 .photocard-headline {
-  font-family: 'Space Grotesk', 'Anek Bangla', 'Hind Siliguri', sans-serif !important;
+  font-family: 'Plus Jakarta Sans', 'Anek Bangla', 'Hind Siliguri', sans-serif !important;
   font-size: 28px;
   font-weight: 800 !important;
   line-height: 1.25 !important;
@@ -13226,7 +13227,7 @@ input[type="datetime-local"] {
 
 /* Summary Excerpt - perfectly aligned flush with headline and date */
 .photocard-summary {
-  font-family: 'Space Grotesk', 'Hind Siliguri', 'Anek Bangla', -apple-system, sans-serif !important;
+  font-family: 'Plus Jakarta Sans', 'Hind Siliguri', 'Anek Bangla', -apple-system, sans-serif !important;
   font-size: 14px !important;
   font-weight: 400 !important;
   line-height: 1.55 !important;
@@ -13394,7 +13395,7 @@ input[type="datetime-local"] {
 }
 
 .photocard-footer-callout {
-  font-family: 'Space Grotesk', 'Hind Siliguri', sans-serif !important;
+  font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif !important;
   font-weight: 700 !important;
   font-size: 11px !important;
   height: 22px !important;
@@ -14328,7 +14329,7 @@ input[type="datetime-local"] {
   background: var(--pc-body-bg, #FFFEF0) !important;
   overflow: hidden !important;
   position: relative !important;
-  font-family: 'Space Grotesk', 'Anek Bangla', 'Hind Siliguri', -apple-system, sans-serif !important;
+  font-family: 'Plus Jakarta Sans', 'Anek Bangla', 'Hind Siliguri', -apple-system, sans-serif !important;
   box-shadow: 8px 8px 0px var(--pc-border, #0A0A0A);
   border: 3px solid var(--pc-border, #0A0A0A);
   text-align: left;
@@ -14428,7 +14429,7 @@ input[type="datetime-local"] {
 }
 
 .pc-story-title-text {
-  font-family: 'Space Grotesk', 'Anek Bangla', 'Hind Siliguri', sans-serif !important;
+  font-family: 'Plus Jakarta Sans', 'Anek Bangla', 'Hind Siliguri', sans-serif !important;
   font-size: 18px !important;
   font-weight: 800 !important;
   line-height: 1.3 !important;
@@ -14445,7 +14446,7 @@ input[type="datetime-local"] {
 .photocard-story-body h2,
 .photocard-story-body h3,
 .photocard-story-body h4 {
-  font-family: 'Space Grotesk', 'Anek Bangla', 'Hind Siliguri', sans-serif !important;
+  font-family: 'Plus Jakarta Sans', 'Anek Bangla', 'Hind Siliguri', sans-serif !important;
   font-weight: 800 !important;
   line-height: 1.3 !important;
   color: var(--pc-text-dark, #0A0A0A) !important;
